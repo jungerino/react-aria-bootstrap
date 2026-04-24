@@ -77,6 +77,7 @@ Never assume component properties without verification through these tools.
 
 - **Honesty about limitations**: Do not make stuff up or provide invalid code. If uncertain, acknowledge it. "I don't know" is acceptable.
 - **Markdown summaries**: When asked to "summarize in markdown", provide a concise summary enclosed in a code block using four backticks (```` ```` ````) so inner triple-backtick fences do not close the outer block.
+- **Context handoff**: When the user says "summarize for new window", "fresh window", "fresh context window", or similar, produce a handoff summary in a fenced code block using four backticks (per the Markdown summaries rule above). Include: current branch, uncommitted files and key changes, what was accomplished this session, open questions or uncertainties, and the immediate next step.
 - **Log updates**: When the user says "update log", append a markdown summary of the work session since the previous commit to `agent/log.md`. Include user prompts (quoted, lightly edited for clarity), responses, and code changes. Exclude reverted or discarded work.
 - **Version bumps**: When the user says "update version", "version bump", or "semver", update `package.json` following Semantic Versioning. State the old/new version and reasoning before making the change.
 - **Component composition styling**: When composing components from sub-components, always use existing CSS classes imported from their `.css` files — not inline styles — unless explicitly instructed otherwise.

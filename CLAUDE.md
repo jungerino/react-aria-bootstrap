@@ -34,6 +34,45 @@ This is a component library that layers **Bootstrap 5 visual styling** on top of
 - Dark mode is handled automatically by Bootstrap CSS variables via `data-bs-theme="dark"` on the root element
 - When composing components from sub-components, import and reuse existing CSS classes from their `.css` files — do not use inline styles
 
+## Experiment: Bootstrap Styling Iterations
+
+**Current iteration:** 0 (not started)
+
+**What this is:** An iterative experiment to develop reusable agent skills for Bootstrap-styling React Aria component libraries. Two outcomes run in parallel:
+1. Properly styled test components (product outcome) — `styled-components` branch
+2. A growing, reusable skill for styling React Aria + Bootstrap projects — `bootstrap-iteration_N` branches
+
+**Branch naming:**
+- `bootstrap-iteration_0`, `bootstrap-iteration_1`, … — experiment branch (uses `react-aria-skill.md` only)
+- `styled-components` — project branch (uses `react-aria-skill.md` + `component-decisions.md`)
+
+**Test component set:** Button, TextField, Checkbox, Select, Tabs, Calendar, ListBox
+
+**Experiment docs:**
+- [Experiment Spec](./agent/experiment-spec.md) — full design document
+- [Iteration Protocol](./agent/iteration-protocol.md) — how to run an iteration
+- [React Aria Skill](./agent/react-aria-skill.md) — growing general skill (updated from experiment branch only)
+- [Component Decisions](./agent/component-decisions.md) — per-component decisions (updated from project branch only)
+- [Bootstrap Skill](./agent/bootstrap-skill.md) — universal Bootstrap skill (retroactively extracted)
+
+## MCP Servers
+
+### React Aria MCP
+Gives direct access to React Aria component documentation.
+- Reference: https://react-aria.adobe.com/ai
+- Component index: https://react-aria.adobe.com/llms.txt
+
+### Storybook MCP
+Gives access to component documentation and story conventions from the running Storybook instance. **Storybook must be running** (`yarn storybook`) for these tools to work.
+
+When working on UI components, always use the Storybook MCP tools before answering or taking any action:
+- `list-all-documentation` — discover available components
+- `get-documentation` — get specific component details
+- `get-storybook-story-instructions` — follow current conventions
+- `run-story-tests` — validate work
+
+Never assume component properties without verification through these tools.
+
 ## Working Guidelines
 
 - **Honesty about limitations**: Do not make stuff up or provide invalid code. If uncertain, acknowledge it. "I don't know" is acceptable.
@@ -63,3 +102,12 @@ This is a component library that layers **Bootstrap 5 visual styling** on top of
 
 ### Bootstrap Trials
 - [Bootstrap Guidelines](./agent/bootstrap-guidelines.md) — Distilled, actionable rules for iterative Bootstrap styling passes: data-* bridges, dark mode, visual elements, variants, form components, overlays, layout, stories, and per-component decisions
+
+### Experiment
+- [Experiment Spec](./agent/experiment-spec.md) — Full design document for the iterative Bootstrap styling experiment
+- [Iteration Protocol](./agent/iteration-protocol.md) — Prescribed workflow for each styling iteration
+
+### Knowledge Files (Bootstrap Experiment)
+- [React Aria Skill](./agent/react-aria-skill.md) — Growing general skill: React Aria + Bootstrap principles (updated from experiment branch)
+- [Component Decisions](./agent/component-decisions.md) — Per-component Bootstrap decisions for this project
+- [Bootstrap Skill](./agent/bootstrap-skill.md) — Universal Bootstrap skill (retroactively extracted; stub until principles emerge)

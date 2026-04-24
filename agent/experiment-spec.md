@@ -322,4 +322,12 @@ After each iteration:
 - `/Users/josh/Library/CloudStorage/Dropbox/Github/react-aria-bootstrap/.storybook/main.js`
 - `/Users/josh/Library/CloudStorage/Dropbox/Github/react-aria-bootstrap/.storybook/preview.js`
 - `/Users/josh/Library/CloudStorage/Dropbox/Github/react-aria-bootstrap/src/scss/` (to be created)
+
+---
+
+## Notes
+
+### `npx skills add` investigation (Task 4, Step 4.3)
+
+Running `npx skills add https://react-aria.adobe.com` (via the `skills` npm package v1.5.1) discovered and installed a React Aria skill from Adobe's well-known endpoint. The skill contains 115 files — per-component reference docs (Button, Calendar, Checkbox, Select, Tabs, etc.), guides, interactions, internationalized utilities, and testing references. It installed to `.agents/skills/react-aria` in the project root with a symlink for Claude Code (`~/.claude/skills/react-aria`). This is a separate system from the MCP server registered via `claude mcp add`: the MCP gives Claude live tool-call access to docs; the `skills` install adds persistent reference files loaded at session start. Both are now active.
 - `/Users/josh/Library/CloudStorage/Dropbox/Github/react-aria-bootstrap/package.json`

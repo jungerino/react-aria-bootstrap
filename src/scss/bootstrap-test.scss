@@ -1,4 +1,44 @@
-// Bootstrap scoped to .bs-test — only affects Bootstrap Test stories
+// Compile-time only — variables, functions, mixins produce no CSS output
+@import "vendor/bootstrap-5.3.8/functions";
+@import "vendor/bootstrap-5.3.8/variables";
+@import "vendor/bootstrap-5.3.8/variables-dark";
+@import "vendor/bootstrap-5.3.8/maps";
+@import "vendor/bootstrap-5.3.8/mixins";
+@import "vendor/bootstrap-5.3.8/utilities";
+
+// CSS-producing partials — scoped to .bs-test to prevent leaking
 .bs-test {
-  @import 'bootstrap/scss/bootstrap';
+  @import "vendor/bootstrap-5.3.8/root";
+  @import "vendor/bootstrap-5.3.8/reboot";
+  @import "vendor/bootstrap-5.3.8/type";
+  @import "vendor/bootstrap-5.3.8/images";
+  @import "vendor/bootstrap-5.3.8/containers";
+  @import "vendor/bootstrap-5.3.8/grid";
+  @import "vendor/bootstrap-5.3.8/tables";
+  @import "vendor/bootstrap-5.3.8/forms";
+  @import "vendor/bootstrap-5.3.8/buttons";
+  @import "vendor/bootstrap-5.3.8/transitions";
+  @import "vendor/bootstrap-5.3.8/dropdown";
+  @import "vendor/bootstrap-5.3.8/button-group";
+  @import "vendor/bootstrap-5.3.8/nav";
+  @import "vendor/bootstrap-5.3.8/navbar";
+  @import "vendor/bootstrap-5.3.8/card";
+  @import "vendor/bootstrap-5.3.8/accordion";
+  @import "vendor/bootstrap-5.3.8/breadcrumb";
+  @import "vendor/bootstrap-5.3.8/pagination";
+  @import "vendor/bootstrap-5.3.8/badge";
+  @import "vendor/bootstrap-5.3.8/alert";
+  @import "vendor/bootstrap-5.3.8/progress";
+  @import "vendor/bootstrap-5.3.8/list-group";
+  @import "vendor/bootstrap-5.3.8/close";
+  @import "vendor/bootstrap-5.3.8/toasts";
+  @import "vendor/bootstrap-5.3.8/modal";
+  @import "vendor/bootstrap-5.3.8/tooltip";
+  @import "vendor/bootstrap-5.3.8/popover";
+  @import "vendor/bootstrap-5.3.8/carousel";
+  @import "vendor/bootstrap-5.3.8/spinners";
+  @import "vendor/bootstrap-5.3.8/offcanvas";
+  @import "vendor/bootstrap-5.3.8/placeholders";
+  @import "vendor/bootstrap-5.3.8/helpers";
+  @import "vendor/bootstrap-5.3.8/utilities/api";
 }

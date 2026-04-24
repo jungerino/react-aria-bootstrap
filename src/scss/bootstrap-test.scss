@@ -1,0 +1,4 @@
+// Bootstrap scoped to .bs-test — only affects Bootstrap Test stories
+.bs-test {
+  @import 'bootstrap/scss/bootstrap';
+}

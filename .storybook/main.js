@@ -10,7 +10,10 @@ function getAbsolutePath(value) {
 
 /** @type { import('@storybook/react-webpack5').StorybookConfig } */
 const config = {
-  stories: ["../stories/*.stories.@(js|jsx|mjs|ts|tsx)"],
+  stories: [
+    "../stories/*.stories.@(js|jsx|mjs|ts|tsx)",
+    "../stories/**/*.stories.@(js|jsx|mjs|ts|tsx)"
+  ],
   addons: [
     getAbsolutePath("@storybook/addon-docs"),
     getAbsolutePath("@storybook/addon-webpack5-compiler-babel"),
@@ -34,8 +37,16 @@ const config = {
     },
   },
   async webpackFinal(config) {
-    let rule = config.module.rules.find(rule => String(rule.test).includes('.css'));
-    rule.use.push('lightningcss-loader');
+    // Existing: add Lightning CSS to the CSS rule
+    let cssRule = config.module.rules.find(rule => String(rule.test).includes('.css'));
+    cssRule.use.push('lightningcss-loader');
+
+    // New: SCSS rule
+    config.module.rules.push({
+      test: /\.scss$/,
+      use: ['style-loader', 'css-loader', 'sass-loader'],
+    });
+
     return config;
   }
 };

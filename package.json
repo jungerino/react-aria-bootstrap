@@ -15,6 +15,7 @@
     "@babel/preset-react": "^7.24.1",
     "@babel/preset-typescript": "^7.27.1",
     "@storybook/addon-docs": "^9.0.18",
+    "@storybook/addon-mcp": "^0.6.0",
     "@storybook/addon-webpack5-compiler-babel": "^3.0.6",
     "@storybook/react": "^9.0.18",
     "@storybook/react-webpack5": "^9.0.18",

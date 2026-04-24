@@ -17,6 +17,7 @@ const config = {
   addons: [
     getAbsolutePath("@storybook/addon-docs"),
     getAbsolutePath("@storybook/addon-webpack5-compiler-babel"),
+    getAbsolutePath("@storybook/addon-mcp")
   ],
   framework: {
     name: getAbsolutePath("@storybook/react-webpack5"),

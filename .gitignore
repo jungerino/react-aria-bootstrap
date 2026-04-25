@@ -2,3 +2,4 @@ node_modules/
 .DS_Store
 storybook-static/
 .claude/
+.yarn/install-state.gz

@@ -6,9 +6,12 @@
 @import "vendor/bootstrap-5.3.8/mixins";
 @import "vendor/bootstrap-5.3.8/utilities";
 
+// Root CSS custom properties — must be outside .bs-test so the :root selector
+// compiles correctly. These variables are benign globals (--bs-* tokens only).
+@import "vendor/bootstrap-5.3.8/root";
+
 // CSS-producing partials — scoped to .bs-test to prevent leaking
 .bs-test {
-  @import "vendor/bootstrap-5.3.8/root";
   @import "vendor/bootstrap-5.3.8/reboot";
   @import "vendor/bootstrap-5.3.8/type";
   @import "vendor/bootstrap-5.3.8/images";

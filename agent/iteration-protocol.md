@@ -8,7 +8,9 @@ This document describes the prescribed workflow for each Bootstrap styling itera
 
 ## Cutting a new experiment branch
 
-When cutting `bootstrap-iteration_N` from `main`, the first commit on the branch must stub out `agent/component-decisions.md`:
+When cutting `bootstrap-iteration_N` from `main`, the first commit on the branch must stub out the following files:
+
+**1. `agent/component-decisions.md`:**
 
 ```markdown
 ---
@@ -24,7 +26,23 @@ Reading this file during an experiment iteration is off-limits — it would cont
 **Do not cherry-pick or copy this file to `main`.** When updating `main` with knowledge from this branch, use file-specific checkout (see "Updating main from an experiment branch" below).
 ```
 
-Commit message: `chore: stub component-decisions.md for experiment isolation`
+**2. All `agent/review-iteration-*.md` files from prior iterations** (e.g. `review-iteration-0.md` when cutting `bootstrap-iteration_1`):
+
+```markdown
+---
+title: Review — Iteration N (STUB — experiment branch)
+---
+
+# Review — Iteration N
+
+**This file is intentionally stubbed on experiment branches.**
+
+Reading prior iteration reviews during an experiment pass is off-limits — the findings and component decisions they contain would contaminate the clean signal the experiment is designed to produce. Principles already extracted from this review live in `agent/react-aria-skill.md`.
+
+The real content lives on `main` and `styled-components_N` branches.
+```
+
+Commit message: `chore: stub experiment-isolation files for iteration N`
 
 ## Updating main from an experiment branch
 

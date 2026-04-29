@@ -51,7 +51,7 @@ This is a component library that layers **Bootstrap 5 visual styling** on top of
 
 **Experiment branch restrictions (`bootstrap-iteration_N` only):**
 - `agent/component-decisions.md` is replaced with a stub on experiment branches. Do not read it. Do not copy or cherry-pick it to `main`.
-- `agent/review-iteration-*.md` files from prior iterations are off-limits during an experiment pass.
+- `agent/review-iteration-*.md` files from prior iterations are replaced with stubs on experiment branches. Do not read them. Extracted principles live in `agent/react-aria-skill.md`.
 - When updating `main` after an experiment debrief, copy files individually using `git checkout <branch> -- <file>`. Never cherry-pick whole commits. See `agent/iteration-protocol.md` for the exact workflow.
 
 **Experiment docs:**

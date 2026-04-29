@@ -47,12 +47,24 @@ Each iteration round consists of two passes in sequence:
 
 Complete both passes before starting round N+1. After the experiment debrief, cherry-pick knowledge file updates to `main`, then cut `styled-components_N` from `main`. After the styled-components debrief, cherry-pick any new `component-decisions.md` updates to `main`, then cut `bootstrap-iteration_N+1` from `main`.
 
+## Bootstrap Reference stories
+
+Reference stories provide visual ground truth for self-review. One story file per test component, in `stories/bootstrap-test/`, title `Bootstrap Reference/ComponentName`.
+
+**Construction rules:**
+1. **Use Bootstrap's HTML verbatim** — fetch the relevant docs page and copy the example markup directly. Adapt to JSX syntax only (`class` → `className`, `for` → `htmlFor`, `checked` → `defaultChecked`). Do not paraphrase or simplify.
+2. **Consult the Bootstrap Counterpart Pairings table** in `react-aria-skill.md` for the approved pattern. Do not choose a different pattern without user approval.
+3. **For JS-dependent components** (dropdowns, tabs): show static open/active state by adding the `.show` / `.active` class directly. Note in the file comment that JS is not loaded.
+4. **For components with no Bootstrap counterpart** (Calendar): show the intended cell/element treatment using Bootstrap classes. Clearly note the absence of a counterpart.
+5. **Add a header comment** to each file: Bootstrap docs URL, chosen pattern, and any deviation from Bootstrap's canonical markup with rationale.
+
 ## Pre-iteration-1 setup (one-time)
 
 Perform the following in `main` before cutting `bootstrap-iteration_1`:
 
-1. **Install Bootstrap Icons** — `yarn add bootstrap-icons`. Import `bootstrap-icons/font/bootstrap-icons.css` in the Storybook entry point (`.storybook/preview.ts`).
-2. **Create Bootstrap Reference stories** — For each of the 7 test components, add a companion reference story (`stories/bootstrap-test/ComponentName.reference.stories.tsx`, title: `Bootstrap Reference/ComponentName`) containing native Bootstrap HTML markup with no React Aria. These serve as visual ground truth during self-review. Agent must judge which Bootstrap pattern best matches each component and document the choice in the story.
+1. **Install Bootstrap Icons** — `yarn add bootstrap-icons`. Import `bootstrap-icons/font/bootstrap-icons.css` in the Storybook entry point (`.storybook/preview.js`).
+2. **Apply Storybook glob filter** — In `.storybook/main.js`, restrict the `stories` pattern to `stories/bootstrap-test/**` only. This prevents original story CSS from entering the shared bundle and eliminates project CSS leakage into the test environment. Original story files remain in the repo untouched.
+3. **Create Bootstrap Reference stories** — For each of the 7 test components, add a companion reference story (`stories/bootstrap-test/ComponentName.reference.stories.tsx`, title: `Bootstrap Reference/ComponentName`) containing native Bootstrap HTML markup with no React Aria. These serve as visual ground truth during self-review. Follow the construction rules in the "Bootstrap Reference stories" section above.
 
 ## Before starting
 
@@ -62,9 +74,7 @@ Perform the following in `main` before cutting `bootstrap-iteration_1`:
 
 2. Read `agent/react-aria-skill.md` carefully. Understand current principles and the self-review checklist.
 
-3. Apply Storybook glob filter: in `.storybook/main.ts`, restrict the `stories` pattern to `stories/bootstrap-test/**` only. This prevents original story CSS from entering the shared bundle and eliminates project CSS leakage into the test environment.
-
-4. Start Storybook (`yarn storybook`) and confirm only the `Bootstrap Test` and `Bootstrap Reference` story groups are visible.
+3. Start Storybook (`yarn storybook`) and confirm only the `Bootstrap Test` and `Bootstrap Reference` story groups are visible.
 
 ## Iteration steps
 

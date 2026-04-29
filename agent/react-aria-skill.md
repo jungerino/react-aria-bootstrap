@@ -88,6 +88,25 @@ Before delivering iteration work, verify:
 - [ ] No project CSS rules that conflict with Bootstrap are left uncommented
 - [ ] Unmapped components/states are logged with alternatives
 
+## Bootstrap Counterpart Pairings
+
+Approved pairings of React Aria components to Bootstrap patterns. Entries are added only after user approval. When encountering a new component, consult this table first — generalize by matching the component's rendered DOM structure to existing entries before researching from scratch.
+
+| React Aria Component | Rendered DOM Structure | Bootstrap Pattern | Docs |
+|----------------------|----------------------|-------------------|------|
+| Button | Native `<button>` | `.btn.btn-{variant}` | [Buttons](https://getbootstrap.com/docs/5.3/components/buttons/) |
+| TextField | `<label>` + `<input>` + description/error `<div>`s | `.form-label` + `.form-control` + `.form-text` + `.invalid-feedback` | [Form control](https://getbootstrap.com/docs/5.3/forms/form-control/) |
+| Checkbox | `<label>` root + custom indicator `<div>` (native `<input>` hidden) | `.form-check` (visual reference only — Bootstrap targets native input; bridge required for custom indicator) | [Checks](https://getbootstrap.com/docs/5.3/forms/checks-radios/) |
+| Select | `<button>` trigger + `<div>` popover overlay + listbox | `.btn.btn-secondary.dropdown-toggle` + `.dropdown-menu` | [Dropdowns](https://getbootstrap.com/docs/5.3/components/dropdowns/) |
+| Tabs | `<div>` tab list + `<div>` tab items + panel container | `.nav.nav-tabs` + `.nav-link` + `.tab-content` + `.tab-pane` | [Navs & Tabs](https://getbootstrap.com/docs/5.3/components/navs-tabs/) |
+| Calendar | Calendar grid — no Bootstrap counterpart | No counterpart. Cell treatment: `.btn.btn-sm.btn-outline-secondary` with `border-color: transparent` at rest. | — |
+| ListBox | List container + interactive item children | `.list-group` + `.list-group-item` (static) / `.list-group-item-action` (interactive) | [List group](https://getbootstrap.com/docs/5.3/components/list-group/) |
+
+**How to generalize to new components:**
+- Identify the component's rendered DOM structure (inspect in browser, not component name)
+- Match the structure to existing entries: trigger + overlay → dropdown; list container + items → list-group; label + input → form control
+- When no existing entry matches, check Bootstrap's docs for a component whose HTML structure resembles the rendered output
+
 ## Pattern Library
 
 *Patterns discovered through iteration. Empty until iteration 0 completes.*

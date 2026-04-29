@@ -1,2 +1,10 @@
 // Bridge selectors: React Aria data-* → Bootstrap interaction states
 // Populated during iterations. Do not add unverified rules here.
+
+// Bootstrap's reboot sets `body { color: var(--bs-body-color) }`, which compiles under SCSS
+// nesting to `.bs-test body { ... }`. Since body is never a descendant of .bs-test, that rule
+// never fires and bare text/labels inherit the browser default (#000) instead of the Bootstrap
+// theme color. Setting it here restores the expected cascade.
+.bs-test {
+  color: var(--bs-body-color);
+}

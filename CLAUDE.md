@@ -22,7 +22,7 @@ This is a component library that layers **Bootstrap 5 visual styling** on top of
 - Bootstrap loads globally and provides visual styling
 - Components are styled using compound selectors (e.g., `.react-aria-Button.btn.btn-primary`) so component CSS wins via specificity
 - `src/scss/_bootstrap-overrides.scss` bridges React Aria state attributes to Bootstrap visual states
-- Bootstrap is scoped to `.bs-test` via `postcss-prefix-selector` (not SCSS nesting — see `agent/bootstrap-skill.md` for why SCSS nesting breaks Bootstrap's adjacent-sibling selectors)
+- Bootstrap loads globally into the Storybook preview iframe (no scoping wrapper). The story glob is restricted to `stories/bootstrap-test/**` so original component CSS is never bundled, and the preview iframe boundary isolates Bootstrap from the Storybook manager shell.
 
 **Key directories:**
 - `src/` — Component implementations (`.tsx`) and scoped styles (`.css`)

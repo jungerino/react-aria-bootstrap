@@ -1,6 +1,7 @@
 import { themes } from "storybook/theming";
 import './preview.css';
 import '../src/scss/styles.scss';
+import 'bootstrap-icons/font/bootstrap-icons.css';
 
 /** @type { import('@storybook/react').Preview } */
 const preview = {

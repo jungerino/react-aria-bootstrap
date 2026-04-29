@@ -252,7 +252,7 @@ Each iteration produces two parallel branches:
 | Branch | Guidance used | Purpose |
 |--------|-------------|---------|
 | `bootstrap-iteration_N` | `react-aria-skill.md` only | Tests the general skill in isolation; primary source for skill updates |
-| `styled-components` | `react-aria-skill.md` + `component-decisions.md` | Project progress; cumulative; both skill + specific decisions applied |
+| `styled-components_N` | `react-aria-skill.md` + `component-decisions.md` | Project progress; versioned snapshot after each round; both skill + specific decisions applied |
 
 ### Iteration flow
 
@@ -275,7 +275,7 @@ Each iteration produces two parallel branches:
 8. If any principle generalizes beyond React Aria → agent adds to bootstrap-skill.md
 9. Update CLAUDE.md: increment iteration number, note what changed
 
-[project branch: styled-components]
+[project branch: styled-components_N]
 10. Agent styles same components using react-aria-skill.md + component-decisions.md
 11. User reviews — less rigorous, focused on product quality
 12. Agent updates component-decisions.md with any new per-component decisions
@@ -291,9 +291,10 @@ All 7 test components look correct on the first pass (before self-review catches
 | File | Scope | Written when | Updated by |
 |------|-------|-------------|-----------|
 | `agent/react-aria-skill.md` | Any React Aria + Bootstrap project | Seeded now; grows each iteration | Experiment branch debrief |
-| `agent/component-decisions.md` | This project only | Stub now; populated per-component | Project branch review |
+| `agent/component-decisions.md` | This project only | Stub now; populated per-component | Experiment branch debrief (and refined by project branch review) |
 | `agent/bootstrap-skill.md` | Any component library + Bootstrap | Stub now; populated retroactively | When principle generalizes beyond React Aria |
 | `agent/iteration-protocol.md` | This experiment | Created now | If the process itself needs refinement |
+| `agent/review-iteration-N.md` | One file per iteration | Created at start of styling pass | Agent (summary) + user (visual review) + debrief decisions |
 | `CLAUDE.md` | This project | Updated now; version-bumped each iteration | Each iteration |
 
 ---

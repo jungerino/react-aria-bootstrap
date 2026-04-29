@@ -6,15 +6,65 @@ title: Iteration Protocol
 
 This document describes the prescribed workflow for each Bootstrap styling iteration.
 
+## Cutting a new experiment branch
+
+When cutting `bootstrap-iteration_N` from `main`, the first commit on the branch must stub out `agent/component-decisions.md`:
+
+```markdown
+---
+title: Component-Specific Decisions (STUB — experiment branch)
+---
+
+# Component-Specific Decisions
+
+**This file is intentionally empty on experiment branches.**
+
+Reading this file during an experiment iteration is off-limits — it would contaminate the clean signal the experiment is designed to produce. The real content lives on `main` and `styled-components_N` branches.
+
+**Do not cherry-pick or copy this file to `main`.** When updating `main` with knowledge from this branch, use file-specific checkout (see "Updating main from an experiment branch" below).
+```
+
+Commit message: `chore: stub component-decisions.md for experiment isolation`
+
+## Updating main from an experiment branch
+
+Never use `git cherry-pick` to move knowledge updates from an experiment branch to `main`. Cherry-picked commits may include the stub file alongside legitimate changes. Instead, copy specific files explicitly:
+
+```sh
+git checkout bootstrap-iteration_N -- agent/react-aria-skill.md
+# repeat for any other files that should update main (bootstrap-skill.md, iteration-protocol.md, etc.)
+# then stage and commit
+```
+
+`agent/component-decisions.md` must never be included in this operation.
+
+## Round structure
+
+Each iteration round consists of two passes in sequence:
+
+1. **Experiment pass** (`bootstrap-iteration_N`) — principles only; primary source for skill updates
+2. **Styled-components pass** (`styled-components_N`) — principles + component decisions; project progress
+
+Complete both passes before starting round N+1. After the experiment debrief, cherry-pick knowledge file updates to `main`, then cut `styled-components_N` from `main`. After the styled-components debrief, cherry-pick any new `component-decisions.md` updates to `main`, then cut `bootstrap-iteration_N+1` from `main`.
+
+## Pre-iteration-1 setup (one-time)
+
+Perform the following in `main` before cutting `bootstrap-iteration_1`:
+
+1. **Install Bootstrap Icons** — `yarn add bootstrap-icons`. Import `bootstrap-icons/font/bootstrap-icons.css` in the Storybook entry point (`.storybook/preview.ts`).
+2. **Create Bootstrap Reference stories** — For each of the 7 test components, add a companion reference story (`stories/bootstrap-test/ComponentName.reference.stories.tsx`, title: `Bootstrap Reference/ComponentName`) containing native Bootstrap HTML markup with no React Aria. These serve as visual ground truth during self-review. Agent must judge which Bootstrap pattern best matches each component and document the choice in the story.
+
 ## Before starting
 
 1. Confirm which branch this is:
    - **Experiment branch** (`bootstrap-iteration_N`): read `agent/react-aria-skill.md` + `CLAUDE.md`. Do NOT consult `agent/component-decisions.md`.
-   - **Project branch** (`styled-components`): read `agent/react-aria-skill.md` + `agent/component-decisions.md` + `CLAUDE.md`.
+   - **Styled-components branch** (`styled-components_N`): read `agent/react-aria-skill.md` + `agent/component-decisions.md` + `CLAUDE.md`.
 
 2. Read `agent/react-aria-skill.md` carefully. Understand current principles and the self-review checklist.
 
-3. Start Storybook (`yarn storybook`) and confirm the `Bootstrap Test` story group is visible.
+3. Apply Storybook glob filter: in `.storybook/main.ts`, restrict the `stories` pattern to `stories/bootstrap-test/**` only. This prevents original story CSS from entering the shared bundle and eliminates project CSS leakage into the test environment.
+
+4. Start Storybook (`yarn storybook`) and confirm only the `Bootstrap Test` and `Bootstrap Reference` story groups are visible.
 
 ## Iteration steps
 
@@ -23,14 +73,15 @@ This document describes the prescribed workflow for each Bootstrap styling itera
    - Apply Bootstrap classes and bridge selectors following `react-aria-skill.md`
    - Comment out conflicting project CSS rules (do not delete)
    - Log any unmapped states
+   - Create or update `stories/bootstrap-test/ComponentName.stories.tsx` following the Stories conventions in `react-aria-skill.md` (argTypes, Variants, LayoutVariants, and state stories as applicable)
 
 2. Run self-review against the checklist in `react-aria-skill.md`.
 
-3. Write the iteration summary (see Output Format below).
+3. Create `agent/review-iteration-N.md` (e.g. `review-iteration-0.md`) and populate the **Agent Iteration Summary** section with the output format below.
 
 ## Output Format
 
-After styling all 7 components, produce a summary with these sections:
+Populate the Agent Iteration Summary section of `agent/review-iteration-N.md` with:
 
 ### Decisions made
 For each component: what Bootstrap classes/patterns were applied and why.
@@ -41,10 +92,21 @@ Places where you were unsure which approach was correct. Flag these for user rev
 ### Unmapped states
 Components or interaction states where no Bootstrap equivalent was found. List alternatives considered.
 
-### Proposed skill updates
-Rules you believe should be added to or changed in `react-aria-skill.md`.
+## User visual review
 
-## After user review (debrief)
+The user reviews each component in Storybook and records observations directly in the **User Visual Review** section of `agent/review-iteration-N.md`.
+
+## Debrief
+
+User and agent work through the review observations together. Record all decisions in the **Debrief Decisions** section of `agent/review-iteration-N.md`, sorted by destination:
+
+- General principles → `agent/react-aria-skill.md`
+- Bootstrap-generic principles → `agent/bootstrap-skill.md`
+- Component-specific decisions → `agent/component-decisions.md`
+
+Component-specific decisions discovered during the experiment-branch debrief should be captured in `agent/component-decisions.md` immediately — do not defer to the `styled-components` review. The `styled-components` review may add further decisions, but anything known now should be recorded now.
+
+## After debrief
 
 1. Update `agent/react-aria-skill.md`:
    - Add new principles
@@ -55,6 +117,10 @@ Rules you believe should be added to or changed in `react-aria-skill.md`.
 
 2. If any principle is clearly not React Aria-specific → add to `agent/bootstrap-skill.md`.
 
-3. Update `CLAUDE.md`: increment iteration number, add 1-line note about what changed.
+3. Update `agent/component-decisions.md` with any component-specific decisions reached during the debrief.
 
-4. Commit.
+4. Update `CLAUDE.md`: increment iteration number, add 1-line note about what changed.
+
+5. Tick off the Skill Update Status checklist in `agent/review-iteration-N.md`.
+
+6. Commit.

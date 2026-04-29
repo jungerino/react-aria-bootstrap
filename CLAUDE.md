@@ -21,7 +21,8 @@ This is a component library that layers **Bootstrap 5 visual styling** on top of
 - React Aria Components handle accessible behavior and ARIA semantics via `.react-aria-*` CSS classes and `data-*` state attributes (`[data-pressed]`, `[data-selected]`, `[data-focused]`, etc.)
 - Bootstrap loads globally and provides visual styling
 - Components are styled using compound selectors (e.g., `.react-aria-Button.btn.btn-primary`) so component CSS wins via specificity
-- `src/_bootstrap-overrides.scss` bridges React Aria state attributes to Bootstrap visual states
+- `src/scss/_bootstrap-overrides.scss` bridges React Aria state attributes to Bootstrap visual states
+- Bootstrap is scoped to `.bs-test` via `postcss-prefix-selector` (not SCSS nesting — see `agent/bootstrap-skill.md` for why SCSS nesting breaks Bootstrap's adjacent-sibling selectors)
 
 **Key directories:**
 - `src/` — Component implementations (`.tsx`) and scoped styles (`.css`)
@@ -36,17 +37,22 @@ This is a component library that layers **Bootstrap 5 visual styling** on top of
 
 ## Experiment: Bootstrap Styling Iterations
 
-**Current iteration:** 0 (not started)
+**Current iteration:** 1
 
-**What this is:** An iterative experiment to develop reusable agent skills for Bootstrap-styling React Aria component libraries. Two outcomes run in parallel:
-1. Properly styled test components (product outcome) — `styled-components` branch
-2. A growing, reusable skill for styling React Aria + Bootstrap projects — `bootstrap-iteration_N` branches
+**What this is:** An iterative experiment to develop reusable agent skills for Bootstrap-styling React Aria component libraries. Each round produces two passes:
+1. Experiment pass (`bootstrap-iteration_N`) — principles only; primary source for skill updates
+2. Styled-components pass (`styled-components_N`) — principles + component decisions; project progress
 
 **Branch naming:**
 - `bootstrap-iteration_0`, `bootstrap-iteration_1`, … — experiment branch (uses `react-aria-skill.md` only)
-- `styled-components` — project branch (uses `react-aria-skill.md` + `component-decisions.md`)
+- `styled-components_0`, `styled-components_1`, … — project branch (uses `react-aria-skill.md` + `component-decisions.md`)
 
 **Test component set:** Button, TextField, Checkbox, Select, Tabs, Calendar, ListBox
+
+**Experiment branch restrictions (`bootstrap-iteration_N` only):**
+- `agent/component-decisions.md` is replaced with a stub on experiment branches. Do not read it. Do not copy or cherry-pick it to `main`.
+- `agent/review-iteration-*.md` files from prior iterations are off-limits during an experiment pass.
+- When updating `main` after an experiment debrief, copy files individually using `git checkout <branch> -- <file>`. Never cherry-pick whole commits. See `agent/iteration-protocol.md` for the exact workflow.
 
 **Experiment docs:**
 - [Experiment Spec](./agent/experiment-spec.md) — full design document
@@ -112,3 +118,6 @@ Never assume component properties without verification through these tools.
 - [React Aria Skill](./agent/react-aria-skill.md) — Growing general skill: React Aria + Bootstrap principles (updated from experiment branch)
 - [Component Decisions](./agent/component-decisions.md) — Per-component Bootstrap decisions for this project
 - [Bootstrap Skill](./agent/bootstrap-skill.md) — Universal Bootstrap skill (retroactively extracted; stub until principles emerge)
+
+### Iteration Reviews
+- [Review — Iteration 0](./agent/review-iteration-0.md) — Agent summary, user visual review, and debrief decisions for iteration 0

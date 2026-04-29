@@ -10,13 +10,17 @@ Not consulted during experiment-branch iterations (deliberate exclusion for clea
 
 ## Button
 
-*No decisions yet.*
+**Reference story pattern:** `.btn.btn-{variant}` for all 9 solid variants and `.btn.btn-outline-{variant}` for 8 outline variants, sourced verbatim from Bootstrap's Buttons docs. React Aria's `Button` renders a native `<button>`, so this pattern maps directly with no bridge required.
 
 ## TextField
+
+**Reference story pattern:** `.form-label` + `.form-control` + `.form-text` (description) + `.invalid-feedback` (error). Three stories: default (with help text), error state (`.is-invalid` applied statically, no JS), and disabled. React Aria's `TextField` renders `<label>` + `<input>` + description/error divs — the structure maps directly.
 
 **`.form-label` color in dark mode:** Same issue as Select — `.form-label` receives dark text in dark mode. No separate fix needed; the global bridge rule `color: var(--bs-body-color)` on `.form-label` (decided under Select) covers this.
 
 ## Checkbox
+
+**Reference story pattern:** `.form-check` + `.form-check-input` + `.form-check-label`. Visual reference only — Bootstrap targets the native `<input type="checkbox">` directly. React Aria hides the native input and renders a custom indicator element; bridge selectors on that indicator are required. The reference shows the target visual state, not a directly applicable class set.
 
 **Suppress utilities.css highlights:** Add `box-shadow: none` to `.react-aria-Checkbox .indicator` in the bridge, covering both the default and selected states. `utilities.css` applies complex specular highlight/gradient box-shadows to `.indicator` — these must be fully overridden so Bootstrap's flat checkbox appearance is not contaminated by the project's design system.
 
@@ -29,6 +33,8 @@ Not consulted during experiment-branch iterations (deliberate exclusion for clea
 **Indicator size:** Change `width: 1em; height: 1em` to `width: 1rem; height: 1rem` on the `.indicator` in the bridge. Bootstrap's `.form-check-input` is 1rem × 1rem (16×16px at default scale). Using `em` causes the size to vary with inherited font-size context; `rem` anchors it to the root.
 
 ## Select
+
+**Reference story pattern:** `.btn.dropdown-toggle` + `.dropdown-menu` — NOT `.form-select`. React Aria hides the native `<select>` and renders a custom `<button>` + popover + listbox; Bootstrap's `.form-select` targets the native element and does not attach. Two stories: closed (default) and open (`.show` forced, since Bootstrap's dropdown JS is not loaded).
 
 **Bootstrap pattern — dropdown, not form-select:** Map Select to Bootstrap's dropdown pattern (`.btn` trigger + `.dropdown-menu` items), not `.form-select`. React Aria hides the native `<select>` and renders a custom `<button>` + popover + listbox — Bootstrap's `.form-select` targets the native element and does not attach. Bootstrap's dropdown matches the rendered structure.
 
@@ -46,11 +52,15 @@ Not consulted during experiment-branch iterations (deliberate exclusion for clea
 
 ## Tabs
 
+**Reference story pattern:** `.nav.nav-tabs` + `.nav-link` on `<button>` elements + `.tab-content` + `.tab-pane`. Static active state only — tab switching requires Bootstrap JS which is not loaded. React Aria renders `<div>` tab items (not `<a>` or `<button>`), so cursor and active state must be bridged explicitly.
+
 **Cursor pointer on tabs:** Add `cursor: pointer` to `.react-aria-Tab` in the bridge. Bootstrap's tabs are `<a>` elements and get pointer cursor for free; React Aria renders `<div>`s and does not. General principle: any interactive element that Bootstrap makes pointer-cursor must have `cursor: pointer` added explicitly when React Aria renders it as a non-anchor, non-button element.
 
 **Vertical orientation — bridge rule, not `.flex-column`:** Implement vertical tabs via `flex-direction: column` on `.react-aria-TabList[data-orientation="vertical"]` in the bridge. Bootstrap documents `.flex-column` for this, but that is a utility class and no Bootstrap component modifier for vertical nav exists. A single bridge rule is not disproportionate, and `data-orientation` is React Aria's own semantic signal for this state.
 
 ## Calendar
+
+**Reference story pattern:** No Bootstrap calendar component exists. The reference shows the intended cell treatment — `.btn.btn-sm.btn-outline-secondary` with `border-color: transparent` at rest — preserving hover/active states without a visible resting border. Nav buttons use the same treatment with Bootstrap Icons chevrons (`bi-chevron-left` / `bi-chevron-right`).
 
 **Date cells:** `btn btn-sm btn-outline-secondary border-0` on `CalendarCell`. Cells are dense and repeated — visible borders add noise. `border-0` suppresses the resting border while `btn-outline-secondary` preserves hover/active/focus states.
 
@@ -65,6 +75,8 @@ Not consulted during experiment-branch iterations (deliberate exclusion for clea
 **Grid layout:** Keep `../Calendar.css` active. Bootstrap has no calendar grid equivalent — removing it breaks cell sizing and aspect ratio.
 
 ## ListBox
+
+**Reference story pattern:** `.list-group` + `.list-group-item` (Basic, from Bootstrap docs verbatim) and `.list-group-item-action` on `<a>` elements (Interactive). The Interactive story uses `<a>` elements because Bootstrap's hover/active/focus states on `.list-group-item-action` are only activated on anchor and button elements. React Aria renders items as `<div>` or `<li>`, so these states must be bridged.
 
 **Container:** `list-group` on `AriaListBox`. Bootstrap's canonical list component — correct structural choice.
 

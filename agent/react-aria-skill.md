@@ -54,10 +54,12 @@ This file is the growing knowledge base for styling React Aria component librari
   color: var(--bs-btn-active-color);
   background-color: var(--bs-btn-active-bg);
   border-color: var(--bs-btn-active-border-color);
-  box-shadow: var(--bs-btn-active-shadow);
+  @include box-shadow(var(--bs-btn-active-shadow));
 }
 ```
 This applies to any component using `.btn`, not just Button.
+
+**Use Bootstrap's SCSS mixins for `$enable-*`-gated properties in bridge selectors:** Bootstrap conditionally emits certain CSS properties through mixins that check `$enable-*` flags — `@include box-shadow(...)` (`$enable-shadows`), `@include transition(...)` (`$enable-transitions`), `@include border-radius(...)` (`$enable-rounded`), `@include gradient-bg(...)` (`$enable-gradients`). Writing these as raw CSS properties in a bridge selector bypasses those flags and produces output the project may have deliberately suppressed (e.g. `$enable-shadows: false` is Bootstrap's default, so a raw `box-shadow:` declaration applies a shadow Bootstrap itself never renders). Since `_bootstrap-overrides.scss` is compiled after Bootstrap's variables and mixins are loaded, use the same mixin Bootstrap uses — not a raw property declaration.
 
 **State-toggled visual indicators need fixed dimensions:** When a visual indicator appears or disappears on state change (e.g., a checkmark showing on selection, a badge toggling visibility), the component can shift layout if the indicator's dimensions change between states. Set explicit `width` and `height` using `rem` units (not `em`, which varies with inherited font-size) so the indicator occupies the same space regardless of state. Diagnose layout-shift bugs in stateful components by checking whether indicator dimensions are state-dependent before looking elsewhere.
 
@@ -119,6 +121,8 @@ If the Bootstrap equivalent for a component or interaction state cannot be ident
 
 **State stories:** Add separate stories for `Disabled`, `Invalid`, and `WithDescription` where applicable. These benefit from independent Controls panel manipulation and make state coverage explicit.
 
+**Variants story labels must be title-cased — never raw prop strings:** When a Variants story maps over prop values to render each variant (e.g. `{VARIANTS.map(v => <Button variant={v}>{v}</Button>)}`), labels render lowercase because prop values are lowercase strings. Always title-case the label: either capitalize the first letter (`v.charAt(0).toUpperCase() + v.slice(1)`) or use Bootstrap's documented display name. Do not pass the raw prop string as the visible label.
+
 ## Self-Review Checklist
 
 Before delivering iteration work, verify:
@@ -128,6 +132,65 @@ Before delivering iteration work, verify:
 - [ ] Unmapped components/states are logged with alternatives
 - [ ] All string-union props have constrained `argTypes` (inline-radio, explicit options)
 - [ ] Any component with layout/orientation variants has a Layout Variants story
+- [ ] Visual comparison completed: each component screenshot-compared against its Bootstrap Reference story (default + interaction states); all fixable deltas resolved; only design decisions remain
+
+## Visual Comparison Workflow
+
+Before delivering, visually compare each test component against its Bootstrap Reference story and resolve fixable deltas. Do not present raw differences to the user — fix what you can first. Human review should focus on design decisions, not regressions the agent can close independently.
+
+**Storybook URL patterns:**
+- Test story:      `http://localhost:6006/?path=/story/bootstrap-test-{component}--example`
+- Reference story: `http://localhost:6006/?path=/story/bootstrap-reference-{component}--{story-name}`
+
+Reference story names vary — use the Storybook sidebar under "Bootstrap Reference" to find the relevant story.
+
+### Fix loop (repeat until clean)
+
+1. Open two tabs — test story in one, reference story in the other
+2. Screenshot both; zoom into the component area of each
+3. List every visual difference
+4. Classify each difference:
+   - **Fixable** — a CSS/class gap with an unambiguous Bootstrap solution → fix it now
+   - **Design decision** — requires a judgment call (e.g. "filled vs. outlined today cell") → flag for user
+   - **Intentional** — a documented deviation → note it
+5. Apply all fixable fixes, reload, re-screenshot to confirm
+6. Repeat until no fixable deltas remain
+
+### What to compare
+
+**Default (at-rest) state:**
+- Typography: font weight, size, color
+- Spacing: padding, row/cell gaps
+- Color and fill: background, border, text at rest
+- Interactive affordance (does it look clickable?)
+- Overall size and proportions
+
+**Interaction states:**
+
+For each stateful component, compare the test component's `data-*` state against the reference component's equivalent CSS pseudo-class or Bootstrap state class. Minimum coverage:
+
+| Test state | Trigger method | Reference equivalent |
+|---|---|---|
+| `[data-hovered]` | `@browser` hover over element | `:hover` |
+| `[data-pressed]` | `@browser` javascript_tool: set `data-pressed="true"` on element | `:active` |
+| `[data-focused]` | `@browser` Tab key to focus element | `:focus-visible` |
+| `[data-selected]` | Navigate to story with selection active | `.active` / Bootstrap selected state |
+| `[data-disabled]` | Navigate to Disabled story | `disabled` attribute / `.disabled` class |
+| `[data-invalid]` | Navigate to Invalid/WithError story | Bootstrap invalid feedback styling |
+
+For forced states (e.g. `data-pressed`), use `@browser javascript_tool` to temporarily set the attribute on the element, screenshot, then remove it.
+
+### Deliver to user only when
+
+- All fixable deltas (default + interaction states) are resolved and confirmed via re-screenshot
+- Remaining items are design decisions or intentional deviations, documented in the Agent Iteration Summary
+
+### Record in review file
+
+In `agent/review-iteration-N.md`, Agent Iteration Summary: add a "Visual Comparison" subsection per component listing:
+- Resolved deltas (what was fixed)
+- Open design decisions (deferred to user)
+- Intentional deviations (documented departures)
 
 ## Bootstrap Counterpart Pairings
 

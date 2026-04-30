@@ -14,6 +14,8 @@ Not consulted during experiment-branch iterations (deliberate exclusion for clea
 
 **`[data-pressed]` bridge — use `@include box-shadow(...)`, not raw `box-shadow:`:** Bootstrap gates the active shadow on `$enable-shadows` via the `@include box-shadow()` mixin. Writing `box-shadow: var(--bs-btn-active-shadow)` directly bypasses this flag and applies a shadow even when `$enable-shadows: false` (Bootstrap's default). Use `@include box-shadow(var(--bs-btn-active-shadow))` in the bridge so the shadow only appears when the project opts into it.
 
+**Variants story labels must be title-cased:** The Variants story maps over `SOLID_VARIANTS`/`OUTLINE_VARIANTS` and uses the variant name as the label. Since prop values are lowercase strings, labels render lowercase. Title-case each label (e.g. `v.charAt(0).toUpperCase() + v.slice(1)`) to match Bootstrap's documented presentation.
+
 ## TextField
 
 **Reference story pattern:** `.form-label` + `.form-control` + `.form-text` (description) + `.invalid-feedback` (error). Three stories: default (with help text), error state (`.is-invalid` applied statically, no JS), and disabled. React Aria's `TextField` renders `<label>` + `<input>` + description/error divs — the structure maps directly.

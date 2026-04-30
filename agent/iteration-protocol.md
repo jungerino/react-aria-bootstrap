@@ -97,6 +97,8 @@ Perform the following in `main` before cutting `bootstrap-iteration_1`:
 
 3. Start Storybook (`yarn storybook`) and confirm only the `Bootstrap Test` and `Bootstrap Reference` story groups are visible.
 
+4. **Confirm Chrome browser tools are available.** Use `@browser` to navigate to `http://localhost:6006` and take a screenshot. If the tool responds successfully, visual comparison is enabled for this session. If it fails or returns no tools, stop — do not begin styling until the Chrome MCP issue is resolved. Visual comparison is a required step; skipping it is not an option.
+
 ## Iteration steps
 
 1. For each of the 7 test components (Button, TextField, Checkbox, Select, Tabs, Calendar, ListBox):
@@ -106,7 +108,7 @@ Perform the following in `main` before cutting `bootstrap-iteration_1`:
    - Log any unmapped states
    - Create or update `stories/bootstrap-test/ComponentName.stories.tsx` following the Stories conventions in `react-aria-skill.md` (argTypes, Variants, LayoutVariants, and state stories as applicable)
 
-2. Run self-review against the checklist in `react-aria-skill.md`.
+2. Run self-review against the checklist in `react-aria-skill.md`. This includes the visual comparison loop for each component: compare the rendered test story against its Bootstrap Reference story using `@browser`, for both default and interaction states. Fix all fixable deltas and re-compare to confirm. Do not deliver until no fixable deltas remain.
 
 3. Create `agent/review-iteration-N.md` (e.g. `review-iteration-0.md`) and populate the **Agent Iteration Summary** section with the output format below.
 
@@ -122,6 +124,9 @@ Places where you were unsure which approach was correct. Flag these for user rev
 
 ### Unmapped states
 Components or interaction states where no Bootstrap equivalent was found. List alternatives considered.
+
+### Visual comparison
+For each component: deltas resolved (what was fixed), open design decisions (judgment calls deferred to user), intentional deviations. Only unresolved items appear here — fixable deltas must be closed before delivery.
 
 ## User visual review
 

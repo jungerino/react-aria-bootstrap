@@ -46,15 +46,18 @@ Commit message: `chore: stub experiment-isolation files for iteration N`
 
 ## Updating main from an experiment branch
 
-Never use `git cherry-pick` to move knowledge updates from an experiment branch to `main`. Cherry-picked commits may include the stub file alongside legitimate changes. Instead, copy specific files explicitly:
+Never use `git cherry-pick` to move knowledge updates from an experiment branch to `main`. Cherry-picked commits may include the stub file alongside legitimate changes. Instead, reconcile each file explicitly at the end of the iteration:
 
+**Wholesale checkout** — experiment branch version replaces `main`'s version:
 ```sh
-git checkout bootstrap-iteration_N -- agent/react-aria-skill.md
-# repeat for any other files that should update main (iteration-protocol.md, etc.)
+git checkout bootstrap-iteration_N -- agent/react-aria-skill.md agent/iteration-protocol.md agent/review-iteration-N.md
 # then stage and commit
 ```
 
-`agent/component-decisions.md` must never be included in this operation.
+**Manual merge** — new entries from the stub must be copied into `main`'s existing file; do not overwrite:
+- `agent/component-decisions.md`: copy new sections/entries from the stub into `main`'s version by hand.
+
+`git checkout bootstrap-iteration_N -- agent/component-decisions.md` must never be used — it would overwrite `main`'s real content with the stub.
 
 ## Round structure
 
@@ -130,6 +133,8 @@ User and agent work through the review observations together. **Update `agent/re
 
 - General principles → `agent/react-aria-skill.md`
 - Component-specific decisions → `agent/component-decisions.md`
+
+**On experiment branches, accumulate component decisions in the stub — reconcile at the end.** Rather than switching to `main` after each component decision, record new entries directly in the `agent/component-decisions.md` stub on the experiment branch (below the stub header). At the end of the iteration, manually merge those entries into `main`'s `component-decisions.md` (see "Updating main from an experiment branch" above).
 
 Component-specific decisions discovered during the experiment-branch debrief should be captured in `agent/component-decisions.md` immediately — do not defer to the `styled-components` review. The `styled-components` review may add further decisions, but anything known now should be recorded now.
 

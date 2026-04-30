@@ -168,10 +168,6 @@ Walk through the interactive setup (browser-based OAuth or token). Confirm with 
 - Per-component decisions ("Calendar date cells → `.btn.btn-secondary`")
 - NOT used in the experiment branch (deliberate exclusion for clean signal)
 
-**`agent/bootstrap-skill.md`** — Universal Bootstrap skill
-- Stub initially; populated **retroactively** when a principle is identified as non-React Aria-specific
-- Not written proactively — extracted during debriefs
-
 **`agent/iteration-protocol.md`** — Prescribed agent workflow
 - What the agent reads before starting
 - Step-by-step iteration flow
@@ -272,8 +268,7 @@ Each iteration produces two parallel branches:
 [debrief — user + agent together]
 6. Identify: what went wrong, what went right, what rule would have prevented each mistake
 7. Agent updates react-aria-skill.md (new principles, refined rules, checklist updates)
-8. If any principle generalizes beyond React Aria → agent adds to bootstrap-skill.md
-9. Update CLAUDE.md: increment iteration number, note what changed
+8. Update CLAUDE.md: increment iteration number, note what changed
 
 [project branch: styled-components_N]
 10. Agent styles same components using react-aria-skill.md + component-decisions.md
@@ -292,7 +287,6 @@ All 7 test components look correct on the first pass (before self-review catches
 |------|-------|-------------|-----------|
 | `agent/react-aria-skill.md` | Any React Aria + Bootstrap project | Seeded now; grows each iteration | Experiment branch debrief |
 | `agent/component-decisions.md` | This project only | Stub now; populated per-component | Experiment branch debrief (and refined by project branch review) |
-| `agent/bootstrap-skill.md` | Any component library + Bootstrap | Stub now; populated retroactively | When principle generalizes beyond React Aria |
 | `agent/iteration-protocol.md` | This experiment | Created now | If the process itself needs refinement |
 | `agent/review-iteration-N.md` | One file per iteration | Created at start of styling pass | Agent (summary) + user (visual review) + debrief decisions |
 | `CLAUDE.md` | This project | Updated now; version-bumped each iteration | Each iteration |

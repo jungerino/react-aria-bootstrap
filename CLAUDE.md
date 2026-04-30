@@ -44,7 +44,7 @@ This is a component library that layers **Bootstrap 5 visual styling** on top of
 2. Styled-components pass (`styled-components_N`) — principles + component decisions; project progress
 
 **Branch naming:**
-- `bootstrap-iteration_0`, `bootstrap-iteration_1`, … — experiment branch (uses `react-aria-skill.md` only)
+- `bootstrap-iteration_0`, `bootstrap-iteration_1`, … — experiment branch (uses `react-aria-skill.md`)
 - `styled-components_0`, `styled-components_1`, … — project branch (uses `react-aria-skill.md` + `component-decisions.md`)
 
 **Test component set:** Button, TextField, Checkbox, Select, Tabs, Calendar, ListBox
@@ -57,9 +57,8 @@ This is a component library that layers **Bootstrap 5 visual styling** on top of
 **Experiment docs:**
 - [Experiment Spec](./agent/experiment-spec.md) — full design document
 - [Iteration Protocol](./agent/iteration-protocol.md) — how to run an iteration
-- [React Aria Skill](./agent/react-aria-skill.md) — growing general skill (updated from experiment branch only)
+- [React Aria Skill](./agent/react-aria-skill.md) — growing general skill: React Aria + Bootstrap principles (updated from experiment branch only)
 - [Component Decisions](./agent/component-decisions.md) — per-component decisions (updated from project branch only)
-- [Bootstrap Skill](./agent/bootstrap-skill.md) — universal Bootstrap skill (retroactively extracted)
 
 ## MCP Servers
 
@@ -117,7 +116,6 @@ Never assume component properties without verification through these tools.
 ### Knowledge Files (Bootstrap Experiment)
 - [React Aria Skill](./agent/react-aria-skill.md) — Growing general skill: React Aria + Bootstrap principles (updated from experiment branch)
 - [Component Decisions](./agent/component-decisions.md) — Per-component Bootstrap decisions for this project
-- [Bootstrap Skill](./agent/bootstrap-skill.md) — Universal Bootstrap skill (retroactively extracted; stub until principles emerge)
 
 ### Iteration Reviews
 - [Review — Iteration 0](./agent/review-iteration-0.md) — Agent summary, user visual review, and debrief decisions for iteration 0

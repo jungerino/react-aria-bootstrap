@@ -50,7 +50,7 @@ Never use `git cherry-pick` to move knowledge updates from an experiment branch 
 
 ```sh
 git checkout bootstrap-iteration_N -- agent/react-aria-skill.md
-# repeat for any other files that should update main (bootstrap-skill.md, iteration-protocol.md, etc.)
+# repeat for any other files that should update main (iteration-protocol.md, etc.)
 # then stage and commit
 ```
 
@@ -129,7 +129,6 @@ The user reviews each component in Storybook and records observations directly i
 User and agent work through the review observations together. Record all decisions in the **Debrief Decisions** section of `agent/review-iteration-N.md`, sorted by destination:
 
 - General principles → `agent/react-aria-skill.md`
-- Bootstrap-generic principles → `agent/bootstrap-skill.md`
 - Component-specific decisions → `agent/component-decisions.md`
 
 Component-specific decisions discovered during the experiment-branch debrief should be captured in `agent/component-decisions.md` immediately — do not defer to the `styled-components` review. The `styled-components` review may add further decisions, but anything known now should be recorded now.
@@ -143,7 +142,7 @@ Component-specific decisions discovered during the experiment-branch debrief sho
    - Add confirmed patterns to the Pattern Library
    - Clear resolved unmapped items
 
-2. If any principle is clearly not React Aria-specific → add to `agent/bootstrap-skill.md`.
+2. All principles — whether React Aria-specific or Bootstrap-generic — go into `agent/react-aria-skill.md`.
 
 3. Update `agent/component-decisions.md` with any component-specific decisions reached during the debrief.
 

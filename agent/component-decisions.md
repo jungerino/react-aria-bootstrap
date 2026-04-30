@@ -12,6 +12,8 @@ Not consulted during experiment-branch iterations (deliberate exclusion for clea
 
 **Reference story pattern:** `.btn.btn-{variant}` for all 9 solid variants and `.btn.btn-outline-{variant}` for 8 outline variants, sourced verbatim from Bootstrap's Buttons docs. React Aria's `Button` renders a native `<button>`, so this pattern maps directly with no bridge required.
 
+**`[data-pressed]` bridge — use `@include box-shadow(...)`, not raw `box-shadow:`:** Bootstrap gates the active shadow on `$enable-shadows` via the `@include box-shadow()` mixin. Writing `box-shadow: var(--bs-btn-active-shadow)` directly bypasses this flag and applies a shadow even when `$enable-shadows: false` (Bootstrap's default). Use `@include box-shadow(var(--bs-btn-active-shadow))` in the bridge so the shadow only appears when the project opts into it.
+
 ## TextField
 
 **Reference story pattern:** `.form-label` + `.form-control` + `.form-text` (description) + `.invalid-feedback` (error). Three stories: default (with help text), error state (`.is-invalid` applied statically, no JS), and disabled. React Aria's `TextField` renders `<label>` + `<input>` + description/error divs — the structure maps directly.

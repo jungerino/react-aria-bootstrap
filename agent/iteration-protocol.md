@@ -126,7 +126,7 @@ The user reviews each component in Storybook and records observations directly i
 
 ## Debrief
 
-User and agent work through the review observations together. Record all decisions in the **Debrief Decisions** section of `agent/review-iteration-N.md`, sorted by destination:
+User and agent work through the review observations together. **Update `agent/review-iteration-N.md` after each item is discussed** — do not defer to end-of-debrief. Record all decisions in the **Debrief Decisions** section, sorted by destination:
 
 - General principles → `agent/react-aria-skill.md`
 - Component-specific decisions → `agent/component-decisions.md`

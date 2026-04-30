@@ -80,6 +80,12 @@ transform: (prefix, selector) => {
 
 **Bootstrap Icons over inline SVG:** When Bootstrap Icons is available, prefer `<i class="bi bi-{name}">` over inline SVG (e.g. lucide-react imports). Bootstrap Icons are an icon font: they inherit `color`, scale with `font-size`, and align with Bootstrap's type scale without extra CSS. Prerequisite: `bootstrap-icons` installed (`yarn add bootstrap-icons`) and CSS imported (`import 'bootstrap-icons/font/bootstrap-icons.css'`). Apply to any icon in the Bootstrap Icons set (https://icons.getbootstrap.com). Do not apply where no equivalent exists or the design requires custom SVG geometry.
 
+**Let Bootstrap render CSS-native visual elements — don't add a JSX icon:** When Bootstrap renders a visual indicator via a pseudo-element (`::before`, `::after`) or `background-image` (e.g. dropdown caret, checkbox checkmark, breadcrumb separator), do not add a JSX icon alongside it. Remove any existing JSX icon and do not suppress the pseudo-element with `content: none` or similar. Adding both produces duplicates; suppressing Bootstrap's version loses the dark mode and theme token wiring it carries.
+
+**Directional caret flip for expandable elements:** Any caret on an element that opens a popover, dropdown, or disclosure must rotate 180° when open. Read open state from `[data-open]` on the component root or `[aria-expanded="true"]` on the trigger. Use `transform: rotate(180deg)` — do not swap icon variants or toggle icon visibility.
+
+**Hardcode `.show` on Bootstrap overlay elements:** Bootstrap JS toggles overlay visibility by adding/removing `.show` on elements like `.dropdown-menu`, `.collapse`, and `.modal`. React Aria manages visibility by mounting/unmounting the element instead. When using Bootstrap overlay classes, hardcode `.show` permanently — React Aria's mount/unmount provides the visibility control; `.show` just ensures Bootstrap's visible styles are always active when the element exists in the DOM.
+
 **Use `rem` for Bootstrap-matched sizing, not `em`:** Bootstrap sizes fixed UI elements in `rem`, anchored to the root font size. Using `em` causes elements to scale with local font-size context, diverging from Bootstrap's values in nested containers. Only use `em` where Bootstrap itself uses it for intentionally fluid scaling. Example: a checkbox indicator sized `1em × 1em` shrinks inside a smaller-font-size context; `1rem × 1rem` matches Bootstrap's `.form-check-input` regardless of nesting.
 
 **`btn` on non-`<button>` interactive elements:** Apply `btn` to any non-`<button>` element (e.g. `<td>`, `<div>`) that a component library makes interactive. It provides the correct cursor, padding, focus baseline, and interaction state hooks. Do not rely on the element's native role alone — `btn` is what makes Bootstrap's interaction CSS apply.
@@ -105,6 +111,14 @@ If the Bootstrap equivalent for a component or interaction state cannot be ident
 1. Log it in the "Unmapped" section at the bottom of this file
 2. List potential alternative Bootstrap sources (similar in appearance or function)
 
+## Stories Conventions
+
+**Constrained argTypes for string union props:** When a prop is a string union with 2–5 values, configure `argTypes` with `control: { type: 'inline-radio' }` and an explicit `options` array. Do not rely on Storybook's auto-inferred free-text control — it produces an open text field that obscures the valid values.
+
+**Layout Variants story:** For any component with layout or orientation variants, add a single "Layout Variants" story showing all non-default permutations inline side by side. Do not add one story per permutation.
+
+**State stories:** Add separate stories for `Disabled`, `Invalid`, and `WithDescription` where applicable. These benefit from independent Controls panel manipulation and make state coverage explicit.
+
 ## Self-Review Checklist
 
 Before delivering iteration work, verify:
@@ -112,6 +126,8 @@ Before delivering iteration work, verify:
 - [ ] All `data-*` bridges that are needed are in `_bootstrap-overrides.scss`
 - [ ] No project CSS rules that conflict with Bootstrap are left uncommented
 - [ ] Unmapped components/states are logged with alternatives
+- [ ] All string-union props have constrained `argTypes` (inline-radio, explicit options)
+- [ ] Any component with layout/orientation variants has a Layout Variants story
 
 ## Bootstrap Counterpart Pairings
 

@@ -1,8 +1,5 @@
 ---
 title: Review — Iteration 1
-iteration: 1
-branch: bootstrap-iteration_1
-date: 2026-04-30
 ---
 
 # Review — Iteration 1
@@ -12,109 +9,133 @@ date: 2026-04-30
 ### Decisions made
 
 **Button**
-- Variants: replaced `'primary' | 'secondary' | 'quiet'` with Bootstrap's full set: 9 solid (`primary secondary success danger warning info light dark link`) + 8 outline (`outline-{color}`). `quiet` removed — no Bootstrap equivalent.
-- className: `react-aria-Button btn btn-${variant}` (static string; includes `react-aria-Button` to preserve specificity).
-- `ProgressCircle` replaced with Bootstrap spinner (`<span className="spinner-border spinner-border-sm me-2">`).
-- `data-variant` attribute removed.
-- Bridge: `[data-pressed]` → Bootstrap `:active` token values (keyboard press support).
-- Stories: Example (args), Variants (all 9 solid), OutlineVariants (all 8 outline), Disabled, Pending.
+- Applied full Bootstrap variant system: 9 solid variants (`btn-primary` … `btn-link`) + 8 outline variants (`btn-outline-*`). `VARIANT_CLASSES` record maps each `BootstrapVariant` to its Bootstrap class.
+- Pending state: used Bootstrap spinner (`spinner-border spinner-border-sm`) via `composeRenderProps` — hides label text while spinner is shown, consistent with Bootstrap loading-button pattern.
+- Disabled state: RAC keeps element focusable via `aria-disabled`; bridge selector adds `opacity: var(--bs-btn-disabled-opacity)` + `pointer-events: none` rather than HTML `disabled` attribute.
+- Pressed state (`[data-pressed]`): bridges keyboard activation gap — CSS `:active` only fires on mouse/touch, not keyboard Space/Enter. Applied Bootstrap `--bs-btn-active-*` tokens.
+- `className` set directly (no `composeRenderProps`) since no per-state class variation is needed beyond variant.
 
 **TextField**
-- Rewrote to import from RAC directly (no project `Form` components) to avoid CSS bundling.
-- `<Label>` → `form-label`, `<Input>` → `form-control`, `<Text slot="description">` → `form-text`, `<FieldError>` → `invalid-feedback`.
-- Bridge: `[data-invalid]` on TextField root → red border on Input + `box-shadow` focus ring + `display: block` on `invalid-feedback`.
-- Stories: Example, WithDescription, Invalid, Disabled.
+- Applied `.form-control` to `<Input>`, `.form-label` to `<Label>`, `.form-text` to description `<Text slot="description">`, `.invalid-feedback` to `<FieldError>`.
+- Invalid state: `[data-invalid]` on the RAC container targets the child input via compound selector. Inlined the Bootstrap SVG warning icon as a `background-image` data URI to match Bootstrap's native `.is-invalid` icon. `invalid-feedback` display forced to `block` via bridge selector (normally only shown inside a parent with `.was-validated` or `.is-invalid`).
 
 **Checkbox**
-- Rewrote to import from RAC directly.
-- Removed SVG checkmark — Bootstrap renders via CSS `background-image` (CSS-native visual principle).
-- Indicator `<div>` receives Bootstrap's form-check-input visual via bridge selectors using Bootstrap's SCSS variables (`$form-check-input-checked-bg-image`, `$form-check-input-indeterminate-bg-image`).
-- Root `<label>` gets `form-check` class; layout is `display: flex; align-items: center; gap: 0.5rem` (overrides Bootstrap's padding-based form-check layout since our indicator is inline, not absolutely positioned).
-- Bridge: `[data-selected]` → checked visual; `[data-indeterminate]` → indeterminate visual; `[data-invalid]` → red border; `[data-disabled]` → opacity.
-- Stories: Example, Checked, Indeterminate, Disabled, Invalid.
+- Used a custom `checkbox-indicator` div (with SVG inside) instead of a native `<input type="checkbox">`, because RAC Checkbox renders as a `<label>`-wrapping custom element with its own focus/selection state.
+- `form-check` on the outer element provides layout. `form-check-label` on the text `<span>`.
+- `Checkbox.css`: indicator is 1rem × 1rem box, border from `--bs-border-color`, SVG checkmark/dash hidden at rest and shown via `[data-selected]` / `[data-indeterminate]` bridge selectors.
+- RAC Checkbox render prop parameter typed explicitly as `{ isIndeterminate: boolean }` to satisfy TypeScript (RAC's inferred type was ambiguous in this context).
+- Selected/indeterminate: fill indicator with `--bs-primary`; show SVG.
+- Hover/focus: border highlight + Bootstrap focus-ring on indicator.
+- Disabled: `opacity: 0.5` + `cursor: not-allowed` on container; indicator filled with `--bs-secondary-bg`.
 
 **Select**
-- Rewrote to import from RAC directly (no project Button/ListBox/Popover/Form imports).
-- Trigger button: `btn btn-secondary dropdown-toggle w-100`. No JSX chevron — Bootstrap's `.dropdown-toggle::after` renders the caret via CSS.
-- Popover: `dropdown-menu show` (hardcoded `.show` since RAC handles visibility via mount/unmount).
-- Items (`SelectItem`): `dropdown-item` on RAC `ListBoxItem`.
-- Bridge: caret rotation via `[aria-expanded="true"]::after { transform: rotate(180deg) }`; `min-width: var(--trigger-width)` on Popover; `[data-focused]` and `[data-selected]` on dropdown items.
-- Stories: Example (width: 220px wrapper), WithDescription, Invalid, Disabled.
+- Used RAC `Button` as the dropdown trigger with `.btn.btn-secondary.dropdown-toggle` — Bootstrap's `::after` pseudo-element caret is included automatically.
+- Caret rotation on open: `[data-open] .dropdown-toggle::after { transform: rotate(180deg) }` — Bootstrap JS normally handles this via `.show`; we replace it with the RAC state attribute.
+- `SelectValue` inside trigger button renders selected option text (or placeholder text when nothing selected).
+- Popover contains a `ListBox` styled as `.dropdown-menu.show` — no JS toggle needed because RAC controls display.
+- `ListBoxItem` styled as `.dropdown-item`, selected item gets `.active`.
+- `[data-focused]` bridge for hover-equivalent on non-native items.
+- Key discovery: RAC's `Label` component renders as `<span>`, not `<label>`. Bootstrap's `.form-label` CSS does not apply `display: block` to spans. Bridge fix: `.react-aria-Select { display: block; .form-label { display: block; } }`.
 
 **Tabs**
-- `TabList` → `nav nav-tabs`.
-- `Tab` → `nav-link` (no `.nav-item` wrapper — Bootstrap CSS targets `.nav-tabs .nav-link` directly, wrapper not required).
-- `SelectionIndicator` removed — Bootstrap provides active state via border treatment on `.nav-link`.
-- `TabPanels` → `tab-content`.
-- `TabPanel` → `tab-pane show active p-3` (hardcoded since RAC unmounts inactive panels by default; only active panel is in DOM).
-- Bridge: `[data-selected]` on `.nav-link` → Bootstrap's active border/bg treatment; `cursor: pointer` (Tab renders as `<div>`); `[data-disabled]` → nav-link disabled colors; vertical orientation → custom flex layout.
-- Stories: Example (width: 480px), LayoutVariants (horizontal + vertical side by side), Disabled.
+- `TabList` → `.nav.nav-tabs`; `Tab` → `.nav-link` with conditional `.active` / `.disabled` via render prop.
+- `TabPanels` → `.tab-content`; `TabPanel` → `.tab-pane.active` (RAC mounts only the active panel, so `.active` is always appropriate on the rendered panel).
+- Removed `SelectionIndicator` (project component) — Bootstrap underline comes from `.nav-tabs .nav-link.active` CSS.
+- Hover and focus-visible bridged for Tab items (non-native `<div>` elements).
 
 **Calendar**
-- Rewrote to import from RAC directly (no project Button/Heading/Content imports).
-- Replaced `lucide-react` chevrons with Bootstrap Icons `<i class="bi bi-chevron-left/right">`.
-- Nav buttons: `btn btn-sm btn-outline-secondary bs-cal-nav` with `border-color: transparent` at rest.
-- Cells: `btn btn-sm btn-outline-secondary bs-cal-cell` with `border-color: transparent` at rest; explicit `color: var(--bs-body-color)` override (`.btn-outline-secondary` uses variant text color which is too light).
-- Bridge: `[data-selected]` → primary bg/border; `[data-today]` → primary border with bold font; `[data-pressed]` → active bg; `[data-outside-month]` → `visibility: hidden` (preserves grid spacing); `[data-unavailable]` → strikethrough danger color; `[data-disabled]` → opacity.
-- Stories: Example, Disabled, WithError.
+- Nav buttons: RAC `Button` with `slot="previous"` / `slot="next"` + `.btn.btn-sm.btn-outline-secondary`. Border hidden at rest via bridge; shown on hover.
+- Replaced lucide `ChevronLeft/Right` with Bootstrap Icons (`bi bi-chevron-left/right`) as specified by the setup.
+- Day grid: `CalendarGrid weekdayStyle="short"` → produces "Sun Mon Tue Wed Thu Fri Sat" labels via `Intl.DateTimeFormat`. `CalendarHeaderCell` styled as `.calendar-header-cell`.
+- Calendar cells: `AriaCalendarCell` with `.btn.btn-sm.btn-outline-secondary.calendar-cell`; border hidden at rest, shown on hover.
+- `[data-today]`: filled primary background + white text + bold — matches Bootstrap's convention for highlighting the current date.
+- `[data-selected]`: filled primary background + white text.
+- `[data-outside-month]`: secondary color + 0.5 opacity.
+- Used `CalendarGridHeader + CalendarGridBody` inside a single `CalendarGrid` (new RAC API). Old function-as-children API mixes incompatibly with header/body split.
 
 **ListBox**
-- Rewrote to import from RAC directly (no project Text/ProgressCircle imports).
-- Removed `lucide-react` Check icon — selection shown via Bootstrap's `.active` background (no checkmark in list-group-item).
-- Container: `list-group`.
-- Items: `list-group-item list-group-item-action`.
-- Section header (`Header`): styled inline in stories via Bootstrap utilities (`fw-semibold small text-secondary bg-body-secondary`).
-- Bridge: `cursor: pointer` on items (renders as `<div>`); `[data-selected]` → `.active` list-group token values; `[data-focused]` → hover bg; `[data-disabled]` → disabled color/pointer-events; section header top border.
-- Stories: Example (selectionMode=single), Sections (with ListBoxSection + Header), LayoutVariants (single / multiple / none side by side), Disabled.
-
-### Uncertainties
-
-1. **Tabs vertical orientation**: Bootstrap's nav-tabs are horizontally oriented by design. My bridge creates a vertical layout but it may look off compared to Bootstrap's nav-pills (which are the recommended vertical nav component). The `.nav-pills` pattern wasn't applied here to keep consistency with `.nav-tabs`, but a debrief decision is needed on which Bootstrap counterpart to use for vertical tabs.
-
-2. **Select Popover positioning**: RAC's Popover uses Floating UI for positioning via inline `style`. Bootstrap's `.dropdown-menu` also sets `position: absolute` via CSS. These coexist without conflict (inline style wins) but have not been visually verified. The `min-width: var(--trigger-width)` bridge may or may not align correctly with the trigger.
-
-3. **Checkbox layout conflict**: Bootstrap's `.form-check` expects `padding-inline-start` for the indented layout (with absolutely-positioned native input). I overrode this to `padding-left: 0` and used `display: flex` for our inline indicator. This deviates from Bootstrap's structural form-check pattern but is the correct approach given RAC's custom indicator.
-
-4. **ListBox border-radius with sections**: Bootstrap's `:first-child`/`:last-child` selectors apply border-radius to first and last items. When sections/headers are present, these selectors fire on the header element, not the first item. Section items don't get rounded corners. Accepted for now.
-
-5. **TextField `FieldError` rendering**: React Aria's `FieldError` renders even when there's no error message (`{errorMessage}` renders as empty). Bootstrap's `invalid-feedback` always occupies height when `display: block`. This may cause spacing issues when no error is shown. Needs visual verification.
-
-### Unmapped states
-
-| Component | State/Element | Alternatives considered |
-|-----------|--------------|------------------------|
-| Tabs | Vertical orientation | `.nav-pills` with `flex-direction: column` is Bootstrap's idiomatic vertical nav; `.nav-tabs` vertical is a custom bridge |
-| ListBox | `[data-dragging]` (drag-and-drop) | No Bootstrap equivalent; opacity-based visual used |
-| Calendar | `[data-in-range]`/`[data-selection-start]`/`[data-selection-end]` | RangeCalendar-specific; not applicable to Calendar |
-| All components | Focus ring (`[data-focus-visible]`) | Bootstrap uses `:focus-visible` natively; no bridge needed for native elements, but custom elements may need explicit outline |
-
-## Skill Update Status
-
-- [x] New principles added to `agent/react-aria-skill.md`
-- [x] Self-review checklist updated
-- [x] `CLAUDE.md` iteration number incremented
-
-## User Visual Review
-
-**Overall score: 3/5**
-*(Scale: 1 = a monkey could have done it as well; 5 = perfect, no notes)*
-
-Improvement over iteration 0 (scored 2/5).
+- Container: `.list-group` on `<ListBox>`.
+- Items: `.list-group-item.list-group-item-action` on `<ListBoxItem>`.
+- `[data-focused]`: `--bs-list-group-action-hover-*` tokens.
+- `[data-selected]`: `--bs-list-group-active-*` tokens (blue background + white text).
+- `[data-disabled]`: `--bs-list-group-disabled-*` tokens + `pointer-events: none`.
+- `Sections` story uses RAC `Section` + `Header` for grouped items.
 
 ---
 
-### Button
+### Uncertainties
 
-**Learning — `[data-pressed]` bridge: use `@include box-shadow()`, not raw `box-shadow:`**
-Bootstrap's `box-shadow` mixin is gated on `$enable-shadows` (default: `false`). Writing `box-shadow: var(--bs-btn-active-shadow)` directly in the bridge bypasses this flag and applies a shadow Bootstrap itself suppresses by default. Correct approach: `@include box-shadow(var(--bs-btn-active-shadow))`.
+1. **Select button width** — The trigger button is `display: inline-block` (Bootstrap's `.btn` default). Some Select patterns use `width: 100%` so the button spans the form width. No `w-100` was added; the button sizes to its content. This may need adjustment depending on how it's used in real forms.
 
-*Applied:* General principle added to `react-aria-skill.md`; Button-specific note added to `component-decisions.md` on `main`. No code change in this iteration.
+2. **Calendar day-of-week label format** — The reference Bootstrap Calendar story uses 2-letter labels ("Su Mo Tu We Th Fr Sa"), but these are not produced by any standard `Intl.DateTimeFormat` format in English. After setting `weekdayStyle="short"`, React Aria produces 3-letter "Sun Mon Tue Wed Thu Fri Sat". This is more readable but differs from the reference. The reference labels may be a Bootstrap-specific convention or a different locale. Deferred to user.
 
-**Learning — Variants story labels should be title-cased, not raw prop strings**
-The Variants story maps over `SOLID_VARIANTS` and uses the variant name as the label (`{v}`). Since prop values are lowercase strings, all labels render lowercase. Labels should be title-cased.
+3. **Checkbox indicator sizing** — The `checkbox-indicator` div is 1rem × 1rem, matching the Bootstrap native checkbox input size. SVG scales proportionally. Not verified at non-default font sizes.
 
-*Applied:* General principle added to `react-aria-skill.md` (Stories Conventions); Button-specific note added to `component-decisions.md` stub (to be reconciled to `main` at end of iteration). No code change in this iteration.
+4. **Tabs `TabPanel` always has `.active`** — RAC only renders the selected panel to the DOM, so `.tab-pane.active` is always correct on the rendered panel. If RAC ever pre-renders hidden panels, this would need to be made conditional.
+
+---
+
+### Unmapped states
+
+| Component | State | Notes |
+|-----------|-------|-------|
+| Button | Focus-visible ring | Not bridged — `:focus-visible` fires natively on `<button>`. Behavior confirmed as equivalent. |
+| TextField | Read-only | `[data-readonly]` not bridged — browser's default `readonly` appearance handles it; Bootstrap has no utility class for this. |
+| Select | Disabled trigger | `AriaSelect[data-disabled]` not bridged; RAC propagates `aria-disabled` to the button which already has a `[data-disabled]` bridge. |
+| Calendar | `[data-unavailable]` | Dates outside min/max. RAC sets both `[data-unavailable]` and `[data-disabled]`; the disabled bridge handles the visual treatment. |
+| ListBox | `[data-dragging]` | Drag-and-drop state. No Bootstrap equivalent; not bridged. |
+
+---
+
+### Visual comparison
+
+**Button** — Clean. All solid and outline variants correct. Link variant renders as underlined text-color button. Disabled and pending states match Bootstrap behavior.
+
+**TextField** — Clean. Invalid state shows Bootstrap SVG warning icon in input and red border. Error message visible below input. Description renders as `.form-text`.
+
+**Checkbox** — Clean. Checked, indeterminate, disabled, and hover states all correct. SVG indicator matches Bootstrap's check and dash shapes.
+
+**Select** — Delta resolved: label was rendering inline with the trigger button. Root cause: RAC renders `Label` as `<span>`, not `<label>`, so Bootstrap's `.form-label` `display: block` does not apply. Fixed with bridge selector on `.react-aria-Select .form-label`. Label now stacks above button.
+
+**Tabs** — Clean. Active tab has bottom-border underline. Disabled tab muted. Hover state on non-active tabs correct.
+
+**Calendar** — Two deltas resolved:
+1. Day header labels changed from narrow single letters (S/M/T) to 3-letter short format (Sun/Mon/Tue) via `weekdayStyle="short"`.
+2. Today cell changed from bold-only to filled primary background + white text + bold.
+- Open design decision: reference uses 2-letter labels (Su/Mo) sourced from custom Bootstrap HTML, not a standard `Intl` format. The 3-letter "short" format was used as the closest available approximation.
+
+**ListBox** — Clean. Single-selection, multiple-selection, section headers, and disabled items all render correctly with Bootstrap list-group styling.
+
+---
+
+## User Visual Review
+
+> **Note:** This iteration was ended before completion. After reviewing Button and Calendar, the user identified process improvements to make before continuing. Findings recorded here represent a partial debrief only. A fresh iteration will follow.
+
+**Overall rating: 3/5** (iteration 0 was 2/5)
+_(scale: 1 = a monkey could have done it as well; 5 = perfect, no notes)_
+
+**Button** — Looks right.
+
+**Calendar**
+- Date cells: reference is 36×31px (wider than tall, Bootstrap `.btn-sm` natural padding); test is 32×32px (square — agent applied fixed-dimensions principle without measuring reference). **Prefer reference dimensions.** Agent diagnosed fixed-dimensions principle as overapplied — date cells don't qualify as state-toggled visual indicators; their presence is constant, only their styling changes.
+- Day header labels: reference is 12px / 400 weight; test is 16px / 600 weight (agent did not set explicit font-size or font-weight on `CalendarHeaderCell`; `<th>` defaults applied). **Prefer reference size and weight — more elegant, less cramped.**
+
+---
 
 ## Debrief Decisions
 
-*To be filled in after debrief.*
+_To be filled during debrief session._
+
+| Decision | Destination |
+|----------|-------------|
+| `argTypes` control type threshold: 2–5 values → `inline-radio`; 6+ values → `select` | `react-aria-skill.md` ✓ |
+| Fixed-dimensions principle refined: apply only when indicator element mounts/unmounts, not when only visual treatment changes | `react-aria-skill.md` ✓ |
+
+---
+
+## Skill Update Status
+
+- [ ] `agent/react-aria-skill.md` updated with new principles
+- [ ] `agent/component-decisions.md` updated with component-specific decisions
+- [ ] `CLAUDE.md` iteration number incremented

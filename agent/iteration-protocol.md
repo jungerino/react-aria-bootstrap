@@ -117,7 +117,15 @@ Perform the following in `main` before cutting `bootstrap-iteration_1`:
 Populate the Agent Iteration Summary section of `agent/review-iteration-N.md` with:
 
 ### Decisions made
-For each component: what Bootstrap classes/patterns were applied and why.
+For each component: what Bootstrap classes/patterns were applied and why. After each component's narrative, include a **Principles used** line listing the P-IDs that drove decisions for that component. On `styled-components` branches, also include a **Decisions applied** line listing any D-IDs from `component-decisions.md` that were followed.
+
+Example:
+```
+**Button**
+- Applied `.btn.btn-{variant}` …
+- Principles used: P001: compound-sel, P007: variant-replace, P014: data-pressed
+- Decisions applied (styled-components only): D001: btn-ref-pattern, D002: btn-pressed-mixin
+```
 
 ### Uncertainties
 Places where you were unsure which approach was correct. Flag these for user review.
@@ -127,6 +135,16 @@ Components or interaction states where no Bootstrap equivalent was found. List a
 
 ### Visual comparison
 For each component: deltas resolved (what was fixed), open design decisions (judgment calls deferred to user), intentional deviations. Only unresolved items appear here — fixable deltas must be closed before delivery.
+
+### Principle usage summary
+A tally of every principle used across all 7 components, plus a list of any principles that were **not used** at all.
+
+| Principle | Times used | Components |
+|-----------|-----------|------------|
+| P001: compound-sel | 7 | Button, TextField, … |
+| … | | |
+
+**Unused principles:** P018: postcss-scope, …
 
 ## User visual review
 

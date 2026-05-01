@@ -80,6 +80,7 @@ Never assume component properties without verification through these tools.
 
 ## Working Guidelines
 
+- **Session start**: Read `agent/todos.md` and summarize open items to the user at the start of every session.
 - **Honesty about limitations**: Do not make stuff up or provide invalid code. If uncertain, acknowledge it. "I don't know" is acceptable.
 - **Markdown summaries**: When asked to "summarize in markdown", provide a concise summary enclosed in a code block using four backticks (```` ```` ````) so inner triple-backtick fences do not close the outer block.
 - **Context handoff**: When the user says "summarize for new window", "fresh window", "fresh context window", or similar, produce a handoff summary in a fenced code block using four backticks (per the Markdown summaries rule above). Include: current branch, uncommitted files and key changes, what was accomplished this session, open questions or uncertainties, and the immediate next step. Label each next step with who owns it — **[User]** for steps requiring human review, decision, or action before proceeding; **[Agent]** for steps the incoming agent should execute immediately.
@@ -97,6 +98,7 @@ Never assume component properties without verification through these tools.
 
 ### Reference Documentation
 - [Project Commands](./agent/project-commands.md) — Common CLI commands (package manager, Storybook, etc.)
+- [Todos](./agent/todos.md) — Open tasks, proposals, and ideas
 
 ### Vision
 - [Project Vision](./agent/project-vision.md) — End goal, roadmap, and key architectural decisions
@@ -111,3 +113,4 @@ Never assume component properties without verification through these tools.
 
 ### Iteration Reviews
 - [Review — Iteration 0](./agent/review-iteration-0.md) — Agent summary, user visual review, and debrief decisions for iteration 0
+- [Review — Iteration 1](./agent/review-iteration-1.md) — Agent summary, partial user visual review, and debrief decisions for iteration 1 (ended early)

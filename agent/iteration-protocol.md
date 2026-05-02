@@ -97,8 +97,6 @@ Perform the following in `main` before cutting `bootstrap-iteration_1`:
 
 3. Start Storybook (`yarn storybook`) and confirm only the `Bootstrap Test` and `Bootstrap Reference` story groups are visible.
 
-4. **Confirm Chrome browser tools are available.** Use `@browser` to navigate to `http://localhost:6006` and take a screenshot. If the tool responds successfully, visual comparison is enabled for this session. If it fails or returns no tools, stop — do not begin styling until the Chrome MCP issue is resolved. Visual comparison is a required step; skipping it is not an option.
-
 ## Iteration steps
 
 1. For each of the 7 test components (Button, TextField, Checkbox, Select, Tabs, Calendar, ListBox):
@@ -108,7 +106,7 @@ Perform the following in `main` before cutting `bootstrap-iteration_1`:
    - Log any unmapped states
    - Create or update `stories/bootstrap-test/ComponentName.stories.tsx` following the Stories conventions in `react-aria-skill.md` (argTypes, Variants, LayoutVariants, and state stories as applicable)
 
-2. Run self-review against the checklist in `react-aria-skill.md`. This includes the visual comparison loop for each component: compare the rendered test story against its Bootstrap Reference story using `@browser`, for both default and interaction states. Fix all fixable deltas and re-compare to confirm. Do not deliver until no fixable deltas remain.
+2. Run self-review against the checklist in `react-aria-skill.md`.
 
 3. Create `agent/review-iteration-N.md` (e.g. `review-iteration-0.md`) and populate the **Agent Iteration Summary** section with the output format below.
 
@@ -133,9 +131,6 @@ Places where you were unsure which approach was correct. Flag these for user rev
 ### Unmapped states
 Components or interaction states where no Bootstrap equivalent was found. List alternatives considered.
 
-### Visual comparison
-For each component: deltas resolved (what was fixed), open design decisions (judgment calls deferred to user), intentional deviations. Only unresolved items appear here — fixable deltas must be closed before delivery.
-
 ### Principle usage summary
 A tally of every principle used across all 7 components, plus a list of any principles that were **not used** at all.
 
@@ -145,10 +140,6 @@ A tally of every principle used across all 7 components, plus a list of any prin
 | … | | |
 
 **Unused principles:** P018: postcss-scope, …
-
-## User visual review
-
-The user reviews each component in Storybook and records observations directly in the **User Visual Review** section of `agent/review-iteration-N.md`.
 
 ## Debrief
 
@@ -179,3 +170,35 @@ Component-specific decisions discovered during the experiment-branch debrief sho
 5. Tick off the Skill Update Status checklist in `agent/review-iteration-N.md`.
 
 6. Commit.
+
+---
+
+## Appendix: Visual Comparison (SUSPENDED)
+
+> **Status: suspended as of iteration 2 debrief.** The instructions below are intact and may be re-enabled by moving them back into the active workflow sections. The decision to suspend is recorded in `agent/review-iteration-2.md`.
+
+### Where these instructions were removed from
+
+- **Before starting**, step 4 (Chrome browser tool confirmation)
+- **Iteration steps**, step 2 (visual comparison loop within self-review)
+- **Output format**, `### Visual comparison` section
+- **User visual review** section (between Output Format and Debrief)
+
+### Before starting (visual comparison step)
+
+4. **Confirm Chrome browser tools are available.** Use `@browser` to navigate to `http://localhost:6006` and take a screenshot. If the tool responds successfully, visual comparison is enabled for this session. If it fails or returns no tools, stop — do not begin styling until the Chrome MCP issue is resolved. Visual comparison is a required step; skipping it is not an option.
+
+### Iteration steps (visual comparison loop)
+
+After running the self-review checklist: compare the rendered test story against its Bootstrap Reference story using `@browser`, for both default and interaction states. Fix all fixable deltas and re-compare to confirm. Do not deliver until no fixable deltas remain.
+
+**Process discipline:** Do all screenshots for all 7 components before making any file edits. Edits should be batched and applied only after all screenshots are captured, then Storybook reloaded once for a confirmation pass. This prevents HMR interaction from stalling the preview iframe mid-comparison.
+
+### Output format (visual comparison section)
+
+#### Visual comparison
+For each component: deltas resolved (what was fixed), open design decisions (judgment calls deferred to user), intentional deviations. Only unresolved items appear here — fixable deltas must be closed before delivery.
+
+### User visual review
+
+The user reviews each component in Storybook and records observations directly in the **User Visual Review** section of `agent/review-iteration-N.md`.

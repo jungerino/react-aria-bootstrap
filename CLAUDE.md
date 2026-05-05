@@ -37,7 +37,7 @@ This is a component library that layers **Bootstrap 5 visual styling** on top of
 
 ## Experiment: Bootstrap Styling Iterations
 
-**Current iteration:** 3 *(visual comparison step suspended — moved to appendix in `iteration-protocol.md`; self-review checklist is now the sole quality gate)*
+**Current iteration:** 4 *(iteration 3 complete; 10 new principles added P034–P043, P007/P033 amended; visual comparison step remains suspended)*
 
 **What this is:** An iterative experiment to develop reusable agent skills for Bootstrap-styling React Aria component libraries. Each round produces two passes:
 1. Experiment pass (`bootstrap-iteration_N`) — principles only; primary source for skill updates

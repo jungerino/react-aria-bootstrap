@@ -61,12 +61,11 @@ git checkout bootstrap-iteration_N -- agent/react-aria-skill.md agent/iteration-
 
 ## Round structure
 
-Each iteration round consists of two passes in sequence:
+The two branch series have **independent counters** and do not need to stay in lockstep.
 
-1. **Experiment pass** (`bootstrap-iteration_N`) — principles only; primary source for skill updates
-2. **Styled-components pass** (`styled-components_N`) — principles + component decisions; project progress
+**Experiment series** (`bootstrap-iteration_N`) — skill-building; run as frequently as desired. After each debrief, merge knowledge files to `main` (see "Updating main from an experiment branch" above) and increment the experiment counter in `CLAUDE.md`.
 
-Complete both passes before starting round N+1. After the experiment debrief, cherry-pick knowledge file updates to `main`, then cut `styled-components_N` from `main`. After the styled-components debrief, cherry-pick any new `component-decisions.md` updates to `main`, then cut `bootstrap-iteration_N+1` from `main`.
+**Styled-components series** (`styled-components_N`) — project progress; run whenever ready to apply accumulated principles to the real component set. Always cut from `main`, so it automatically benefits from all experiment debriefs completed to date. After each debrief, merge any new `component-decisions.md` entries to `main` and increment the styled-components counter in `CLAUDE.md`.
 
 ## Bootstrap Reference stories
 

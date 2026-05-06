@@ -8,7 +8,7 @@ This document describes the prescribed workflow for each Bootstrap styling itera
 
 ## Cutting a new experiment branch
 
-When cutting `bootstrap-iteration_N` from `main`, the first commit on the branch must stub out the following files:
+When cutting `styling-skill_N` from `main`, the first commit on the branch must stub out the following files:
 
 **1. `agent/component-decisions.md`:**
 
@@ -26,7 +26,7 @@ Reading this file during an experiment iteration is off-limits — it would cont
 **Do not cherry-pick or copy this file to `main`.** When updating `main` with knowledge from this branch, use file-specific checkout (see "Updating main from an experiment branch" below).
 ```
 
-**2. All `agent/review-iteration-*.md` files from prior iterations** (e.g. `review-iteration-0.md` when cutting `bootstrap-iteration_1`):
+**2. All `agent/review-iteration-*.md` files from prior iterations** (e.g. `review-iteration-0.md` when cutting `styling-skill_1`):
 
 ```markdown
 ---
@@ -50,20 +50,20 @@ Never use `git cherry-pick` to move knowledge updates from an experiment branch 
 
 **Wholesale checkout** — experiment branch version replaces `main`'s version:
 ```sh
-git checkout bootstrap-iteration_N -- agent/react-aria-skill.md agent/iteration-protocol.md agent/review-iteration-N.md
+git checkout styling-skill_N -- agent/react-aria-skill.md agent/iteration-protocol.md agent/review-iteration-N.md
 # then stage and commit
 ```
 
 **Manual merge** — new entries from the stub must be copied into `main`'s existing file; do not overwrite:
 - `agent/component-decisions.md`: copy new sections/entries from the stub into `main`'s version by hand.
 
-`git checkout bootstrap-iteration_N -- agent/component-decisions.md` must never be used — it would overwrite `main`'s real content with the stub.
+`git checkout styling-skill_N -- agent/component-decisions.md` must never be used — it would overwrite `main`'s real content with the stub.
 
 ## Round structure
 
 The two branch series have **independent counters** and do not need to stay in lockstep.
 
-**Experiment series** (`bootstrap-iteration_N`) — skill-building; run as frequently as desired. After each debrief, merge knowledge files to `main` (see "Updating main from an experiment branch" above) and increment the experiment counter in `CLAUDE.md`.
+**Experiment series** (`styling-skill_N`) — skill-building; run as frequently as desired. After each debrief, merge knowledge files to `main` (see "Updating main from an experiment branch" above) and increment the experiment counter in `CLAUDE.md`.
 
 **Styled-components series** (`styled-components_N`) — project progress; run whenever ready to apply accumulated principles to the real component set. Always cut from `main`, so it automatically benefits from all experiment debriefs completed to date. After each debrief, merge any new `component-decisions.md` entries to `main` and increment the styled-components counter in `CLAUDE.md`.
 
@@ -80,7 +80,7 @@ Reference stories provide visual ground truth for self-review. One story file pe
 
 ## Pre-iteration-1 setup (one-time)
 
-Perform the following in `main` before cutting `bootstrap-iteration_1`:
+Perform the following in `main` before cutting `styling-skill_1`:
 
 1. **Install Bootstrap Icons** — `yarn add bootstrap-icons`. Import `bootstrap-icons/font/bootstrap-icons.css` in the Storybook entry point (`.storybook/preview.js`).
 2. **Apply Storybook glob filter** — In `.storybook/main.js`, restrict the `stories` pattern to `stories/bootstrap-test/**` only. This prevents original story CSS from entering the shared bundle and eliminates project CSS leakage into the test environment. Original story files remain in the repo untouched.
@@ -89,7 +89,7 @@ Perform the following in `main` before cutting `bootstrap-iteration_1`:
 ## Before starting
 
 1. Confirm which branch this is:
-   - **Experiment branch** (`bootstrap-iteration_N`): read `agent/react-aria-skill.md` + `CLAUDE.md`. Do NOT consult `agent/component-decisions.md`.
+   - **Experiment branch** (`styling-skill_N`): read `agent/react-aria-skill.md` + `CLAUDE.md`. Do NOT consult `agent/component-decisions.md`.
    - **Styled-components branch** (`styled-components_N`): read `agent/react-aria-skill.md` + `agent/component-decisions.md` + `CLAUDE.md`.
 
 2. Read `agent/react-aria-skill.md` carefully. Understand current principles and the self-review checklist.

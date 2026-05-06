@@ -247,13 +247,13 @@ Each iteration produces two parallel branches:
 
 | Branch | Guidance used | Purpose |
 |--------|-------------|---------|
-| `bootstrap-iteration_N` | `react-aria-skill.md` only | Tests the general skill in isolation; primary source for skill updates |
+| `styling-skill_N` | `react-aria-skill.md` only | Tests the general skill in isolation; primary source for skill updates |
 | `styled-components_N` | `react-aria-skill.md` + `component-decisions.md` | Project progress; versioned snapshot after each round; both skill + specific decisions applied |
 
 ### Iteration flow
 
 ```
-[experiment branch: bootstrap-iteration_N]
+[experiment branch: styling-skill_N]
 1. Agent reads react-aria-skill.md + CLAUDE.md
 2. Agent styles all 7 test components (TSX + CSS changes)
 3. Agent self-reviews against checklist in react-aria-skill.md

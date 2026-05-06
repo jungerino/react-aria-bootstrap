@@ -37,20 +37,17 @@ This is a component library that layers **Bootstrap 5 visual styling** on top of
 
 ## Experiment: Bootstrap Styling Iterations
 
-**Current experiment iteration:** 4 *(iteration 3 complete; 10 new principles added P034–P043, P007/P033 amended; visual comparison step remains suspended)*
-**Current styled-components iteration:** 0 *(none completed yet)*
+**Current experiment iteration:** 4 *(iteration 3 complete; 10 new principles added P034–P043, P007/P033 amended; visual comparison step remains suspended — iteration 4 debrief in progress on `styling-skill_4`)*
 
-**What this is:** An iterative experiment to develop reusable agent skills for Bootstrap-styling React Aria component libraries. The two series have independent counters and do not need to stay in lockstep:
-1. Experiment pass (`bootstrap-iteration_N`) — principles only; primary source for skill updates; run frequently
-2. Styled-components pass (`styled-components_N`) — principles + component decisions; project progress; run when ready
+**What this is:** An iterative experiment to develop reusable agent skills for Bootstrap-styling React Aria component libraries.
+1. Experiment pass (`styling-skill_N`) — principles only; primary source for skill updates; run frequently
 
 **Branch naming:**
-- `bootstrap-iteration_0`, `bootstrap-iteration_1`, … — experiment branch (uses `react-aria-skill.md`)
-- `styled-components_0`, `styled-components_1`, … — project branch (uses `react-aria-skill.md` + `component-decisions.md`)
+- `styling-skill_0`, `styling-skill_1`, … — experiment branch (uses `react-aria-skill.md`)
 
 **Test component set:** Button, TextField, Checkbox, Select, Tabs, Calendar, ListBox
 
-**Experiment branch restrictions (`bootstrap-iteration_N` only):**
+**Experiment branch restrictions (`styling-skill_N` only):**
 - `agent/component-decisions.md` is replaced with a stub on experiment branches. Do not read it. Do not copy or cherry-pick it to `main`.
 - `agent/review-iteration-*.md` files from prior iterations are replaced with stubs on experiment branches. Do not read them. Extracted principles live in `agent/react-aria-skill.md`.
 - When updating `main` after an experiment debrief, copy files individually using `git checkout <branch> -- <file>`. Never cherry-pick whole commits. See `agent/iteration-protocol.md` for the exact workflow.

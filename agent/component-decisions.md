@@ -4,9 +4,7 @@ title: Component-Specific Decisions
 
 # Component-Specific Decisions
 
-Per-component Bootstrap decisions for this project. Updated after **project branch** (`styled-components`) review only.
-
-Not consulted during experiment-branch iterations (deliberate exclusion for clean skill signal).
+Per-component Bootstrap decisions for this project. Not consulted during experiment-branch iterations (deliberate exclusion for clean skill signal) — stubbed on experiment branches.
 
 ## Button
 

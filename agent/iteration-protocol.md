@@ -8,7 +8,7 @@ This document describes the prescribed workflow for each Bootstrap styling itera
 
 ## Cutting a new experiment branch
 
-When cutting `styling-skill_N` from `main`, the first commit on the branch must stub out the following files:
+When cutting `styling-skill-plus_N` from `styling-skill-plus`, the first commit on the branch must stub out the following files:
 
 **1. `agent/component-decisions.md`:**
 
@@ -21,12 +21,12 @@ title: Component-Specific Decisions (STUB — experiment branch)
 
 **This file is intentionally empty on experiment branches.**
 
-Reading this file during an experiment iteration is off-limits — it would contaminate the clean signal the experiment is designed to produce. The real content lives on `main` and `styled-components_N` branches.
+Reading this file during an experiment iteration is off-limits — it would contaminate the clean signal the experiment is designed to produce. The real content lives on `styling-skill-plus`.
 
-**Do not cherry-pick or copy this file to `main`.** When updating `main` with knowledge from this branch, use file-specific checkout (see "Updating main from an experiment branch" below).
+**Do not cherry-pick or copy this file to `styling-skill-plus`.** When updating `styling-skill-plus` with knowledge from this branch, use file-specific checkout (see "Updating styling-skill-plus from an experiment branch" below).
 ```
 
-**2. All `agent/review-iteration-*.md` files from prior iterations** (e.g. `review-iteration-0.md` when cutting `styling-skill_1`):
+**2. All `agent/review-iteration-*.md` files from prior iterations** (e.g. `review-iteration-0.md` when cutting `styling-skill-plus_1`):
 
 ```markdown
 ---
@@ -39,33 +39,29 @@ title: Review — Iteration N (STUB — experiment branch)
 
 Reading prior iteration reviews during an experiment pass is off-limits — the findings and component decisions they contain would contaminate the clean signal the experiment is designed to produce. Principles already extracted from this review live in `agent/react-aria-skill.md`.
 
-The real content lives on `main` and `styled-components_N` branches.
+The real content lives on `styling-skill-plus`.
 ```
 
 Commit message: `chore: stub experiment-isolation files for iteration N`
 
-## Updating main from an experiment branch
+## Updating styling-skill-plus from an experiment branch
 
-Never use `git cherry-pick` to move knowledge updates from an experiment branch to `main`. Cherry-picked commits may include the stub file alongside legitimate changes. Instead, reconcile each file explicitly at the end of the iteration:
+Never use `git cherry-pick` to move knowledge updates from an experiment branch to `styling-skill-plus`. Cherry-picked commits may include the stub file alongside legitimate changes. Instead, reconcile each file explicitly at the end of the iteration:
 
-**Wholesale checkout** — experiment branch version replaces `main`'s version:
+**Wholesale checkout** — experiment branch version replaces the integration branch version:
 ```sh
-git checkout styling-skill_N -- agent/react-aria-skill.md agent/iteration-protocol.md agent/review-iteration-N.md
+git checkout styling-skill-plus_N -- agent/react-aria-skill.md agent/iteration-protocol.md agent/review-iteration-N.md
 # then stage and commit
 ```
 
-**Manual merge** — new entries from the stub must be copied into `main`'s existing file; do not overwrite:
-- `agent/component-decisions.md`: copy new sections/entries from the stub into `main`'s version by hand.
+**Manual merge** — new entries from the stub must be copied into the existing file; do not overwrite:
+- `agent/component-decisions.md`: copy new sections/entries from the stub into `styling-skill-plus`'s version by hand.
 
-`git checkout styling-skill_N -- agent/component-decisions.md` must never be used — it would overwrite `main`'s real content with the stub.
+`git checkout styling-skill-plus_N -- agent/component-decisions.md` must never be used — it would overwrite the real content with the stub.
 
 ## Round structure
 
-The two branch series have **independent counters** and do not need to stay in lockstep.
-
-**Experiment series** (`styling-skill_N`) — skill-building; run as frequently as desired. After each debrief, merge knowledge files to `main` (see "Updating main from an experiment branch" above) and increment the experiment counter in `CLAUDE.md`.
-
-**Styled-components series** (`styled-components_N`) — project progress; run whenever ready to apply accumulated principles to the real component set. Always cut from `main`, so it automatically benefits from all experiment debriefs completed to date. After each debrief, merge any new `component-decisions.md` entries to `main` and increment the styled-components counter in `CLAUDE.md`.
+**Experiment series** (`styling-skill-plus_N`) — skill-building; cut from `styling-skill-plus`. After each debrief, merge knowledge files back to `styling-skill-plus` (see "Updating styling-skill-plus from an experiment branch" above) and increment the experiment counter in `CLAUDE.md`.
 
 ## Bootstrap Reference stories
 
@@ -73,14 +69,14 @@ Reference stories provide visual ground truth for self-review. One story file pe
 
 **Construction rules:**
 1. **Use Bootstrap's HTML verbatim** — fetch the relevant docs page and copy the example markup directly. Adapt to JSX syntax only (`class` → `className`, `for` → `htmlFor`, `checked` → `defaultChecked`). Do not paraphrase or simplify.
-2. **Consult the Bootstrap Counterpart Pairings table** in `react-aria-skill.md` for the approved pattern. Do not choose a different pattern without user approval.
+2. **Consult `agent/mapping-table.md`** for the approved Bootstrap counterpart and sub-part mappings. Do not choose a different pattern without user approval.
 3. **For JS-dependent components** (dropdowns, tabs): show static open/active state by adding the `.show` / `.active` class directly. Note in the file comment that JS is not loaded.
 4. **For components with no Bootstrap counterpart** (Calendar): show the intended cell/element treatment using Bootstrap classes. Clearly note the absence of a counterpart.
 5. **Add a header comment** to each file: Bootstrap docs URL, chosen pattern, and any deviation from Bootstrap's canonical markup with rationale.
 
 ## Pre-iteration-1 setup (one-time)
 
-Perform the following in `main` before cutting `styling-skill_1`:
+Perform the following in `styling-skill-plus` before cutting `styling-skill-plus_1`:
 
 1. **Install Bootstrap Icons** — `yarn add bootstrap-icons`. Import `bootstrap-icons/font/bootstrap-icons.css` in the Storybook entry point (`.storybook/preview.js`).
 2. **Apply Storybook glob filter** — In `.storybook/main.js`, restrict the `stories` pattern to `stories/bootstrap-test/**` only. This prevents original story CSS from entering the shared bundle and eliminates project CSS leakage into the test environment. Original story files remain in the repo untouched.
@@ -88,11 +84,13 @@ Perform the following in `main` before cutting `styling-skill_1`:
 
 ## Before starting
 
-1. Confirm which branch this is:
-   - **Experiment branch** (`styling-skill_N`): read `agent/react-aria-skill.md` + `CLAUDE.md`. Do NOT consult `agent/component-decisions.md`.
-   - **Styled-components branch** (`styled-components_N`): read `agent/react-aria-skill.md` + `agent/component-decisions.md` + `CLAUDE.md`.
+1. Confirm you are on an experiment branch (`styling-skill-plus_N`).
 
-2. Read `agent/react-aria-skill.md` carefully. Understand current principles and the self-review checklist.
+2. Load inputs in order:
+   - Read `agent/react-aria-skill.md` carefully. Understand current principles and the self-review checklist.
+   - Read `agent/mapping-table.md` fully. These are approved, authoritative mappings — treat each entry as a decided answer, not a starting point for re-derivation.
+   - Navigate `agent/bootstrap-kb/` via `README.md`. Load individual KB files selectively as you work on each component (the README's "load when" fields tell you which files apply).
+   - Do NOT consult `agent/component-decisions.md` on experiment branches.
 
 3. Start Storybook (`yarn storybook`) and confirm only the `Bootstrap Test` and `Bootstrap Reference` story groups are visible.
 
@@ -114,14 +112,13 @@ Perform the following in `main` before cutting `styling-skill_1`:
 Populate the Agent Iteration Summary section of `agent/review-iteration-N.md` with:
 
 ### Decisions made
-For each component: what Bootstrap classes/patterns were applied and why. After each component's narrative, include a **Principles used** line listing the P-IDs that drove decisions for that component. On `styled-components` branches, also include a **Decisions applied** line listing any D-IDs from `component-decisions.md` that were followed.
+For each component: what Bootstrap classes/patterns were applied and why, including which mapping table entries were used and whether any deviated from the table. After each component's narrative, include a **Principles used** line listing the P-IDs that drove decisions.
 
 Example:
 ```
 **Button**
-- Applied `.btn.btn-{variant}` …
+- Applied `.btn.btn-{variant}` per mapping table sub-part mapping
 - Principles used: P001: compound-sel, P007: variant-replace, P014: data-pressed
-- Decisions applied (styled-components only): D001: btn-ref-pattern, D002: btn-pressed-mixin
 ```
 
 ### Uncertainties
@@ -147,9 +144,7 @@ User and agent work through the review observations together. **Write each obser
 - General principles → `agent/react-aria-skill.md`
 - Component-specific decisions → `agent/component-decisions.md`
 
-**On experiment branches, accumulate component decisions in the stub — reconcile at the end.** Rather than switching to `main` after each component decision, record new entries directly in the `agent/component-decisions.md` stub on the experiment branch (below the stub header). At the end of the iteration, manually merge those entries into `main`'s `component-decisions.md` (see "Updating main from an experiment branch" above).
-
-Component-specific decisions discovered during the experiment-branch debrief should be captured in `agent/component-decisions.md` immediately — do not defer to the `styled-components` review. The `styled-components` review may add further decisions, but anything known now should be recorded now.
+**On experiment branches, accumulate component decisions in the stub — reconcile at the end.** Rather than switching to `styling-skill-plus` after each component decision, record new entries directly in the `agent/component-decisions.md` stub on the experiment branch (below the stub header). At the end of the iteration, manually merge those entries into `styling-skill-plus`'s `component-decisions.md` (see "Updating styling-skill-plus from an experiment branch" above).
 
 ## After debrief
 

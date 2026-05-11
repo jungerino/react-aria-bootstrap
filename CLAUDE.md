@@ -35,27 +35,35 @@ This is a component library that layers **Bootstrap 5 visual styling** on top of
 - Dark mode is handled automatically by Bootstrap CSS variables via `data-bs-theme="dark"` on the root element
 - When composing components from sub-components, import and reuse existing CSS classes from their `.css` files — do not use inline styles
 
-## Experiment: Bootstrap Styling Iterations
+## Experiment: Bootstrap Styling Iterations (Plus)
 
-**Current experiment iteration:** 4 *(iteration 3 complete; 10 new principles added P034–P043, P007/P033 amended; visual comparison step remains suspended — iteration 4 debrief in progress on `styling-skill_4`)*
+**Current experiment iteration:** 0 *(new series — augmented inputs: mapping table + Bootstrap KB alongside `react-aria-skill.md`; principles inherited from `styling-skill` series through iteration 4)*
 
-**What this is:** An iterative experiment to develop reusable agent skills for Bootstrap-styling React Aria component libraries.
-1. Experiment pass (`styling-skill_N`) — principles only; primary source for skill updates; run frequently
+**What this is:** An iterative experiment to develop reusable agent skills for Bootstrap-styling React Aria component libraries. This series extends the prior `styling-skill` series by providing the Bootstrap Knowledge Base and approved mapping table as authoritative inputs alongside `react-aria-skill.md`.
+
+**Agent inputs (load at session start for each iteration):**
+1. `agent/react-aria-skill.md` — methodology: principles for bridging React Aria to Bootstrap
+2. `agent/mapping-table.md` — approved per-component mappings; **treat entries as authoritative** — they are decided, not starting points for re-derivation
+3. `agent/bootstrap-kb/` — Bootstrap reference; navigate via `README.md` and load files selectively per component
 
 **Branch naming:**
-- `styling-skill_0`, `styling-skill_1`, … — experiment branch (uses `react-aria-skill.md`)
+- `styling-skill-plus` — integration branch; holds `react-aria-skill.md`, mapping table, Bootstrap KB
+- `styling-skill-plus_0`, `styling-skill-plus_1`, … — experiment branches
 
 **Test component set:** Button, TextField, Checkbox, Select, Tabs, Calendar, ListBox
 
-**Experiment branch restrictions (`styling-skill_N` only):**
-- `agent/component-decisions.md` is replaced with a stub on experiment branches. Do not read it. Do not copy or cherry-pick it to `main`.
+**Experiment branch restrictions (`styling-skill-plus_N` only):**
+- `agent/component-decisions.md` is replaced with a stub on experiment branches. Do not read it.
 - `agent/review-iteration-*.md` files from prior iterations are replaced with stubs on experiment branches. Do not read them. Extracted principles live in `agent/react-aria-skill.md`.
-- When updating `main` after an experiment debrief, copy files individually using `git checkout <branch> -- <file>`. Never cherry-pick whole commits. See `agent/iteration-protocol.md` for the exact workflow.
+- `agent/mapping-table.md` and `agent/bootstrap-kb/` are NOT stubbed — they are inputs for the iteration agent.
+- When updating `styling-skill-plus` after a debrief, copy files individually using `git checkout <branch> -- <file>`. Never cherry-pick whole commits. See `agent/iteration-protocol.md` for the exact workflow.
 
 **Experiment docs:**
 - [Experiment Spec](./agent/experiment-spec.md) — full design document
 - [Iteration Protocol](./agent/iteration-protocol.md) — how to run an iteration
-- [React Aria Skill](./agent/react-aria-skill.md) — growing general skill: React Aria + Bootstrap principles (updated from experiment branch only)
+- [React Aria Skill](./agent/react-aria-skill.md) — growing skill: principles for React Aria + Bootstrap (updated from experiment branch only)
+- [Bootstrap KB Index](./agent/bootstrap-kb/README.md) — Bootstrap knowledge base master index
+- [Mapping Table](./agent/mapping-table.md) — approved Bootstrap ↔ React Aria component mappings
 - [Component Decisions](./agent/component-decisions.md) — per-component decisions (updated from project branch only)
 
 ## MCP Servers
@@ -109,6 +117,16 @@ Never assume component properties without verification through these tools.
 - [React Aria Skill](./agent/react-aria-skill.md) — Growing general skill: React Aria + Bootstrap principles (updated from experiment branch)
 - [Component Decisions](./agent/component-decisions.md) — Per-component Bootstrap decisions for this project
 
+### Bootstrap Knowledge Base
+- [KB Index](./agent/bootstrap-kb/README.md) — Master index and retrieval guide; load this first
+- [Tokens](./agent/bootstrap-kb/tokens.md) — All `--bs-*` CSS custom properties
+- [Utilities](./agent/bootstrap-kb/utilities.md) — All Bootstrap utility classes
+- [States](./agent/bootstrap-kb/states.md) — Interactive state selectors across all components
+- [Components](./agent/bootstrap-kb/components.md) — Component class and DOM structure reference
+- [Patterns](./agent/bootstrap-kb/patterns.md) — Bootstrap↔React Aria DOM conflict analysis
+
+### Mapping
+- [Mapping Table](./agent/mapping-table.md) — Approved Bootstrap ↔ React Aria component mappings
+
 ### Iteration Reviews
-- [Review — Iteration 0](./agent/review-iteration-0.md) — Agent summary, user visual review, and debrief decisions for iteration 0
-- [Review — Iteration 1](./agent/review-iteration-1.md) — Agent summary, partial user visual review, and debrief decisions for iteration 1 (ended early)
+*(no iterations completed yet for the Plus series — prior series reviews in `agent/review-iteration-*.md` are for reference only)*

@@ -99,6 +99,7 @@ Never assume component properties without verification through these tools.
 - **Project memory location**: Store project-specific knowledge in the versioned `agent/` directory rather than the `.claude` memory system, so it is tracked by git and shared with the project.
 - **Commit grouping**: When the user says "commit changes" or "commit updates", split changes into as many logical commits as make sense rather than committing everything at once.
 - **Diagnose before fixing**: Confirm actual state before implementing a fix — treat explanations of bugs as hypotheses requiring verification, not truth.
+- **Push back when warranted**: If something the user says seems factually incorrect or likely to cause a problem, push back before proceeding. If there's a tradeoff the user may not have considered, say so once. Do not agree by default, but do not re-litigate after a decision has been made.
 
 ## Agent Documentation
 

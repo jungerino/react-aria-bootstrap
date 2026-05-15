@@ -37,7 +37,7 @@ This is a component library that layers **Bootstrap 5 visual styling** on top of
 
 ## Experiment: Reference Stories
 
-**Current experiment iteration:** 1 *(iteration 0 complete — Button, ListBox, Select; established P-S001, P-S002, P-T001, P-T002)*
+**Current experiment iteration:** 0 *(new series — developing a reusable skill for sub-part Bootstrap reference story production)*
 
 **What this is:** An iterative experiment to develop a reusable agent skill for producing sub-part Bootstrap reference stories for React Aria components. Each iteration defines taxonomies for a component set and implements them as Storybook stories. Principles accumulate in `agent/reference-stories-skill.md`.
 
@@ -50,7 +50,7 @@ This is a component library that layers **Bootstrap 5 visual styling** on top of
 - `reference-stories` — integration branch; holds approved taxonomy files, finalized story files, and the growing skill doc
 - `reference-stories_0`, `reference-stories_1`, … — experiment branches
 
-**Test component set (iteration 1):** Button, ListBox, Select, Calendar, Tabs
+**Test component set (iteration 0):** Button, ListBox, Select
 
 **Experiment docs:**
 - [Iteration Protocol](./agent/iteration-protocol.md) — how to run an iteration
@@ -105,6 +105,7 @@ Never assume component properties without verification through these tools.
 ### Experiment
 - [Iteration Protocol](./agent/iteration-protocol.md) — Prescribed workflow for each reference-stories iteration
 - [Reference Stories Skill](./agent/reference-stories-skill.md) — Growing skill: taxonomy and story construction principles
+- [For Consolidated Experiment](./agent/for-consolidated-experiment.md) — Carrying-forward notes: all principles, formats, and prior decisions for the consolidated taxonomy/mapping/reference-story workflow
 
 ### Knowledge Files
 - [React Aria Skill](./agent/react-aria-skill.md) — React Aria + Bootstrap bridging principles (from styling-skill-plus experiment)
@@ -118,8 +119,5 @@ Never assume component properties without verification through these tools.
 - [Components](./agent/bootstrap-kb/components.md) — Component class and DOM structure reference
 - [Patterns](./agent/bootstrap-kb/patterns.md) — Bootstrap↔React Aria DOM conflict analysis
 
-### Taxonomies
-- [ListBox Taxonomy](./agent/reference-stories/listbox-taxonomy.md) — ListBox sub-part taxonomy (iteration 0 worked example)
-
 ### Iteration Reviews
-*(no iterations completed yet)*
+- [Review — Iteration 0](./agent/review-iteration-0.md) — Button, ListBox, Select; established P-S001, P-S002, P-T001, P-T002

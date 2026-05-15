@@ -35,28 +35,26 @@ This is a component library that layers **Bootstrap 5 visual styling** on top of
 - Dark mode is handled automatically by Bootstrap CSS variables via `data-bs-theme="dark"` on the root element
 - When composing components from sub-components, import and reuse existing CSS classes from their `.css` files — do not use inline styles
 
-## Experiment: Reference Stories
+## Experiment: Mapping and References
 
-**Current experiment iteration:** 0 *(new series — developing a reusable skill for sub-part Bootstrap reference story production)*
+**Current experiment iteration:** 0 *(new series — consolidated taxonomy formation, state mapping, and reference story production)*
 
-**What this is:** An iterative experiment to develop a reusable agent skill for producing sub-part Bootstrap reference stories for React Aria components. Each iteration defines taxonomies for a component set and implements them as Storybook stories. Principles accumulate in `agent/reference-stories-skill.md`.
+**What this is:** An iterative experiment to develop a reusable agent skill for producing per-component taxonomy documents (sub-part identification, state mappings with bridge strategy, DOM conflicts, variants, decisions needed) and Storybook reference stories in a single consolidated pass. Principles accumulate in `agent/mapping-and-references-skill.md`.
 
 **Agent inputs (load at session start for each iteration):**
-1. `agent/reference-stories-skill.md` — current taxonomy and story construction principles
-2. `agent/mapping-table.md` — approved Bootstrap ↔ React Aria sub-part mappings; authoritative reference for sub-part identification
-3. `agent/bootstrap-kb/` — Bootstrap reference; navigate via `README.md` and load files selectively per component
+1. `agent/mapping-and-references-skill.md` — current methodology and story construction principles
+2. `agent/bootstrap-kb/` — Bootstrap reference; navigate via `README.md` and load files selectively per component
 
 **Branch naming:**
-- `reference-stories` — integration branch; holds approved taxonomy files, finalized story files, and the growing skill doc
-- `reference-stories_0`, `reference-stories_1`, … — experiment branches
+- `mapping-and-references` — integration branch; holds approved taxonomy files, finalized story files, and the growing skill doc
+- `mapping-and-references_0`, `mapping-and-references_1`, … — experiment branches
 
-**Test component set (iteration 0):** Button, ListBox, Select
+**Test component set (iteration 0):** TBD — defined when the first experiment branch is cut
 
 **Experiment docs:**
 - [Iteration Protocol](./agent/iteration-protocol.md) — how to run an iteration
-- [Reference Stories Skill](./agent/reference-stories-skill.md) — growing skill: taxonomy and story construction principles
+- [Mapping and References Skill](./agent/mapping-and-references-skill.md) — growing skill: taxonomy and story construction principles
 - [Bootstrap KB Index](./agent/bootstrap-kb/README.md) — Bootstrap knowledge base master index
-- [Mapping Table](./agent/mapping-table.md) — approved Bootstrap ↔ React Aria component mappings
 
 ## MCP Servers
 
@@ -103,13 +101,12 @@ Never assume component properties without verification through these tools.
 - [Project Vision](./agent/project-vision.md) — End goal, roadmap, and key architectural decisions
 
 ### Experiment
-- [Iteration Protocol](./agent/iteration-protocol.md) — Prescribed workflow for each reference-stories iteration
-- [Reference Stories Skill](./agent/reference-stories-skill.md) — Growing skill: taxonomy and story construction principles
-- [For Consolidated Experiment](./agent/for-consolidated-experiment.md) — Carrying-forward notes: all principles, formats, and prior decisions for the consolidated taxonomy/mapping/reference-story workflow
+- [Iteration Protocol](./agent/iteration-protocol.md) — Prescribed workflow for each mapping-and-references iteration
+- [Mapping and References Skill](./agent/mapping-and-references-skill.md) — Growing skill: taxonomy and story construction principles
+- [For Consolidated Experiment](./agent/for-consolidated-experiment.md) — Exclusions log and open questions from the consolidation of bootstrap-mapping and reference-stories experiments
 
 ### Knowledge Files
 - [React Aria Skill](./agent/react-aria-skill.md) — React Aria + Bootstrap bridging principles (from styling-skill-plus experiment)
-- [Mapping Table](./agent/mapping-table.md) — Approved Bootstrap ↔ React Aria component mappings
 
 ### Bootstrap Knowledge Base
 - [KB Index](./agent/bootstrap-kb/README.md) — Master index and retrieval guide; load this first

@@ -3,6 +3,28 @@ title: For Consolidated Experiment — Carrying-Forward Notes
 source-branches: bootstrap-mapping, reference-stories_0
 ---
 
+# Consolidation Record
+
+This section records what was excluded from the skill and iteration protocol during consolidation, and what was uncertain. Added after consolidation was complete on the `mapping-and-references` branch.
+
+## Excluded items
+
+**M013 (icons and indicators) — Part 6**
+Excluded from `mapping-and-references-skill.md`. Reason: M013 pertains to resolving conflicting icon approaches between Bootstrap Icons and inline SVG when a visual indicator element is warranted. This is a styling-phase concern — at the taxonomy phase we identify *that* an indicator sub-part exists and *which* Bootstrap embeddable serves it (M010), but we do not yet prescribe the icon implementation. M013 belongs in a future styling skill, not here.
+
+**Source file SCSS path list — Part 5 (second half)**
+Excluded from both skill and protocol. Reason: The list of specific SCSS file paths (`_root.scss`, `_buttons.scss`, `forms/_form-check.scss`, `node_modules/bootstrap/dist/css/bootstrap.css`) is reference information already implicit in the KB README and M007. Listing file paths as a skill principle adds no methodological value — they belong in the KB as lookup context.
+
+**Part 10 — Prior resolved decisions (Tabs, Calendar ghost button, multi-select indicator, Select trigger)**
+Excluded from both skill and protocol. Reason: These are component-specific design decisions that apply to specific components in a specific iteration. They are not reusable cross-component principles. When any of these components appears in a future iteration, the agent should surface the same questions via M016 (decisions-needed) and the user can confirm or revise the prior decision at that time. Baking them into the skill as standing directives would bypass M016's function.
+
+## Questions and uncertainties
+
+**Mapping type concept (1:1 vs composite)**
+The handoff identified this as a potential standalone principle. Decision made during consolidation: folded into M002 as a "Mapping type classification" sub-section rather than giving it its own principle entry. Rationale: mapping type is determined by the outcome of sub-part identification (M002), not an independent step. The classification rules are simple enough to be a note within M002 rather than a separate principle. **Open question for iteration review:** Does the current placement in M002 give it sufficient prominence, or does it need to be a named principle (e.g. M-mapping-type) so the self-review checklist can reference it explicitly?
+
+---
+
 # For Consolidated Experiment — Carrying-Forward Notes
 
 This file gathers everything to carry into the next experiment, which consolidates taxonomy formation, Bootstrap↔React Aria state mapping, and reference story production into a single workflow. It is input material for writing the new skill and iteration protocol.

@@ -133,6 +133,6 @@ All four principles below were extracted during iteration 0 and written to `agen
 ## Skill update status
 
 - [x] `agent/reference-stories-skill.md` updated
-- [ ] Finalized taxonomy files merged to `reference-stories`
-- [ ] Finalized story files merged to `reference-stories`
-- [ ] `CLAUDE.md` iteration counter incremented
+- [x] Finalized taxonomy files merged to `reference-stories`
+- [x] Finalized story files merged to `reference-stories`
+- [x] `CLAUDE.md` iteration counter incremented

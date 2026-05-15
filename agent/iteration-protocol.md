@@ -30,7 +30,8 @@ Principles discovered in each iteration are accumulated in `agent/reference-stor
 Cut `reference-stories_N` from `reference-stories`. First commit on the branch:
 
 1. Create `agent/review-iteration-N.md` with the stub below.
-2. No other files need stubbing — taxonomy files from prior iterations are read-only inputs, not contamination risks.
+2. For each component in this iteration's test set, create a stub story file at `stories/bootstrap-test/bootstrap-reference/ComponentName.reference.stories.tsx` (see stub below). These files are the primary output of Phase 2 — they are created here so Storybook launches without a "no story files found" error, and to make the iteration's scope explicit from the start.
+3. Taxonomy files from prior iterations are read-only inputs, not contamination risks — no stubbing needed there.
 
 **`agent/review-iteration-N.md` stub:**
 
@@ -65,6 +66,26 @@ Button, ListBox, Select (adjust per iteration)
 ```
 
 Commit message: `chore: stub review-iteration-N for experiment branch`
+
+**`stories/bootstrap-test/bootstrap-reference/ComponentName.reference.stories.tsx` stub:**
+
+```tsx
+import type { Meta } from '@storybook/react';
+import { withBootstrapTest } from '../_decorators';
+import './augments.scss';
+
+const meta: Meta = {
+  title: 'Bootstrap Reference/ComponentName',
+  decorators: [withBootstrapTest],
+  parameters: { layout: 'padded' },
+  tags: ['autodocs'],
+};
+export default meta;
+
+// Stories to be implemented in Phase 2
+```
+
+Commit message: `chore: stub story files for iteration N component set`
 
 ---
 
@@ -108,7 +129,7 @@ For each approved taxonomy, implement reference stories.
 - Title pattern: `Bootstrap Reference/ComponentName/SubPartName` (creates nested Storybook tree)
 - Custom CSS augmentations: `stories/bootstrap-test/bootstrap-reference/augments.scss`
 
-The `main.js` glob (`stories/bootstrap-test/**/*.stories.*`) already covers this subdirectory.
+The `main.js` glob covers this subdirectory.
 
 ### Construction rules
 

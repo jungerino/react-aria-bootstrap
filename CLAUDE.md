@@ -50,7 +50,7 @@ This is a component library that layers **Bootstrap 5 visual styling** on top of
 - `reference-stories` — integration branch; holds approved taxonomy files, finalized story files, and the growing skill doc
 - `reference-stories_0`, `reference-stories_1`, … — experiment branches
 
-**Test component set (iteration 0):** Button, ListBox, Select
+**Test component set (iteration 1):** Button, ListBox, Select, Calendar, Tabs
 
 **Experiment docs:**
 - [Iteration Protocol](./agent/iteration-protocol.md) — how to run an iteration

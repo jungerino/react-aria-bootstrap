@@ -37,7 +37,7 @@ This is a component library that layers **Bootstrap 5 visual styling** on top of
 
 ## Experiment: Reference Stories
 
-**Current experiment iteration:** 0 *(new series — developing a reusable skill for sub-part Bootstrap reference story production)*
+**Current experiment iteration:** 1 *(iteration 0 complete — Button, ListBox, Select; established P-S001, P-S002, P-T001, P-T002)*
 
 **What this is:** An iterative experiment to develop a reusable agent skill for producing sub-part Bootstrap reference stories for React Aria components. Each iteration defines taxonomies for a component set and implements them as Storybook stories. Principles accumulate in `agent/reference-stories-skill.md`.
 

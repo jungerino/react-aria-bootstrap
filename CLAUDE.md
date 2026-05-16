@@ -49,7 +49,7 @@ This is a component library that layers **Bootstrap 5 visual styling** on top of
 - `mapping-and-references` — integration branch; holds approved taxonomy files, finalized story files, and the growing skill doc
 - `mapping-and-references_0`, `mapping-and-references_1`, … — experiment branches
 
-**Test component set (iteration 0):** TBD — defined when the first experiment branch is cut
+**Test component set (iteration 0):** Button, ListBox, Select, Calendar, Tabs
 
 **Experiment docs:**
 - [Iteration Protocol](./agent/iteration-protocol.md) — how to run an iteration

@@ -103,8 +103,6 @@ Never assume component properties without verification through these tools.
 ### Experiment
 - [Iteration Protocol](./agent/iteration-protocol.md) — Prescribed workflow for each mapping-and-references iteration
 - [Mapping and References Skill](./agent/mapping-and-references-skill.md) — Growing skill: taxonomy and story construction principles
-- [For Consolidated Experiment](./agent/for-consolidated-experiment.md) — Exclusions log and open questions from the consolidation of bootstrap-mapping and reference-stories experiments
-
 ### Knowledge Files
 - [React Aria Skill](./agent/react-aria-skill.md) — React Aria + Bootstrap bridging principles (from styling-skill-plus experiment)
 

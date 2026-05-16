@@ -113,6 +113,3 @@ Never assume component properties without verification through these tools.
 - [States](./agent/bootstrap-kb/states.md) — Interactive state selectors across all components
 - [Components](./agent/bootstrap-kb/components.md) — Component class and DOM structure reference
 - [Patterns](./agent/bootstrap-kb/patterns.md) — Bootstrap↔React Aria DOM conflict analysis
-
-### Iteration Reviews
-- [Review — Iteration 0](./agent/review-iteration-0.md) — Button, ListBox, Select; established P-S001, P-S002, P-T001, P-T002

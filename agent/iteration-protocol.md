@@ -30,7 +30,9 @@ Principles discovered in each iteration are accumulated in `agent/mapping-and-re
 Cut `mapping-and-references_N` from `mapping-and-references`. First commit on the branch:
 
 1. Create `agent/review-iteration-N.md` with the stub below.
-2. For each component in this iteration's test set, create a stub story file at `stories/bootstrap-test/bootstrap-reference/ComponentName.reference.stories.tsx` (see stub below). These files are the primary output of Phase 2 — they are created here so Storybook launches without a "no story files found" error, and to make the iteration's scope explicit from the start.
+2. For each component in this iteration's test set, **write or overwrite** the stub story file at `stories/bootstrap-test/bootstrap-reference/ComponentName.reference.stories.tsx` (see stub below). If a file already exists from a prior iteration, replace its entire contents with the stub — do not preserve prior implementation. These files are the primary output of Phase 2; they are stubbed here so Storybook launches without a "no story files found" error and to make the iteration's scope explicit from the start.
+
+3. Reset `stories/bootstrap-test/bootstrap-reference/augments.scss` to a single comment line (`// Augmentations to be added in Phase 2`) — even if the file already has content from a prior iteration.
 
 **`agent/review-iteration-N.md` stub:**
 
@@ -85,6 +87,8 @@ export default meta;
 ```
 
 Commit message: `chore: stub story files for iteration N component set`
+
+(Steps 2 and 3 go in the same commit.)
 
 ---
 

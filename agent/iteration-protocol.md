@@ -110,8 +110,7 @@ For each component in the iteration:
 
 1. **Read React Aria docs** — call `mcp__react-aria__get_react_aria_page`. Enumerate every `data-*` attribute listed before writing any state mappings (M008).
 2. **Load KB** per M003 sequence — `README.md` → `components.md` entry → `states.md` → `patterns.md` if applicable.
-3. **Apply INERT heuristic** — pre-classify class-based state selectors and native-element pseudo-classes as INERT; audit `:hover`, `:focus-visible`, `:focus` individually (M007).
-4. **Write the taxonomy entry** (see format below) before moving to the next component. Do not hold all entries in memory.
+3. **Write the taxonomy entry** (see format below) before moving to the next component. Do not hold all entries in memory.
 
 Document all non-obvious decisions in the `## Phase 1 — Taxonomy decisions` section of `agent/review-iteration-N.md` as you go.
 
@@ -177,7 +176,6 @@ Before presenting taxonomy for user review, verify:
 
 - [ ] Every named React Aria sub-part has its own row in the sub-parts table
 - [ ] Every `data-*` attribute listed in the React Aria docs appears in state mappings
-- [ ] INERT heuristic applied: class-based state selectors and native-element pseudo-classes pre-classified as INERT; `:hover`, `:focus-visible`, `:focus` individually audited
 - [ ] Every DOM conflict has a proposed resolution and a conflict type (MINOR/MAJOR/CRITICAL)
 - [ ] Confidence rating assigned; reason given for anything below High
 - [ ] `[NO DIRECT COUNTERPART]` flags include the closest structural pattern, closest visual pattern, and alternatives considered (M006)

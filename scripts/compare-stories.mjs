@@ -4,12 +4,13 @@
  *
  * Usage:
  *   node scripts/compare-stories.js \
- *     --reference  <story-id>  \
- *     --impl       <story-id>  \
- *     [--out       <dir>]      \
- *     [--threshold <0–1>]      \
- *     [--width     <px>]       \
- *     [--height    <px>]
+ *     --reference        <story-id>  \
+ *     --impl             <story-id>  \
+ *     [--out             <dir>]      \
+ *     [--threshold       <0–1>]      \
+ *     [--pixel-threshold <0–1>]      \
+ *     [--width           <px>]       \
+ *     [--height          <px>]
  *
  * Story IDs use Storybook's iframe URL format, e.g.:
  *   bootstrap-reference-button--solid-variants
@@ -27,7 +28,7 @@ import fs from 'fs';
 import path from 'path';
 
 const STORYBOOK_URL = 'http://localhost:6006';
-const DEFAULTS = { out: '.story-diffs', threshold: 0.1, width: 1280, height: 900 };
+const DEFAULTS = { out: '.story-diffs', threshold: 0.1, pixelThreshold: 0.1, width: 1280, height: 900 };
 
 function parseArgs(argv) {
   const args = {};
@@ -64,14 +65,14 @@ async function screenshot(page, storyId, outPath, width, height) {
   await iframeEl.screenshot({ path: outPath });
 }
 
-function diffImages(pathA, pathB, diffPath) {
+function diffImages(pathA, pathB, diffPath, pixelThreshold) {
   const a = PNG.sync.read(fs.readFileSync(pathA));
   const b = PNG.sync.read(fs.readFileSync(pathB));
   const width = Math.min(a.width, b.width);
   const height = Math.min(a.height, b.height);
   const diff = new PNG({ width, height });
   const numDiff = pixelmatch(a.data, b.data, diff.data, width, height, {
-    threshold: 0.1,
+    threshold: pixelThreshold,
     includeAA: false,
   });
   fs.writeFileSync(diffPath, PNG.sync.write(diff));
@@ -82,12 +83,13 @@ const raw = parseArgs(process.argv.slice(2));
 const { reference, impl } = raw;
 
 if (!reference || !impl) {
-  console.error('Usage: compare-stories.mjs --reference <id> --impl <id> [--out <dir>] [--threshold <0-1>] [--width <px>] [--height <px>]');
+  console.error('Usage: compare-stories.mjs --reference <id> --impl <id> [--out <dir>] [--threshold <0-1>] [--pixel-threshold <0-1>] [--width <px>] [--height <px>]');
   process.exit(2);
 }
 
 const out = raw.out ?? DEFAULTS.out;
 const threshold = parseFloat(raw.threshold ?? DEFAULTS.threshold);
+const pixelThreshold = parseFloat(raw['pixel-threshold'] ?? DEFAULTS.pixelThreshold);
 const width = parseInt(raw.width ?? DEFAULTS.width, 10);
 const height = parseInt(raw.height ?? DEFAULTS.height, 10);
 
@@ -108,7 +110,7 @@ await screenshot(page, impl, implOut, width, height);
 
 await browser.close();
 
-const { numDiff, totalPixels } = diffImages(refOut, implOut, diffOut);
+const { numDiff, totalPixels } = diffImages(refOut, implOut, diffOut, pixelThreshold);
 const pct = ((numDiff / totalPixels) * 100).toFixed(2);
 
 console.log(`Diff pixels: ${numDiff} / ${totalPixels} (${pct}%)`);

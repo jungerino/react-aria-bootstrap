@@ -26,76 +26,22 @@ Each iteration works through a fixed component set in three phases:
 
 ---
 
-## Phase 0 — One-time Setup (run once before iteration 0)
+## Phase 0 — One-time Setup ✓ Complete
 
-### Step 0a: Verify Loki compatibility with Storybook 9
+**Loki was incompatible with Storybook 9** (`peerDependency: @storybook/react ^5||^6||^7||^8`). Visual regression uses `scripts/compare-stories.mjs` (Playwright + pixelmatch) instead. The script and dependencies are installed on `main` and `styling-implementation`. Smoke-tested: same-vs-same → 0 diff pixels; different stories → detected correctly.
 
-Loki's published adapter targets Storybook 6–8. Storybook 9 (in use here) may require verification.
-
+**To run a comparison:**
 ```bash
-yarn info loki peerDependencies
+# Storybook must be running and HMR settled first
+node scripts/compare-stories.mjs \
+  --reference <story-id> \
+  --impl <story-id> \
+  --out .story-diffs/<component>
 ```
 
-If Loki's peer dependency range excludes Storybook 9:
-- Fall back to Playwright + `pixelmatch` for pixel diffing.
-- Substitute all "Loki" references in this protocol with the Playwright equivalents.
+**No baselines to capture** — the script compares two live stories directly, not against stored screenshots. No baseline management needed.
 
-Attempt install and smoke test:
-```bash
-yarn add --dev loki
-yarn loki --help
-```
-
-**Playwright fallback (if Loki incompatible):**
-```bash
-yarn add --dev @playwright/test pixelmatch pngjs
-npx playwright install chromium
-```
-
-### Step 0b: Configure the visual regression tool
-
-**Loki config** — add to `package.json`:
-```json
-"loki": {
-  "configurations": {
-    "chrome.laptop": {
-      "target": "chrome.app",
-      "width": 1280,
-      "height": 900
-    }
-  }
-}
-```
-
-Add scripts to `package.json`:
-```json
-"loki:update": "loki update",
-"loki:test": "loki test",
-"loki:compare": "loki test"
-```
-
-**Playwright fallback:** Create `scripts/compare-stories.js` — see plan file for full script. Add `"compare-stories": "node scripts/compare-stories.js"` to package.json scripts.
-
-### Step 0c: Capture reference story baselines
-
-With Storybook running (`yarn storybook`):
-
-```bash
-yarn loki:update --filter "Bootstrap Reference"
-# OR Playwright: capture each reference story via compare-stories.js
-```
-
-Commit the screenshots:
-```bash
-git add .loki/reference/
-git commit -m "chore: capture Loki baselines from bootstrap reference stories"
-```
-
-**Baseline update policy:** Baselines are updated only when reference stories change (intentional visual target change). Never update baselines as a workaround for failing tests.
-
-### Step 0d: Update `react-aria-skill.md` — visual regression section
-
-Replace the manual "Visual Comparison Workflow" section in `agent/react-aria-skill.md` with the "Visual Regression Workflow" section described in the plan. See Open Questions below for diff classification rules — those are deferred to iteration 0 debrief.
+**`react-aria-skill.md` visual comparison section** — still uses the manual workflow description. Update it when diff classification rules are codified after iteration 0 debrief.
 
 ---
 
@@ -210,15 +156,18 @@ Follow `get-storybook-story-instructions` conventions. Use `argTypes` with expli
 
 ### 2e. Visual regression — compare against reference
 
-Run the comparison for this component (see "Visual Regression Workflow" in `agent/react-aria-skill.md`):
+**Prerequisite:** Storybook must be running and fully settled before screenshotting. If you just saved component files, wait for the HMR rebuild to complete — the terminal should show no pending compilation before you run the comparison. Screenshotting during an active HMR rebuild captures a blank page.
+
+Run the comparison for this component:
 
 ```bash
-yarn loki:compare --filter {component-name}
-# OR Playwright fallback:
-node scripts/compare-stories.js \
+node scripts/compare-stories.mjs \
   --reference bootstrap-reference-{component}--{story-name} \
-  --implementation bootstrap-test-{component}--{story-name}
+  --impl bootstrap-test-{component}--{story-name} \
+  --out .story-diffs/{component}
 ```
+
+The script captures both stories via the full Storybook UI URL (not the bare iframe URL — the iframe requires the manager frame to signal it before rendering). Output PNGs land in `.story-diffs/{component}/`: `reference.png`, `implementation.png`, `diff.png`.
 
 Fix all fixable deltas before presenting to the user. Flag design decisions and intentional deviations.
 
@@ -262,7 +211,7 @@ Both implementation quality and visual comparison methodology are in scope.
 
 ## Open questions (to resolve before or during iteration 0)
 
-1. **Loki/Storybook 9 compatibility** — must be verified in Phase 0a before any baseline capture. If incompatible, Playwright fallback applies throughout.
+1. ~~**Loki/Storybook 9 compatibility**~~ — **Resolved.** Loki 0.35.1 does not support Storybook 9 (`@storybook/react: '^5 || ^6 || ^7 || ^8'`). Visual regression uses `scripts/compare-stories.mjs` (Playwright + pixelmatch). The script is on both `main` and `styling-implementation`, smoke-tested and working.
 
 2. **Diff classification rules** — intentionally deferred to iteration 0 debrief. After debrief, codify as principles in `react-aria-skill.md` (P044+). Current policy: if in doubt, fix it and re-run. Do not present fixable deltas to the user.
 

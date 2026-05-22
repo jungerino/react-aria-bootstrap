@@ -8,12 +8,14 @@
   ],
   "scripts": {
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "compare-stories": "node scripts/compare-stories.js"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.28.3",
     "@babel/preset-react": "^7.24.1",
     "@babel/preset-typescript": "^7.27.1",
+    "@playwright/test": "^1.60.0",
     "@storybook/addon-docs": "^9.0.18",
     "@storybook/addon-mcp": "^0.6.0",
     "@storybook/addon-webpack5-compiler-babel": "^3.0.6",
@@ -24,6 +26,8 @@
     "clsx": "^2.1.1",
     "lightningcss-loader": "^2.1.0",
     "lucide-react": "^0.517.0",
+    "pixelmatch": "^7.2.0",
+    "pngjs": "^7.0.0",
     "react": "^19.2.0",
     "react-aria-components": "^1.17.0",
     "react-dom": "^19.2.0",

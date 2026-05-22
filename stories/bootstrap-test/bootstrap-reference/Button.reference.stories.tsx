@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { withBootstrapTest } from '../_decorators';
 import './augments.scss';
@@ -10,152 +9,116 @@ const meta: Meta = {
   tags: ['autodocs'],
 };
 export default meta;
+type Story = StoryObj<typeof meta>;
 
-function Label({ children }: { children: ReactNode }) {
-  return (
-    <p style={{ margin: '0 0 0.25rem', fontSize: '0.75rem', color: 'var(--bs-secondary-color, #6c757d)' }}>
-      {children}
-    </p>
-  );
-}
+const specimen = (lbl: string, children: React.ReactNode) => (
+  <div>
+    <div className="ref-label">{lbl}</div>
+    {children}
+  </div>
+);
 
-function Specimen({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div style={{ outline: '1px solid magenta', padding: 4 }}>
-      <Label>{label}</Label>
-      {children}
-    </div>
-  );
-}
+// ── Color Variants — Solid ────────────────────────────────────────────────────
 
-const SOLID_VARIANTS = ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark'] as const;
-const OUTLINE_VARIANTS = ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark'] as const;
-
-export const Root: StoryObj = {
+export const ColorVariantsSolid: Story = {
+  name: 'Color Variants — Solid',
   parameters: {
     docs: {
       description: {
-        story:
-          '**Source:** [Bootstrap Docs — Buttons › Variants](https://getbootstrap.com/docs/5.3/components/buttons/#variants) · [Sizes](https://getbootstrap.com/docs/5.3/components/buttons/#sizes) · [Disabled state](https://getbootstrap.com/docs/5.3/components/buttons/#disabled-state)',
+        story: 'Source: https://getbootstrap.com/docs/5.3/components/buttons/#examples',
       },
     },
   },
   render: () => (
-    <div style={{ padding: '1rem' }}>
+    <div className="ref-specimen-row">
+      {specimen('Primary', <button className="btn btn-primary">Primary</button>)}
+      {specimen('Secondary', <button className="btn btn-secondary">Secondary</button>)}
+      {specimen('Success', <button className="btn btn-success">Success</button>)}
+      {specimen('Danger', <button className="btn btn-danger">Danger</button>)}
+      {specimen('Warning', <button className="btn btn-warning">Warning</button>)}
+      {specimen('Info', <button className="btn btn-info">Info</button>)}
+      {specimen('Light', <button className="btn btn-light">Light</button>)}
+      {specimen('Dark', <button className="btn btn-dark">Dark</button>)}
+    </div>
+  ),
+};
 
-      {/* ── Group A — Variant families ── */}
-      <p style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--bs-secondary-color, #6c757d)', marginBottom: '0.5rem' }}>
-        Group A — Variant families
-      </p>
+// ── Color Variants — Outline ──────────────────────────────────────────────────
 
-      <Label>Solid</Label>
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(8, auto)',
-          gap: '0.5rem',
-          alignItems: 'start',
-          marginBottom: '0.75rem',
-        }}
-      >
-        {SOLID_VARIANTS.map((v) => (
-          <Specimen key={v} label={v}>
-            <button type="button" className={`btn btn-${v}`}>Button</button>
-          </Specimen>
-        ))}
-      </div>
+export const ColorVariantsOutline: Story = {
+  name: 'Color Variants — Outline',
+  parameters: {
+    docs: {
+      description: {
+        story: 'Source: https://getbootstrap.com/docs/5.3/components/buttons/#outline-buttons',
+      },
+    },
+  },
+  render: () => (
+    <div className="ref-specimen-row">
+      {specimen('Outline Primary', <button className="btn btn-outline-primary">Primary</button>)}
+      {specimen('Outline Secondary', <button className="btn btn-outline-secondary">Secondary</button>)}
+      {specimen('Outline Success', <button className="btn btn-outline-success">Success</button>)}
+      {specimen('Outline Danger', <button className="btn btn-outline-danger">Danger</button>)}
+      {specimen('Outline Warning', <button className="btn btn-outline-warning">Warning</button>)}
+      {specimen('Outline Info', <button className="btn btn-outline-info">Info</button>)}
+      {specimen('Outline Light', <button className="btn btn-outline-light">Light</button>)}
+      {specimen('Outline Dark', <button className="btn btn-outline-dark">Dark</button>)}
+    </div>
+  ),
+};
 
-      <Label>Outline</Label>
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(8, auto)',
-          gap: '0.5rem',
-          alignItems: 'start',
-          marginBottom: '0.75rem',
-        }}
-      >
-        {OUTLINE_VARIANTS.map((v) =>
-          v === 'light' ? (
-            <Specimen key={v} label={`outline-${v}`}>
-              <div
-                data-bs-theme="dark"
-                style={{ background: 'var(--bs-dark, #212529)', padding: '0.375rem 0.5rem', borderRadius: '0.25rem' }}
-              >
-                <button type="button" className="btn btn-outline-light">Button</button>
-              </div>
-            </Specimen>
-          ) : (
-            <Specimen key={v} label={`outline-${v}`}>
-              <button type="button" className={`btn btn-outline-${v}`}>Button</button>
-            </Specimen>
-          )
-        )}
-      </div>
+// ── Sizes ─────────────────────────────────────────────────────────────────────
 
-      <Label>Link</Label>
-      <div style={{ marginBottom: '2rem' }}>
-        <Specimen label="link">
-          <button type="button" className="btn btn-link">Button</button>
-        </Specimen>
-      </div>
+export const Sizes: Story = {
+  name: 'Sizes',
+  parameters: {
+    docs: {
+      description: {
+        story: 'Source: https://getbootstrap.com/docs/5.3/components/buttons/#sizes',
+      },
+    },
+  },
+  render: () => (
+    <div className="ref-specimen-row ref-align-center">
+      {specimen('Small (.btn-sm)', <button className="btn btn-primary btn-sm">Small</button>)}
+      {specimen('Default', <button className="btn btn-primary">Default</button>)}
+      {specimen('Large (.btn-lg)', <button className="btn btn-primary btn-lg">Large</button>)}
+    </div>
+  ),
+};
 
-      {/* ── Group B — Sizes ── */}
-      <p style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--bs-secondary-color, #6c757d)', marginBottom: '0.5rem' }}>
-        Group B — Sizes
-      </p>
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, auto)',
-          gap: '0.75rem',
-          alignItems: 'end',
-          marginBottom: '2rem',
-        }}
-      >
-        <Specimen label="Small">
-          <button type="button" className="btn btn-primary btn-sm">Button</button>
-        </Specimen>
-        <Specimen label="Default">
-          <button type="button" className="btn btn-primary">Button</button>
-        </Specimen>
-        <Specimen label="Large">
-          <button type="button" className="btn btn-primary btn-lg">Button</button>
-        </Specimen>
-      </div>
+// ── States ────────────────────────────────────────────────────────────────────
 
-      {/* ── Group C — Interactive states ── */}
-      <p style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--bs-secondary-color, #6c757d)', marginBottom: '0.5rem' }}>
-        Group C — Interactive states
-      </p>
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(2, auto)',
-          gap: '0.75rem',
-          alignItems: 'start',
-        }}
-      >
-        <Specimen label="Default">
-          <button type="button" className="btn btn-primary">Button</button>
-        </Specimen>
-        <Specimen label="Hover">
-          <button type="button" className="btn btn-primary faux-hover">Button</button>
-        </Specimen>
-        <Specimen label="Focus visible">
-          <button type="button" className="btn btn-primary faux-focus">Button</button>
-        </Specimen>
-        <Specimen label="Active / pressed">
-          <button type="button" className="btn btn-primary active">Button</button>
-        </Specimen>
-        <Specimen label="Disabled">
-          <button type="button" className="btn btn-primary" disabled>Button</button>
-        </Specimen>
-        <Specimen label="Disabled (link variant)">
-          <button type="button" className="btn btn-link disabled" disabled>Button</button>
-        </Specimen>
-      </div>
-
+export const States: Story = {
+  name: 'States',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Faux state classes from augments.scss reproduce hover/focus/active CSS variable values statically. ' +
+          'Source: https://getbootstrap.com/docs/5.3/components/buttons/#disabled-state',
+      },
+    },
+  },
+  render: () => (
+    <div className="ref-specimen-row">
+      {specimen('Default', <button className="btn btn-primary">Button</button>)}
+      {specimen('Hover', <button className="btn btn-primary faux-hover">Button</button>)}
+      {specimen('Focus', <button className="btn btn-primary faux-focus">Button</button>)}
+      {specimen('Active', <button className="btn btn-primary faux-active">Button</button>)}
+      {specimen('Disabled', <button className="btn btn-primary" disabled>Button</button>)}
+      {specimen(
+        'Pending',
+        <button className="btn btn-primary" disabled>
+          <span
+            className="spinner-border spinner-border-sm me-2"
+            role="status"
+            aria-hidden="true"
+          />
+          Loading…
+        </button>,
+      )}
     </div>
   ),
 };

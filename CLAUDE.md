@@ -37,7 +37,7 @@ This is a component library that layers **Bootstrap 5 visual styling** on top of
 
 ## Experiment: Mapping and References
 
-**Current experiment iteration:** 0 *(new series — consolidated taxonomy formation, state mapping, and reference story production)*
+**Current experiment iteration:** 1 *(iteration 0 complete — Button, ListBox, Select, Calendar, Tabs; P-S004 flex-wrap layout, P-S005 open-state trigger value)*
 
 **What this is:** An iterative experiment to develop a reusable agent skill for producing per-component taxonomy documents (sub-part identification, state mappings with bridge strategy, DOM conflicts, variants, decisions needed) and Storybook reference stories in a single consolidated pass. Principles accumulate in `agent/mapping-and-references-skill.md`.
 

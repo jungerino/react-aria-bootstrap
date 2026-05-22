@@ -1,22 +1,53 @@
-// Faux state classes for static pseudo-class specimen rendering (P-S001)
-// Scoped to the component class to match Bootstrap's specificity.
+// ============================================================
+// Reference story shared layout utilities
+// Used across multiple components.
+// ============================================================
 
-// ── .btn ────────────────────────────────────────────────────────────────────
+.ref-label {
+  font-size: 0.75rem;
+  color: var(--bs-secondary-color);
+  margin-bottom: 0.25rem;
+}
+
+// Smaller label used inside dense specimen grids (Calendar CellStates, Tabs TabStates)
+.ref-specimen-label {
+  font-size: 0.7rem;
+  color: var(--bs-secondary-color);
+  margin-bottom: 0.25rem;
+}
+
+// Story-level flex row — specimens at intrinsic width, wrap to next line when needed
+.ref-flex-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+
+// Specimen row (compact gap) — Button, Calendar, Tabs
+.ref-specimen-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.75rem 1rem;
+}
+
+// Align-center modifier — Button Sizes, Select SizeVariants
+.ref-align-center { align-items: center; }
+
+// ============================================================
+// Button faux states (P-S001)
+// Scoped to .btn to match Bootstrap's specificity — no !important needed.
+// ============================================================
 .btn.faux-hover {
   color: var(--bs-btn-hover-color);
   background-color: var(--bs-btn-hover-bg);
   border-color: var(--bs-btn-hover-border-color);
 }
 .btn.faux-focus {
-  color: var(--bs-btn-focus-color, var(--bs-btn-hover-color));
-  background-color: var(--bs-btn-focus-bg, var(--bs-btn-hover-bg));
-  border-color: var(--bs-btn-focus-border-color, var(--bs-btn-hover-border-color));
-  box-shadow: var(--bs-btn-focus-box-shadow);
-}
-.btn.faux-focus-visible {
-  color: var(--bs-btn-focus-color, var(--bs-btn-hover-color));
-  background-color: var(--bs-btn-focus-bg, var(--bs-btn-hover-bg));
-  border-color: var(--bs-btn-focus-border-color, var(--bs-btn-hover-border-color));
+  color: var(--bs-btn-hover-color);
+  background-color: var(--bs-btn-hover-bg);
+  border-color: var(--bs-btn-hover-border-color);
   box-shadow: var(--bs-btn-focus-box-shadow);
 }
 .btn.faux-active {
@@ -25,12 +56,12 @@
   border-color: var(--bs-btn-active-border-color);
 }
 
-// ── .list-group (root focus ring) ───────────────────────────────────────────
-.list-group.faux-focus {
-  outline: var(--bs-focus-ring-width) solid var(--bs-focus-ring-color);
-}
-
-// ── .list-group-item-action ─────────────────────────────────────────────────
+// ============================================================
+// ListBox faux states (P-S001)
+// Bootstrap hover guard is :not(.active); since .active is INERT in React Aria,
+// the guard never fires in production. Reference story faux classes mirror the
+// underlying CSS variable values directly.
+// ============================================================
 .list-group-item.list-group-item-action.faux-hover {
   color: var(--bs-list-group-action-hover-color);
   background-color: var(--bs-list-group-action-hover-bg);
@@ -38,45 +69,304 @@
 .list-group-item.list-group-item-action.faux-focus {
   color: var(--bs-list-group-action-hover-color);
   background-color: var(--bs-list-group-action-hover-bg);
-}
-.list-group-item.list-group-item-action.faux-focus-visible {
-  color: var(--bs-list-group-action-hover-color);
-  background-color: var(--bs-list-group-action-hover-bg);
-  outline: var(--bs-focus-ring-width) solid var(--bs-focus-ring-color);
+  outline: 0;
+  box-shadow: 0 0 0 var(--bs-focus-ring-width, 0.25rem) var(--bs-focus-ring-color, rgba(13, 110, 253, 0.25));
 }
 .list-group-item.list-group-item-action.faux-active {
   color: var(--bs-list-group-action-active-color);
   background-color: var(--bs-list-group-action-active-bg);
 }
 
-// ── .dropdown-item ──────────────────────────────────────────────────────────
+// Section header — Bootstrap has no list-group section header pattern.
+// Based on Bootstrap's .dropdown-header visual (font-size, weight, color).
+.list-group-section-header {
+  padding: 0.5rem 1rem 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--bs-secondary-color);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background-color: var(--bs-secondary-bg);
+  border-bottom: var(--bs-border-width) solid var(--bs-border-color);
+  user-select: none;
+  pointer-events: none;
+}
+
+// Sectioned list group — outer border/radius on container; items use only internal bottom borders.
+// Prevents broken-border appearance when .list-group-section-header elements (lacking side borders)
+// are interleaved with .list-group-item elements.
+.list-group.list-group-sectioned {
+  border: var(--bs-list-group-border-width) solid var(--bs-list-group-border-color);
+  border-radius: var(--bs-list-group-border-radius);
+  overflow: hidden;
+}
+.list-group.list-group-sectioned .list-group-item,
+.list-group.list-group-sectioned .list-group-section-header {
+  border: none;
+  border-bottom: var(--bs-list-group-border-width) solid var(--bs-list-group-border-color);
+  border-radius: 0;
+}
+.list-group.list-group-sectioned > *:last-child {
+  border-bottom: none;
+}
+
+// Grid layout (layout="grid") — no Bootstrap modifier class; custom CSS.
+// grid-template-columns exposed as --list-group-grid-columns CSS custom property.
+// Container background shows through gap (internal lines) and padding (outer border).
+// Works for any column count; no per-item border logic needed.
+.list-group-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--list-group-grid-columns, 3), 1fr);
+  gap: var(--bs-list-group-border-width);
+  padding: var(--bs-list-group-border-width);
+  background-color: var(--bs-list-group-border-color);
+  border-radius: var(--bs-list-group-border-radius);
+}
+// Reset all item borders and radii; then set inner corner radii only on the four corner items.
+// Inner radius = container radius − padding width (concentric). overflow:hidden clipping is
+// unreliable across browsers for grid children; explicit corner radii are used instead.
+// :nth-child(3) / :nth-last-child(3) assume the default 3-column count.
+.list-group-grid .list-group-item {
+  border: none;
+  border-radius: 0;
+}
+.list-group-grid .list-group-item:first-child {
+  border-top-left-radius: calc(var(--bs-list-group-border-radius) - var(--bs-list-group-border-width));
+}
+.list-group-grid .list-group-item:nth-child(3) {
+  border-top-right-radius: calc(var(--bs-list-group-border-radius) - var(--bs-list-group-border-width));
+}
+.list-group-grid .list-group-item:nth-last-child(3) {
+  border-bottom-left-radius: calc(var(--bs-list-group-border-radius) - var(--bs-list-group-border-width));
+}
+.list-group-grid .list-group-item:last-child {
+  border-bottom-right-radius: calc(var(--bs-list-group-border-radius) - var(--bs-list-group-border-width));
+}
+
+// Reference story layout
+.ref-listbox-specimen { max-width: 320px; }
+.ref-listbox-grid-specimen { max-width: 480px; }
+.ref-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+// ============================================================
+// Select / Dropdown item faux states (P-S001)
+// Scoped to .dropdown-item to match Bootstrap's specificity.
+// ============================================================
 .dropdown-item.faux-hover {
   color: var(--bs-dropdown-link-hover-color);
   background-color: var(--bs-dropdown-link-hover-bg);
 }
-.dropdown-item.faux-focus {
-  color: var(--bs-dropdown-link-hover-color);
-  background-color: var(--bs-dropdown-link-hover-bg);
-}
-.dropdown-item.faux-focus-visible {
-  color: var(--bs-dropdown-link-hover-color);
-  background-color: var(--bs-dropdown-link-hover-bg);
-  outline: var(--bs-focus-ring-width) solid var(--bs-focus-ring-color);
-}
-.dropdown-item.faux-active {
-  color: var(--bs-dropdown-link-active-color);
-  background-color: var(--bs-dropdown-link-active-bg);
+
+// ============================================================
+// Select faux states (P-S001)
+// Bootstrap's .form-select:focus uses hardcoded rgba values (not CSS vars).
+// ============================================================
+.form-select.faux-focus {
+  border-color: #86b7fe;
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
 }
 
-// ── ListBox grid layout (M017) ───────────────────────────────────────────────
-// Vertical grid: items flow top-to-bottom, wrapping across columns
-.list-group-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+// Reference story layout — override absolute positioning for in-flow display
+.ref-dropdown-static { position: static; }
+.ref-dropdown-full-width { width: 100%; }
+
+// ============================================================
+// Calendar layout and cell CSS
+// Bootstrap has no calendar component — all CSS is custom using Bootstrap tokens.
+// ============================================================
+
+.cal-root {
+  display: inline-block;
+  font-family: var(--bs-body-font-family);
 }
-// Horizontal grid: items flow left-to-right, wrapping into rows
-.list-group-grid-row {
-  display: grid;
-  grid-auto-flow: row;
-  grid-template-columns: repeat(3, auto);
+
+.cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
 }
+
+.cal-heading {
+  font-weight: 600;
+  text-align: center;
+  flex: 1;
+  font-size: 0.9375rem;
+}
+
+.cal-table {
+  border-collapse: collapse;
+}
+
+.cal-table th {
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--bs-secondary-color);
+  padding-bottom: 0.25rem;
+}
+
+.cal-table td {
+  padding: 1px;
+  text-align: center;
+}
+
+// CalendarCell — .btn.btn-outline-secondary.btn-sm applied in HTML.
+// Custom properties override btn-outline-secondary defaults: body color for text, transparent borders.
+.cal-cell {
+  --bs-btn-color: var(--bs-body-color);
+  --bs-btn-border-color: transparent;
+  --bs-btn-hover-border-color: transparent;
+  --bs-btn-active-border-color: transparent;
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  width: 2.5em;
+  height: 2.5em;
+  padding: 0;
+  border-radius: 9999px;
+  border: 2px solid transparent;
+}
+
+// Nav buttons (prev/next) — same size and token overrides as date cells.
+.cal-header .btn {
+  --bs-btn-color: var(--bs-body-color);
+  --bs-btn-border-color: transparent;
+  --bs-btn-hover-border-color: transparent;
+  --bs-btn-active-border-color: transparent;
+  width: 2.5em;
+  height: 2.5em;
+  padding: 0;
+}
+
+.cal-cell.faux-hover {
+  background-color: var(--bs-secondary);
+  color: var(--bs-btn-hover-color);
+}
+
+.cal-cell.faux-focus {
+  color: var(--bs-body-color);
+  background-color: var(--bs-tertiary-bg);
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.cal-cell.is-selected {
+  background-color: var(--bs-primary);
+  color: #fff;
+}
+
+// today = border ring; all cells carry 2px border (transparent by default)
+// to prevent layout shift when the today border appears.
+.cal-cell.is-today {
+  border-color: var(--bs-primary);
+}
+
+.cal-cell.is-disabled {
+  color: var(--bs-secondary-color);
+  opacity: 0.5;
+  pointer-events: none;
+  cursor: default;
+}
+
+.cal-cell.is-unavailable {
+  text-decoration: line-through;
+  color: var(--bs-danger-text-emphasis);
+  cursor: default;
+}
+
+// Outside-month cells shown muted (not hidden) per component decision.
+.cal-cell.is-outside-month {
+  color: var(--bs-secondary-color);
+}
+.cal-cell.is-outside-month:hover,
+.cal-cell.is-outside-month.faux-hover {
+  color: var(--bs-btn-hover-color);
+}
+
+.ref-specimen-row--gap-md { gap: 1rem; }
+.ref-cell-specimen { text-align: center; }
+
+// ============================================================
+// Tabs — SelectionIndicator suppression
+// Active tab indication is handled by Bootstrap's .nav-underline token-based
+// border on the Tab itself; the React Aria SelectionIndicator is suppressed.
+// ============================================================
+.react-aria-SelectionIndicator {
+  display: none;
+}
+
+// ============================================================
+// Tabs — Panel visibility bridge
+// Panels use display:block baseline + [data-inert] bridge.
+// .tab-pane class is NOT used (would hide all panels via Bootstrap's default).
+// Reference story uses .ref-tab-panel with hidden attribute for inactive panels.
+// ============================================================
+.ref-tab-panel {
+  display: block;
+  padding: 1rem 0;
+  color: var(--bs-body-color);
+}
+.ref-tab-panel[hidden] {
+  display: none;
+}
+
+// ============================================================
+// Tabs nav-underline faux states (P-S001)
+// Mirrors Bootstrap's .nav-underline .nav-link:hover/active CSS variable values.
+// ============================================================
+.nav-underline .nav-link.faux-hover {
+  border-bottom-color: currentcolor;
+}
+.nav-underline .nav-link.faux-active {
+  font-weight: 700;
+  color: var(--bs-nav-underline-link-active-color);
+  border-bottom-color: currentcolor;
+}
+
+// ============================================================
+// Tabs — Vertical orientation (sidescore)
+// Active underline indicator repositioned from bottom to right edge.
+// ============================================================
+.ref-tabs-vertical {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.ref-tabs-vertical .nav-underline {
+  flex-direction: column;
+  gap: 0;
+  border-bottom: none;
+  flex-shrink: 0;
+  min-width: 120px;
+}
+
+.ref-tabs-vertical .nav-underline .nav-link {
+  border-bottom: none;
+  border-right: var(--bs-nav-underline-border-width, 0.125rem) solid transparent;
+  padding-right: 1rem;
+  white-space: nowrap;
+}
+
+.ref-tabs-vertical .nav-underline .nav-link:hover {
+  border-right-color: currentcolor;
+  border-bottom-color: transparent;
+}
+
+.ref-tabs-vertical .nav-underline .nav-link.active,
+.ref-tabs-vertical .nav-underline .nav-link.faux-active {
+  border-right-color: currentcolor;
+  border-bottom-color: transparent;
+}
+
+.ref-tabs-vertical .ref-tab-content {
+  flex: 1;
+}
+
+// Reference story layout
+.ref-specimen-row--gap-wide { gap: 0.75rem 1.5rem; }
+.ref-nav-nowrap { flex-wrap: nowrap; }

@@ -39,6 +39,7 @@ M004 (three-bridges) covers CSS-level bridges — pseudo-class, compound selecto
 - **Loading/pending** → `.spinner-border.spinner-border-sm` or `.spinner-grow.spinner-grow-sm`; both inherit color from `currentColor`; Bootstrap's own docs show `.spinner-border-sm` inside a disabled `.btn` as the canonical pending button pattern
 - **Counts / labels** → `.badge`
 - **Dismissible** → `.btn-close`
+- **Selection indicator** → `.form-check-input` (checkbox or radio); selected/checked states on selectable items commonly drive a visible indicator child element rather than (or in addition to) a visual change on the item itself — always check whether `[data-selected]` or `[data-checked]` implies indicator content, and whether that indicator varies by selection mode or behavior
 
 Scan `agent/bootstrap-kb/components.md` for candidate components when a state implies content presence.
 
@@ -101,7 +102,7 @@ When mapping Bootstrap form classes that target native inputs (`.form-check-inpu
 
 When Bootstrap's variant vocabulary is authoritative for a sub-part, list Bootstrap's variants as the complete and final set. React Aria-only variant values are out of scope — do not nearest-match or approximate them. The mapping is adopting Bootstrap's design system, not translating React Aria's.
 
-For React Aria structural variants (props like `orientation`, `layout`, `selectionMode`): check for a Bootstrap modifier class equivalent per component. If one exists, map it. If not, note "custom CSS required." Structural variants are not dropped.
+For React Aria structural variants (props like `orientation`, `layout`, `selectionMode`, `selectionBehavior`): check for a Bootstrap modifier class equivalent per component. If one exists, map it. If not, note "custom CSS required." Structural variants are not dropped. Note that some behavioral variants (e.g. `selectionBehavior`) affect rendered sub-parts as well as interaction — enumerate them in the Variants table and re-check the sub-parts table for any indicator or affordance elements they introduce.
 
 ### M011: structural-variants — A Bootstrap structural variant is in scope if it reuses the same sub-parts in a different arrangement
 
@@ -124,7 +125,9 @@ When a React Aria structural variant has no Bootstrap modifier class equivalent,
 
 ### M016: decisions-needed — Surface genuine forks as explicit questions; do not resolve unilaterally
 
-When the mapping encounters a genuine fork — multiple legitimate Bootstrap variants for the same semantic role, or a React Aria feature with multiple viable Bootstrap implementation paths — do not resolve it unilaterally. Insert a **Decisions needed** section listing each open question, the available options, and their trade-offs. Stop short of recommending an answer.
+When the mapping encounters a genuine fork — multiple legitimate Bootstrap variants for the same semantic role, or a React Aria feature with multiple viable Bootstrap implementation paths — do not resolve it unilaterally. Record each open question in the **`## Phase 1 — Taxonomy decisions`** section of the current `agent/review-iteration-N.md`, at the top of the component's subsection, under a **Decisions needed** heading. Stop short of recommending an answer. Do not put a Decisions needed section in the taxonomy file itself.
+
+Once the user resolves a decision, record the answer in `agent/component-decisions.md` (one component section per component; resolved decisions only — no open questions). The review doc retains the original questions as a historical record.
 
 **Four trigger patterns** must elevate items to Decisions needed:
 
@@ -199,6 +202,22 @@ For each sub-part specimen, search the compiled Bootstrap CSS (`node_modules/boo
 **Ancestor context:** Required when selectors contain `.ancestor .sub-part` or `.ancestor > .sub-part`, or when CSS custom properties referenced via `var()` are defined on an ancestor class rather than `:root`. Nest as many levels deep as the selector chain requires.
 
 **Sibling context:** Required when selectors use adjacent sibling combinators (`.sub-part + .sub-part`) or position pseudo-classes (`:first-child`, `:last-child`, `:not(:last-child)`) that would affect the visual state being shown. Add the minimum siblings needed to place the specimen in the correct position.
+
+### P-S003: Use CSS classes, not inline styles
+
+Reference story render functions should not use inline `style` props for visual styling. All visual CSS — including faux state values, layout, sizing, and spacing — belongs in `augments.scss` as named classes. The story file applies class names only.
+
+**Why:** `augments.scss` is the single searchable source of truth for how Bootstrap appearances are represented statically. Inline styles scatter visual definitions across story files, cannot be grepped alongside related rules, and are harder to audit during review. A class name is also more self-documenting than a bag of property values.
+
+The only case where an inline style would be justified is one that cannot be expressed as a reusable class — for example, a per-specimen value that is genuinely unique and data-driven. No such case has arisen in practice.
+
+### P-S004: Lay out specimens in a flex-wrap container
+
+Specimens should wrap naturally in a `display: flex; flex-wrap: wrap` container. Never specify a fixed column count.
+
+### P-S005: Open-state specimens show a selected value in the trigger
+
+When a story specimen shows a component in its open state (dropdown open, popover visible, panel expanded), the trigger must display the currently selected value — not a placeholder or empty state. The selected value should match the visually active item in the open panel. This reflects the most common real-world open interaction: the user has a prior selection and reopens the component to review or change it. An empty trigger paired with an open panel is an unrealistic combination that misrepresents the target appearance.
 
 ### P-T001: Err on the side of over-inclusion
 

@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { withBootstrapTest } from '../_decorators';
 import './augments.scss';
@@ -10,290 +9,277 @@ const meta: Meta = {
   tags: ['autodocs'],
 };
 export default meta;
+type Story = StoryObj<typeof meta>;
 
-function Label({ children }: { children: ReactNode }) {
-  return (
-    <p style={{ margin: '0 0 0.25rem', fontSize: '0.75rem', color: 'var(--bs-secondary-color, #6c757d)' }}>
-      {children}
-    </p>
-  );
-}
 
-function Specimen({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div style={{ outline: '1px solid magenta', padding: 4 }}>
-      <Label>{label}</Label>
-      {children}
-    </div>
-  );
-}
+// ── Trigger States ────────────────────────────────────────────────────────────
 
-// ── Trigger ──────────────────────────────────────────────────────────────────
-
-export const Trigger: StoryObj = {
+export const TriggerStates: Story = {
+  name: 'Trigger States',
   parameters: {
     docs: {
       description: {
         story:
-          '**Source:** [Bootstrap Docs — Select](https://getbootstrap.com/docs/5.3/forms/select/) (native `.form-select` is the visual target for the React Aria trigger)',
+          'Bootstrap .form-select trigger states. The React Aria implementation bridges a <button> ' +
+          'to produce these appearances via CSS custom property overrides (M014). ' +
+          'Source: https://getbootstrap.com/docs/5.3/forms/select/',
       },
     },
   },
   render: () => (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(2, auto)',
-        gap: '1.5rem',
-        alignItems: 'start',
-      }}
-    >
-      {/* Group A — Native form-select states */}
+    <div className="ref-flex-row">
       <div>
-        <p style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--bs-secondary-color, #6c757d)', marginBottom: '0.5rem' }}>
-          Group A — Target appearance (native <code>.form-select</code>)
-        </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', width: 240 }}>
-          <Specimen label="Default">
-            <select className="form-select" defaultValue="option1">
-              <option value="option1">Option 1</option>
-              <option value="option2">Option 2</option>
-            </select>
-          </Specimen>
-          <Specimen label="Valid (.is-valid)">
-            <select className="form-select is-valid" defaultValue="option1">
-              <option value="option1">Option 1</option>
-              <option value="option2">Option 2</option>
-            </select>
-          </Specimen>
-          <Specimen label="Invalid (.is-invalid)">
-            <select className="form-select is-invalid" defaultValue="option1">
-              <option value="option1">Option 1</option>
-              <option value="option2">Option 2</option>
-            </select>
-          </Specimen>
-          <Specimen label="Disabled">
-            <select className="form-select" disabled defaultValue="option1">
-              <option value="option1">Option 1</option>
-              <option value="option2">Option 2</option>
-            </select>
-          </Specimen>
+        <div className="ref-label">Default (placeholder showing)</div>
+        <select className="form-select">
+          <option value="" disabled>
+            Choose an option
+          </option>
+          <option>Apple</option>
+          <option>Banana</option>
+          <option>Cherry</option>
+        </select>
+      </div>
+
+      <div>
+        <div className="ref-label">With value selected</div>
+        <select className="form-select" defaultValue="banana">
+          <option value="" disabled>
+            Choose an option
+          </option>
+          <option value="apple">Apple</option>
+          <option value="banana">Banana</option>
+          <option value="cherry">Cherry</option>
+        </select>
+      </div>
+
+      <div>
+        <div className="ref-label">Focus</div>
+        <select className="form-select faux-focus" defaultValue="">
+          <option value="" disabled>
+            Choose an option
+          </option>
+          <option>Apple</option>
+          <option>Banana</option>
+          <option>Cherry</option>
+        </select>
+      </div>
+
+      <div>
+        <div className="ref-label">Disabled</div>
+        <select className="form-select" disabled>
+          <option value="" disabled>
+            Choose an option
+          </option>
+          <option>Apple</option>
+          <option>Banana</option>
+          <option>Cherry</option>
+        </select>
+      </div>
+    </div>
+  ),
+};
+
+// ── Open Dropdown ─────────────────────────────────────────────────────────────
+
+export const OpenDropdown: Story = {
+  name: 'Open Dropdown',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Bootstrap .dropdown-menu shown statically (display: block). React Aria renders the ' +
+          'Popover only when open; DOM presence alone controls visibility — no .show bridge needed. ' +
+          'Source: https://getbootstrap.com/docs/5.3/components/dropdowns/',
+      },
+    },
+  },
+  render: () => (
+    <div className="ref-flex-row">
+      <div>
+        <div className="ref-label">Open dropdown (trigger + menu)</div>
+        <select className="form-select mb-1" defaultValue="banana">
+          <option value="apple">Apple</option>
+          <option value="banana">Banana</option>
+          <option value="cherry">Cherry</option>
+          <option value="date">Date</option>
+          <option value="elderberry" disabled>Elderberry (disabled)</option>
+        </select>
+        <div className="dropdown-menu show ref-dropdown-static ref-dropdown-full-width">
+          <button className="dropdown-item" type="button">
+            Apple
+          </button>
+          <button className="dropdown-item active" type="button">
+            Banana
+          </button>
+          <button className="dropdown-item" type="button">
+            Cherry
+          </button>
+          <button className="dropdown-item" type="button">
+            Date
+          </button>
+          <button className="dropdown-item disabled" type="button" aria-disabled="true">
+            Elderberry (disabled)
+          </button>
         </div>
       </div>
 
-      {/* Group B — Sizes */}
       <div>
-        <p style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--bs-secondary-color, #6c757d)', marginBottom: '0.5rem' }}>
-          Group B — Sizes
-        </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', width: 240 }}>
-          <Specimen label="Small (.form-select-sm)">
-            <select className="form-select form-select-sm" defaultValue="option1">
-              <option value="option1">Option 1</option>
-              <option value="option2">Option 2</option>
-            </select>
-          </Specimen>
-          <Specimen label="Default">
-            <select className="form-select" defaultValue="option1">
-              <option value="option1">Option 1</option>
-              <option value="option2">Option 2</option>
-            </select>
-          </Specimen>
-          <Specimen label="Large (.form-select-lg)">
-            <select className="form-select form-select-lg" defaultValue="option1">
-              <option value="option1">Option 1</option>
-              <option value="option2">Option 2</option>
-            </select>
-          </Specimen>
+        <div className="ref-label">Dropdown item states</div>
+        <div className="dropdown-menu show ref-dropdown-static">
+          <button className="dropdown-item" type="button">
+            Default
+          </button>
+          <button className="dropdown-item faux-hover" type="button">
+            Hover (faux)
+          </button>
+          <button className="dropdown-item active" type="button">
+            Selected (.active)
+          </button>
+          <button className="dropdown-item disabled" type="button" aria-disabled="true">
+            Disabled
+          </button>
         </div>
       </div>
     </div>
   ),
 };
 
-// ── Popover ──────────────────────────────────────────────────────────────────
+// ── Validation — Invalid State ────────────────────────────────────────────────
 
-export const Popover: StoryObj = {
+export const InvalidState: Story = {
+  name: 'Validation — Invalid',
   parameters: {
     docs: {
       description: {
         story:
-          '**Source:** [Bootstrap Docs — Dropdowns › Single button](https://getbootstrap.com/docs/5.3/components/dropdowns/#single-button) (`.show` applied directly — no JS; popover renders inline)',
+          'Bootstrap .form-select.is-invalid with .invalid-feedback. React Aria bridges via ' +
+          '[data-invalid] compound selector; FieldError renders only when invalid. ' +
+          'Valid state is out of scope per component decision. ' +
+          'Source: https://getbootstrap.com/docs/5.3/forms/validation/',
       },
     },
   },
   render: () => (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(2, auto)',
-        gap: '1.5rem',
-        alignItems: 'start',
-      }}
-    >
-      <Specimen label="Open, no selection">
-        <ul className="dropdown-menu show" style={{ position: 'static', display: 'block', minWidth: 180 }}>
-          <li><a className="dropdown-item" href="#">Apple</a></li>
-          <li><a className="dropdown-item" href="#">Banana</a></li>
-          <li><a className="dropdown-item" href="#">Cherry</a></li>
-          <li><a className="dropdown-item" href="#">Durian</a></li>
-          <li><a className="dropdown-item" href="#">Elderberry</a></li>
-        </ul>
-      </Specimen>
-
-      <Specimen label="Open, one item selected (.active)">
-        <ul className="dropdown-menu show" style={{ position: 'static', display: 'block', minWidth: 180 }}>
-          <li><a className="dropdown-item" href="#">Apple</a></li>
-          <li><a className="dropdown-item active" href="#" aria-current="true">Banana</a></li>
-          <li><a className="dropdown-item" href="#">Cherry</a></li>
-          <li><a className="dropdown-item" href="#">Durian</a></li>
-          <li><a className="dropdown-item" href="#">Elderberry</a></li>
-        </ul>
-      </Specimen>
-
-      <Specimen label="Open, one item disabled (.disabled)">
-        <ul className="dropdown-menu show" style={{ position: 'static', display: 'block', minWidth: 180 }}>
-          <li><a className="dropdown-item" href="#">Apple</a></li>
-          <li><a className="dropdown-item" href="#">Banana</a></li>
-          <li><a className="dropdown-item disabled" aria-disabled="true">Cherry</a></li>
-          <li><a className="dropdown-item" href="#">Durian</a></li>
-          <li><a className="dropdown-item" href="#">Elderberry</a></li>
-        </ul>
-      </Specimen>
-
-      <Specimen label="Open, with divider (.dropdown-divider)">
-        <ul className="dropdown-menu show" style={{ position: 'static', display: 'block', minWidth: 180 }}>
-          <li><a className="dropdown-item" href="#">Apple</a></li>
-          <li><a className="dropdown-item" href="#">Banana</a></li>
-          <li><hr className="dropdown-divider" /></li>
-          <li><a className="dropdown-item" href="#">Cherry</a></li>
-          <li><a className="dropdown-item" href="#">Durian</a></li>
-        </ul>
-      </Specimen>
-    </div>
-  ),
-};
-
-// ── ListBoxItem ──────────────────────────────────────────────────────────────
-
-export const ListBoxItem: StoryObj = {
-  parameters: {
-    docs: {
-      description: {
-        story:
-          '**Source:** [Bootstrap Docs — Dropdowns › Menu items](https://getbootstrap.com/docs/5.3/components/dropdowns/#menu-items) (`.dropdown-item` inside `.dropdown-menu.show`)',
-      },
-    },
-  },
-  render: () => (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(2, auto)',
-        gap: '1.5rem',
-        alignItems: 'start',
-      }}
-    >
-      {/* selectionMode="single" */}
+    <div>
+      <div className="ref-label">Invalid state (with field error)</div>
       <div>
-        <p style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--bs-secondary-color, #6c757d)', marginBottom: '0.5rem' }}>
-          selectionMode=&#34;single&#34;
-        </p>
-        <ul className="dropdown-menu show" style={{ position: 'static', display: 'block', minWidth: 200 }}>
-          <li>
-            <Label>Default</Label>
-            <a className="dropdown-item" href="#">Option</a>
-          </li>
-          <li>
-            <Label>Hovered</Label>
-            <a className="dropdown-item faux-hover" href="#">Option</a>
-          </li>
-          <li>
-            <Label>Focused</Label>
-            <a className="dropdown-item faux-focus" href="#">Option</a>
-          </li>
-          <li>
-            <Label>Selected / active (.active)</Label>
-            <a className="dropdown-item active" href="#" aria-current="true">Option</a>
-          </li>
-          <li>
-            <Label>Disabled (.disabled)</Label>
-            <a className="dropdown-item disabled" aria-disabled="true">Option</a>
-          </li>
-          <li>
-            <Label>Selected + focused</Label>
-            <a className="dropdown-item active faux-focus" href="#" aria-current="true">Option</a>
-          </li>
-        </ul>
-      </div>
-
-      {/* selectionMode="multiple" */}
-      <div>
-        <p style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--bs-secondary-color, #6c757d)', marginBottom: '0.5rem' }}>
-          selectionMode=&#34;multiple&#34;
-        </p>
-        <ul className="dropdown-menu show" style={{ position: 'static', display: 'block', minWidth: 200 }}>
-          <li>
-            <Label>Default (unselected)</Label>
-            <a className="dropdown-item d-flex align-items-center" href="#">
-              <input className="form-check-input m-0 me-2 flex-shrink-0" type="checkbox" readOnly />
-              Option
-            </a>
-          </li>
-          <li>
-            <Label>Selected (checked)</Label>
-            <a className="dropdown-item d-flex align-items-center active" href="#" aria-current="true">
-              <input className="form-check-input m-0 me-2 flex-shrink-0" type="checkbox" defaultChecked readOnly />
-              Option
-            </a>
-          </li>
-          <li>
-            <Label>Disabled</Label>
-            <a className="dropdown-item d-flex align-items-center disabled" aria-disabled="true">
-              <input className="form-check-input m-0 me-2 flex-shrink-0" type="checkbox" disabled readOnly />
-              Option
-            </a>
-          </li>
-        </ul>
+        <label className="form-label" htmlFor="select-invalid">
+          Favourite fruit
+        </label>
+        <select className="form-select is-invalid" id="select-invalid">
+          <option value="" disabled>
+            Choose an option
+          </option>
+          <option>Apple</option>
+          <option>Banana</option>
+          <option>Cherry</option>
+        </select>
+        <div className="invalid-feedback">Please select a valid option.</div>
       </div>
     </div>
   ),
 };
 
-// ── Form Support ─────────────────────────────────────────────────────────────
+// ── Size Variants ─────────────────────────────────────────────────────────────
 
-export const FormSupport: StoryObj = {
+export const SizeVariants: Story = {
+  name: 'Size Variants',
   parameters: {
     docs: {
       description: {
-        story:
-          '**Source:** [Bootstrap Docs — Forms › Form text](https://getbootstrap.com/docs/5.3/forms/form-text/) · [Validation](https://getbootstrap.com/docs/5.3/forms/validation/)',
+        story: 'Source: https://getbootstrap.com/docs/5.3/forms/select/#sizing',
       },
     },
   },
   render: () => (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(3, auto)',
-        gap: '1.5rem',
-        alignItems: 'start',
-      }}
-    >
-      <Specimen label="Label (.form-label)">
-        <label className="form-label">Country</label>
-      </Specimen>
+    <div className="ref-flex-row ref-align-center">
+      <div>
+        <div className="ref-label">Small (.form-select-sm)</div>
+        <select className="form-select form-select-sm">
+          <option>Small</option>
+        </select>
+      </div>
+      <div>
+        <div className="ref-label">Default</div>
+        <select className="form-select">
+          <option>Default</option>
+        </select>
+      </div>
+      <div>
+        <div className="ref-label">Large (.form-select-lg)</div>
+        <select className="form-select form-select-lg">
+          <option>Large</option>
+        </select>
+      </div>
+    </div>
+  ),
+};
 
-      <Specimen label="Description (.form-text)">
-        <div className="form-text">Choose your country of residence.</div>
-      </Specimen>
+// ── Full Field ────────────────────────────────────────────────────────────────
 
-      <Specimen label="FieldError (.invalid-feedback)">
-        {/* display: block forces visibility — Bootstrap hides .invalid-feedback by default */}
-        <div className="invalid-feedback" style={{ display: 'block' }}>
-          Please select a country.
+export const FullField: Story = {
+  name: 'Full Field (Label + Trigger + Description + Error)',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Complete form field: .form-label + .form-select + .form-text + .invalid-feedback. ' +
+          'Source: https://getbootstrap.com/docs/5.3/forms/select/',
+      },
+    },
+  },
+  render: () => (
+    <div className="ref-flex-row">
+      <div>
+        <div className="ref-label">Default field</div>
+        <div>
+          <label className="form-label" htmlFor="select-full-default">
+            Favourite fruit
+          </label>
+          <select className="form-select" id="select-full-default" defaultValue="banana">
+            <option value="" disabled>
+              Choose an option
+            </option>
+            <option value="apple">Apple</option>
+            <option value="banana">Banana</option>
+            <option value="cherry">Cherry</option>
+          </select>
+          <div className="form-text">Select your favourite fruit from the list.</div>
         </div>
-      </Specimen>
+      </div>
+
+      <div>
+        <div className="ref-label">Invalid field</div>
+        <div>
+          <label className="form-label" htmlFor="select-full-invalid">
+            Favourite fruit
+          </label>
+          <select className="form-select is-invalid" id="select-full-invalid">
+            <option value="" disabled>
+              Choose an option
+            </option>
+            <option value="apple">Apple</option>
+            <option value="banana">Banana</option>
+            <option value="cherry">Cherry</option>
+          </select>
+          <div className="form-text">Select your favourite fruit from the list.</div>
+          <div className="invalid-feedback">Please select a valid option.</div>
+        </div>
+      </div>
+
+      <div>
+        <div className="ref-label">Disabled field</div>
+        <div>
+          <label className="form-label" htmlFor="select-full-disabled">
+            Favourite fruit
+          </label>
+          <select className="form-select" id="select-full-disabled" disabled defaultValue="apple">
+            <option value="apple">Apple</option>
+            <option value="banana">Banana</option>
+          </select>
+          <div className="form-text">This field is disabled.</div>
+        </div>
+      </div>
     </div>
   ),
 };

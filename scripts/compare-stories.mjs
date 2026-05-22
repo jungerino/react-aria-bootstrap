@@ -38,13 +38,30 @@ function parseArgs(argv) {
 }
 
 async function screenshot(page, storyId, outPath, width, height) {
-  const url = `${STORYBOOK_URL}/iframe.html?id=${storyId}&viewMode=story`;
-  // 'load' instead of 'networkidle': Storybook's dev server keeps a HMR WebSocket
-  // open permanently, so networkidle never fires.
-  await page.goto(url, { waitUntil: 'load' });
-  // Give React time to render after load fires
-  await page.waitForTimeout(500);
-  await page.screenshot({ path: outPath, clip: { x: 0, y: 0, width, height } });
+  // Load the full Storybook UI — the manager frame must run to signal the preview
+  // iframe to render. Loading the iframe URL alone leaves it in sb-show-preparing-story.
+  await page.goto(`${STORYBOOK_URL}/?path=/story/${storyId}`, { waitUntil: 'load' });
+
+  // Find the preview iframe frame (loads asynchronously)
+  let previewFrame;
+  for (let i = 0; i < 20; i++) {
+    await page.waitForTimeout(500);
+    previewFrame = page.frames().find(f => f.url().includes('iframe.html'));
+    if (previewFrame) break;
+  }
+  if (!previewFrame) throw new Error(`Preview iframe not found for story: ${storyId}`);
+
+  // Wait for Storybook to signal the story is ready (sb-show-main replaces sb-show-preparing-story)
+  await previewFrame.waitForFunction(
+    () => document.body.classList.contains('sb-show-main'),
+    { timeout: 15000 }
+  );
+  // Small settle for fonts and CSS variables
+  await page.waitForTimeout(300);
+
+  // Screenshot the iframe element itself, clipped to viewport size
+  const iframeEl = await page.locator('#storybook-preview-iframe').elementHandle();
+  await iframeEl.screenshot({ path: outPath });
 }
 
 function diffImages(pathA, pathB, diffPath) {

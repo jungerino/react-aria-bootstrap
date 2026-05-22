@@ -41,7 +41,7 @@ node scripts/compare-stories.mjs \
 
 **No baselines to capture** — the script compares two live stories directly, not against stored screenshots. No baseline management needed.
 
-**`react-aria-skill.md` visual comparison section** — still uses the manual workflow description. Update it when diff classification rules are codified after iteration 0 debrief.
+**`react-aria-skill.md` visual comparison section** — update after iteration 0 debrief when diff classification rules are codified. The comparison methodology is now defined in Phase 2e above (pixel diff for static mirror stories; vision comparison for interactive states).
 
 ---
 
@@ -97,8 +97,10 @@ status: in-progress
 For each component in the iteration:
 - `src/{ComponentName}/{ComponentName}.tsx` — bare React Aria component with no className additions yet
 - `src/{ComponentName}/{ComponentName}.css` — empty file
-- `stories/bootstrap-test/{ComponentName}/{ComponentName}.stories.tsx` — minimal shell:
+- `stories/bootstrap-test/{ComponentName}/{ComponentName}.stories.tsx` — standard arg-table stories (documentation/playground)
+- `stories/bootstrap-test/{ComponentName}/{ComponentName}.mirror.stories.tsx` — mirror stories for pixel diff comparison
 
+Standard story stub:
 ```tsx
 import type { Meta, StoryObj } from '@storybook/react';
 
@@ -110,6 +112,21 @@ const meta: Meta = {
 export default meta;
 
 // Stories to be implemented in Phase 2
+```
+
+Mirror story stub:
+```tsx
+import type { Meta, StoryObj } from '@storybook/react';
+import { withBootstrapTest } from '../../_decorators';
+
+const meta: Meta = {
+  title: 'Bootstrap Test Mirror/{ComponentName}',
+  decorators: [withBootstrapTest],
+  parameters: { layout: 'padded' },
+};
+export default meta;
+
+// Mirror stories implemented in Phase 2 — must match reference story layout exactly
 ```
 
 Commit message: `chore: stub files for styling-implementation_N ({Component1}, {Component2})`
@@ -147,29 +164,48 @@ Repeat for each component. **Pause for user review after each component** — do
 
 ### 2d. Write Storybook stories
 
-Minimum story set per component:
-- Default (at-rest)
-- Variants (if component has a `variant` prop) — all values side by side (P030, P032)
-- Disabled, Invalid, WithDescription where applicable (P031)
+Write **two story files** per component:
 
-Follow `get-storybook-story-instructions` conventions. Use `argTypes` with explicit `options` for all string-union props (P029).
+**Standard stories** (`{ComponentName}.stories.tsx`, title `Bootstrap Test/{ComponentName}`):
+- Follow `get-storybook-story-instructions` conventions
+- `argTypes` with explicit `options` for all string-union props (P029)
+- Default (at-rest), Variants (all values side by side, P030/P032), Disabled, Invalid, WithDescription where applicable (P031)
+
+**Mirror stories** (`{ComponentName}.mirror.stories.tsx`, title `Bootstrap Test Mirror/{ComponentName}`):
+- One story per reference story in scope (names must match)
+- Must replicate the reference story layout exactly: same wrapper classes (`ref-specimen-row`, `ref-flex-row`), same `specimen()` helper pattern, same variant order
+- Cover static/at-rest states only — do not attempt to mirror `.faux-hover` / `.faux-focus` reference states via pixel diff; use vision comparison for interactive states instead (see Phase 2e)
 
 ### 2e. Visual regression — compare against reference
 
-**Prerequisite:** Storybook must be running and fully settled before screenshotting. If you just saved component files, wait for the HMR rebuild to complete — the terminal should show no pending compilation before you run the comparison. Screenshotting during an active HMR rebuild captures a blank page.
+**Prerequisite:** Storybook must be running and fully settled. If you just saved component files, wait for the HMR rebuild to complete before screenshotting — rebuilding mid-comparison captures a blank page.
 
-Run the comparison for this component:
+The script captures stories via the full Storybook UI URL (not the bare iframe URL — the iframe requires the manager frame to signal it before rendering). Output PNGs land in the `--out` directory: `reference.png`, `implementation.png`, `diff.png`.
+
+#### Step 1 — Pixel diff (mirror stories, static states)
+
+Run for each mirror story that has a matching reference story:
 
 ```bash
 node scripts/compare-stories.mjs \
   --reference bootstrap-reference-{component}--{story-name} \
-  --impl bootstrap-test-{component}--{story-name} \
-  --out .story-diffs/{component}
+  --impl      bootstrap-test-mirror-{component}--{story-name} \
+  --out .story-diffs/{component}/{story-name} \
+  [--pixel-threshold 0.1]
 ```
 
-The script captures both stories via the full Storybook UI URL (not the bare iframe URL — the iframe requires the manager frame to signal it before rendering). Output PNGs land in `.story-diffs/{component}/`: `reference.png`, `implementation.png`, `diff.png`.
+**Calibration:** Run same-vs-same first (`--reference X --impl X`). Any nonzero result is rendering noise (font hinting, subpixel AA). Set `--pixel-threshold` just above that floor. `includeAA: false` (default) suppresses font-edge noise and should remain unchanged.
 
 Fix all fixable deltas before presenting to the user. Flag design decisions and intentional deviations.
+
+#### Step 2 — Vision comparison (interactive states and layout mismatches)
+
+For hover, focus, active, open-dropdown, and any state that can't be reliably pixel-diffed:
+
+1. Run the script against the closest comparable stories (the PNGs are written regardless of diff quality)
+2. Read both `reference.png` and `implementation.png` using the Read tool
+3. Describe visual differences semantically and fix them
+4. Note intentional deviations in the review file
 
 ### 2f. Document in review file
 
@@ -204,6 +240,7 @@ Both implementation quality and visual comparison methodology are in scope.
    git checkout styling-implementation_N -- src/{ComponentName}/{ComponentName}.tsx
    git checkout styling-implementation_N -- src/{ComponentName}/{ComponentName}.css
    git checkout styling-implementation_N -- stories/bootstrap-test/{ComponentName}/{ComponentName}.stories.tsx
+   git checkout styling-implementation_N -- stories/bootstrap-test/{ComponentName}/{ComponentName}.mirror.stories.tsx
    ```
    Commit to `styling-implementation`: `feat: merge iteration N styled components ({Component1}, {Component2})`
 
@@ -215,6 +252,6 @@ Both implementation quality and visual comparison methodology are in scope.
 
 2. **Diff classification rules** — intentionally deferred to iteration 0 debrief. After debrief, codify as principles in `react-aria-skill.md` (P044+). Current policy: if in doubt, fix it and re-run. Do not present fixable deltas to the user.
 
-3. **Styled component story location** — protocol currently assumes `stories/bootstrap-test/{ComponentName}/` (separate from pre-existing story files). Confirm this doesn't collide with any existing story structure before iteration 0.
+3. ~~**Styled component story location**~~ — **Resolved.** `stories/bootstrap-test/` only contains `bootstrap-reference/`. No existing `Button/` or `Select/` subdirectories. Two files per component under `stories/bootstrap-test/{ComponentName}/`: `{ComponentName}.stories.tsx` (standard) and `{ComponentName}.mirror.stories.tsx` (comparison).
 
-4. **Iteration 0 component set** — Button (simple) + Select (complex), per user input. Confirm before cutting the experiment branch.
+4. ~~**Iteration 0 component set**~~ — **Resolved.** Button + Select.

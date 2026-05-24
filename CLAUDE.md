@@ -90,6 +90,7 @@ Never assume component properties without verification through these tools.
 - **Commit grouping**: When the user says "commit changes" or "commit updates", split changes into as many logical commits as make sense rather than committing everything at once.
 - **Diagnose before fixing**: Confirm actual state before implementing a fix — treat explanations of bugs as hypotheses requiring verification, not truth.
 - **Push back when warranted**: If something the user says seems factually incorrect or likely to cause a problem, push back before proceeding. If there's a tradeoff the user may not have considered, say so once. Do not agree by default, but do not re-litigate after a decision has been made.
+- **Defer low-risk permission requests**: For additive, reversible actions (e.g. commits, file writes), defer requesting permission until the current logical unit of work is complete, or until the pending action would block the next step — whichever comes first. For commits specifically, defer until either all current tasks are done or a file in the pending commit needs to be modified again (to avoid overloaded commits). Never defer permissions for destructive or hard-to-reverse operations (force push, file deletion, `reset --hard`, etc.) — those require confirmation before proceeding.
 
 ## Agent Documentation
 

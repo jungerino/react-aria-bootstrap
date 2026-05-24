@@ -5,7 +5,185 @@ iteration: 0
 
 # React Aria + Bootstrap Skill
 
-This file is the growing knowledge base for styling React Aria component libraries with Bootstrap. Updated only via experiment-branch debriefs — do not update it from the integration branch directly.
+This file is the single source of truth for the styling-implementation experiment: workflow, principles, and visual comparison methodology. Updated only via experiment-branch debriefs — do not update it from the integration branch directly.
+
+---
+
+## Workflow
+
+### Overview
+
+Goal: Implement Bootstrap-styled React Aria components that visually match the Bootstrap reference stories, verified via pixel diff and vision comparison.
+
+Each iteration works through a fixed component set in three phases:
+- **Phase 1 — Scaffolding:** Cut experiment branch, stub files.
+- **Phase 2 — Per-component implementation:** Read taxonomy → implement TSX → write bridge selectors → write stories → run visual comparison → fix deltas. Pause for user review after each component.
+- **Phase 3 — Debrief and close-out:** User reviews in Storybook, agent extracts principles, files merged to integration branch.
+
+**Visual regression tooling:** Loki was incompatible with Storybook 9. Visual regression uses `scripts/compare-stories.mjs` (Playwright + pixelmatch). The script compares two live stories directly — no baseline management needed. See [Visual Comparison Workflow](#visual-comparison-workflow) for usage.
+
+### Branch naming
+
+- `styling-implementation` — integration branch (cut from `mapping-and-references`; includes reference stories and taxonomies)
+- `styling-implementation_N` — experiment branches
+
+### Session start
+
+On a `styling-implementation_*` branch, load at session start:
+
+1. `agent/react-aria-skill.md` — this document; the single source of truth for workflow and principles
+2. `agent/component-decisions.md` — resolved decisions; implementation must honor every entry for components in scope
+3. `agent/reference-stories/{component}-taxonomy.md` — for each component in this iteration
+4. `agent/bootstrap-kb/` — Bootstrap reference; load via `README.md` then selectively per component
+
+Then create a TodoWrite enumerating every step in the current phase before doing anything else.
+
+### Phase 1 — Cut experiment branch
+
+Cut `styling-implementation_N` from `styling-implementation`. Two first commits:
+
+**1. Create review stub** — `agent/review-styling-iteration-N.md`:
+
+```markdown
+---
+title: Review — Styling Iteration N
+status: in-progress
+---
+
+# Review — Styling Iteration N
+
+## Components
+(list the component set for this iteration)
+
+## Phase 1 — Scaffolding notes
+*(agent fills in)*
+
+## Phase 2 — Implementation notes
+*(one entry per component, added after each component is reviewed)*
+
+## User review
+*(user fills in during debrief)*
+
+## Principles extracted
+*(filled in during debrief — go into `agent/react-aria-skill.md`)*
+
+## Skill update status
+- [ ] `agent/react-aria-skill.md` updated
+- [ ] Finalized component files merged to `styling-implementation`
+- [ ] `CLAUDE.md` iteration counter incremented (if applicable)
+```
+
+**2. Stub target files** for each component:
+- `src/bootstrap-test/{ComponentName}.tsx` — bare React Aria component, no className additions yet
+- `stories/bootstrap-test/{ComponentName}/{ComponentName}.stories.tsx` — standard arg-table stories
+- `stories/bootstrap-test/{ComponentName}/{ComponentName}.mirror.stories.tsx` — mirror stories for pixel diff
+
+Standard story stub:
+```tsx
+import type { Meta, StoryObj } from '@storybook/react';
+
+const meta: Meta = {
+  title: 'Bootstrap Test/{ComponentName}',
+  parameters: { layout: 'padded' },
+  tags: ['autodocs'],
+};
+export default meta;
+
+// Stories to be implemented in Phase 2
+```
+
+Mirror story stub:
+```tsx
+import type { Meta, StoryObj } from '@storybook/react';
+import { withBootstrapTest } from '../../_decorators';
+
+const meta: Meta = {
+  title: 'Bootstrap Test Mirror/{ComponentName}',
+  decorators: [withBootstrapTest],
+  parameters: { layout: 'padded' },
+};
+export default meta;
+
+// Mirror stories implemented in Phase 2 — must match reference story layout exactly
+```
+
+Commit message: `chore: stub files for styling-implementation_N ({Component1}, {Component2})`
+
+### Phase 2 — Per-component work sequence
+
+Repeat for each component. **Pause for user review after each component** — do not proceed without sign-off.
+
+**2a. Read and internalize inputs**
+
+1. Read `agent/reference-stories/{component}-taxonomy.md` in full.
+2. Read `agent/component-decisions.md` entry for this component.
+3. Call `mcp__react-aria__get_react_aria_page` for the component. Cross-check: every `data-*` attribute in the docs must appear in the taxonomy's state mappings.
+4. Load Bootstrap KB: `components.md` entry for the matched Bootstrap component → `states.md` → `patterns.md` if a DOM conflict entry exists.
+5. **Review all principles in this skill** before writing any code. Flag any principle with structural or sizing implications (P008, P010, P016, P040, P041, P042) — these must be addressed during TSX/bridge implementation, not discovered at diff time.
+
+**2b. Implement TSX**
+
+- Apply `className` render-prop pattern (P002) for Bootstrap classes.
+- Use `variantClassMap` for variant props (P007); read Bootstrap docs before finalizing the variant set.
+- Honor all entries in `component-decisions.md`; these are pre-resolved — do not re-derive them.
+- Apply Bootstrap component classes (P013); reserve utility classes for genuine one-off cases.
+- Address all structural and sizing principles identified in step 2a (e.g. P041 hidden sizer for value-displaying triggers).
+
+**2c. Write bridge selectors**
+
+Write **all** bridge selectors in `src/scss/_bootstrap-overrides.scss` (P003) — this is the single location for all React Aria → Bootstrap style bridging. SCSS mixins work here because the file is compiled after Bootstrap's variables and mixins are loaded (P015). Cover all states in the taxonomy's state mappings; follow the data-* bridge rules below.
+
+**2d. Write Storybook stories**
+
+Write two story files per component:
+
+*Standard stories* (`{ComponentName}.stories.tsx`, title `Bootstrap Test/{ComponentName}`):
+- Follow `get-storybook-story-instructions` conventions
+- `argTypes` with explicit `options` for all string-union props (P029)
+- Default, Variants (all values side by side, P030/P032), Disabled, Invalid, WithDescription where applicable (P031)
+
+*Mirror stories* (`{ComponentName}.mirror.stories.tsx`, title `Bootstrap Test Mirror/{ComponentName}`):
+- One story per reference story in scope; names must match exactly
+- Replicate reference story layout: same wrapper classes (`ref-specimen-row`, `ref-flex-row`), same `specimen()` helper pattern, same variant order
+- Include interactive state specimens using `.faux-*` wrappers (P044); these are pixel-diffed alongside static states
+
+**2e. Visual comparison**
+
+Follow the [Visual Comparison Workflow](#visual-comparison-workflow) section. Fix all fixable deltas before presenting to the user.
+
+**2f. Document in review file**
+
+Add an entry to `agent/review-styling-iteration-N.md` under "Phase 2 — Implementation notes":
+- Sub-parts implemented and bridge strategies used
+- Visual comparison results: resolved deltas, open design decisions, intentional deviations
+- Candidate principles for this skill file
+
+### Phase 3 — Debrief
+
+User reviews styled components in Storybook. Provides observations.
+
+**Write each observation to `agent/review-styling-iteration-N.md` immediately — before replying.** Do not batch, do not defer. Multiple observations in one message → write all before replying.
+
+Both implementation quality and visual comparison methodology are in scope.
+
+### After debrief — Merge to integration branch
+
+1. Update this skill file:
+   - Add new principles extracted from debrief (numbered sequentially after current highest)
+   - Refine or correct existing principles
+   - Update the Visual Comparison Workflow section if the comparison process changed
+2. Tick off the Skill Update Status checklist in the review file.
+3. Merge finalized files to `styling-implementation` (file-by-file checkout, not cherry-pick):
+   ```bash
+   git checkout styling-implementation_N -- agent/react-aria-skill.md
+   git checkout styling-implementation_N -- agent/review-styling-iteration-N.md
+   git checkout styling-implementation_N -- src/bootstrap-test/{ComponentName}.tsx
+   git checkout styling-implementation_N -- stories/bootstrap-test/{ComponentName}/{ComponentName}.stories.tsx
+   git checkout styling-implementation_N -- stories/bootstrap-test/{ComponentName}/{ComponentName}.mirror.stories.tsx
+   ```
+   Commit to `styling-implementation`: `feat: merge iteration N styled components ({Component1}, {Component2})`
+
+---
 
 ## Principles
 
@@ -143,6 +321,10 @@ If the Bootstrap equivalent for a component or interaction state cannot be ident
 
 **P031: state-stories — State stories:** Add separate stories for `Disabled`, `Invalid`, and `WithDescription` where applicable. These benefit from independent Controls panel manipulation and make state coverage explicit.
 
+**P045: diff-png-required — Read `diff.png` after every pixel diff run — exit code alone is not sufficient:** The default compare-stories threshold (10%) is too lenient to catch localised styling failures like a missing focus ring or background color on a small control in a mostly-white iframe. Always run with `--threshold 0.005` (0.5%) and always read `diff.png` after every run — even on a passing exit code. Red regions in `diff.png` are unambiguous: they show exactly which pixels differ, regardless of whether the aggregate percentage crossed the threshold. A run is only clean when `diff.png` contains no red regions.
+
+**P044: faux-state-class — Simulate non-declarative interactive states in mirror stories using `.faux-*` CSS:** Reference stories simulate interactive states (focus, hover, pressed) using `.faux-*` CSS classes on native HTML elements (e.g. `.faux-focus` on `<select>`). Mirror stories must match this coverage — do not omit an interactive state specimen just because the state cannot be triggered via React Aria props. The pattern: (1) add a `.faux-[state]` bridge rule in `_bootstrap-overrides.scss` (P003) applying the same property values Bootstrap uses for the equivalent native pseudo-class; if the RAC component replaces `className` entirely (preventing the faux class from landing on the component root), wrap the component in a `.faux-[state]-scope` div and scope the bridge rule to that wrapper; (2) wrap the component in the story with that div (or pass `className="faux-[state]"` where the class lands on a stable outer element). This is symmetric with how reference stories fake state on native elements and requires no changes to the component's core API.
+
 **P032: title-case-labels — Variants story labels must be title-cased — never raw prop strings:** When a Variants story maps over prop values to render each variant (e.g. `{VARIANTS.map(v => <Button variant={v}>{v}</Button>)}`), labels render lowercase because prop values are lowercase strings. Always title-case the label: either capitalize the first letter (`v.charAt(0).toUpperCase() + v.slice(1)`) or use Bootstrap's documented display name. Do not pass the raw prop string as the visible label.
 
 ## Self-Review Checklist
@@ -155,7 +337,7 @@ Before delivering iteration work, verify:
 - [ ] Unmapped components/states are logged with alternatives
 - [ ] All string-union props have constrained `argTypes` (inline-radio, explicit options)
 - [ ] React Aria documentation was read for each component; all props with layout, orientation, selection-mode, or variant semantics are implemented with bridge rules and stories (P038)
-- [ ] Visual comparison completed: each component screenshot-compared against its Bootstrap Reference story (default + interaction states); all fixable deltas resolved; only design decisions remain
+- [ ] Visual comparison completed: each component pixel-diffed with `--threshold 0.005` (0.5%); all runs exit 0; `diff.png` inspected for every story and contains no red regions
 
 ## Visual Comparison Workflow
 
@@ -167,17 +349,31 @@ Before delivering, visually compare each test component against its Bootstrap Re
 
 Reference story names vary — use the Storybook sidebar under "Bootstrap Reference" to find the relevant story.
 
+### Pixel diff command
+
+Always run with `--threshold 0.005` (0.5%). The default 10% threshold is far too lenient — a missing focus ring or background color on a small control in a mostly-white 1280×900 iframe can easily stay under 10% while being visually wrong.
+
+```bash
+node scripts/compare-stories.mjs \
+  --reference <reference-story-id> \
+  --impl      <mirror-story-id> \
+  --out       .story-diffs/<component>/<story> \
+  --threshold 0.005
+```
+
+The 0.5% threshold gives comfortable headroom over subpixel font rendering noise (which runs ~0.1–0.2% on clean stories) while reliably catching missing styling like a focus ring or background color.
+
 ### Fix loop (repeat until clean)
 
-1. Open two tabs — test story in one, reference story in the other
-2. Screenshot both; zoom into the component area of each
-3. List every visual difference
+1. Run pixel diff with `--threshold 0.005`
+2. If exit code is non-zero **or** exit code is zero: read `diff.png` — the exit code alone is not sufficient. Red regions in `diff.png` identify exactly which pixels differ. No red regions = clean.
+3. List every visual difference visible in `diff.png` and in the reference/implementation screenshots
 4. Classify each difference:
    - **Fixable** — a CSS/class gap with an unambiguous Bootstrap solution → fix it now
    - **Design decision** — requires a judgment call (e.g. "filled vs. outlined today cell") → flag for user
    - **Intentional** — a documented deviation → note it
-5. Apply all fixable fixes, reload, re-screenshot to confirm
-6. Repeat until no fixable deltas remain
+5. Apply all fixable fixes, reload, re-run pixel diff, re-read `diff.png` to confirm
+6. Repeat until `diff.png` contains no red regions and exit code is 0
 
 ### What to compare
 

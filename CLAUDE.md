@@ -76,7 +76,7 @@ Never assume component properties without verification through these tools.
 
 ## Working Guidelines
 
-- **Session start**: Read `agent/todos.md` and summarize open items to the user at the start of every session.
+- **Session start**: Read `agent/todos.md` and summarize open items to the user at the start of every session. **On a `styling-implementation_*` branch:** also read `agent/react-aria-skill.md` in full, then create a TodoWrite that enumerates every step in the current phase before doing anything else. Do not rely on the handoff message alone to derive the step list — the skill is authoritative.
 - **Honesty about limitations**: Do not make stuff up or provide invalid code. If uncertain, acknowledge it. "I don't know" is acceptable.
 - **Markdown summaries**: When asked to "summarize in markdown", provide a concise summary enclosed in a code block using four backticks (```` ```` ````) so inner triple-backtick fences do not close the outer block.
 - **Context handoff**: When the user says "summarize for new window", "fresh window", "fresh context window", or similar, produce a handoff summary in a fenced code block using four backticks (per the Markdown summaries rule above). Include: current branch, uncommitted files and key changes, what was accomplished this session, open questions or uncertainties, and the immediate next step. Label each next step with who owns it — **[User]** for steps requiring human review, decision, or action before proceeding; **[Agent]** for steps the incoming agent should execute immediately.
@@ -104,7 +104,7 @@ Never assume component properties without verification through these tools.
 - [Iteration Protocol](./agent/iteration-protocol.md) — Prescribed workflow for each mapping-and-references iteration
 - [Mapping and References Skill](./agent/mapping-and-references-skill.md) — Growing skill: taxonomy and story construction principles
 ### Knowledge Files
-- [React Aria Skill](./agent/react-aria-skill.md) — React Aria + Bootstrap bridging principles (from styling-skill-plus experiment)
+- [React Aria Skill](./agent/react-aria-skill.md) — Workflow, principles, and visual comparison methodology for styling-implementation iterations; **load at session start on `styling-implementation_*` branches**
 
 ### Bootstrap Knowledge Base
 - [KB Index](./agent/bootstrap-kb/README.md) — Master index and retrieval guide; load this first

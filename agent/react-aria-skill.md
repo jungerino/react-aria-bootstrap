@@ -109,6 +109,19 @@ export default meta;
 
 Commit message: `chore: stub files for styling-implementation_N ({Component1}, {Component2})`
 
+**3. Add story globs to `.storybook/main.js`** — add one glob entry per component (e.g. `stories/bootstrap-test/{ComponentName}/**`) in the same scaffolding commit. This must happen before any implementation work begins.
+
+**4. Restart Storybook** — after the scaffolding commit, kill the running Storybook process and start a fresh one:
+
+```bash
+# Find the PID listening on port 6006
+lsof -ti tcp:6006 | xargs kill -9
+# Start fresh instance
+yarn storybook &
+```
+
+Wait for the new instance to serve `index.json` with the stub story IDs before proceeding to Phase 2. This is required because adding a new glob creates a new webpack entry point, which HMR cannot handle — it requires a clean rebuild. Doing this once at scaffolding time means Phase 2 only ever makes content changes that HMR handles correctly.
+
 ### Phase 2 — Per-component work sequence
 
 Repeat for each component. **Pause for user review after each component** — do not proceed without sign-off.
@@ -148,6 +161,8 @@ Write two story files per component:
 - Include interactive state specimens using `.faux-*` wrappers (P044); these are pixel-diffed alongside static states
 
 **2e. Visual comparison**
+
+Before running pixel diffs, verify stories are rendering: if `index.json` shows story IDs registered but `compare-stories.mjs` times out on them, this is the HMR loop pattern (new entry point added mid-session). Kill and restart Storybook (same procedure as Phase 1 step 4) and confirm rendering before proceeding.
 
 Follow the [Visual Comparison Workflow](#visual-comparison-workflow) section. Fix all fixable deltas before presenting to the user.
 
@@ -290,7 +305,7 @@ transform: (prefix, selector) => {
 
 **P043: visual-metaphor-completeness — Verify that the rendered output reproduces Bootstrap's full visual metaphor, not just individual state properties:** Bootstrap components produce many of their characteristic effects through coordinated CSS across multiple elements — negative margins that create visual connections, pseudo-element indicators, overlapping backgrounds that occlude borders, etc. Correctly bridging color and border-color properties for each state is necessary but not sufficient. After writing all bridge rules, ask: "does the rendered component tell the same visual story Bootstrap intends?" Check the full coordinated effect, not just that each mapped property is correct in isolation. Two categories of properties must both be present: (1) properties Bootstrap applies to all instances of an element (e.g. structural margins, z-index) — these come from Bootstrap's own CSS automatically and must be verified to still work through the React Aria DOM; (2) properties Bootstrap applies via `.active` or state classes — these are not triggered by React Aria and must be explicitly included in the `[data-*]` bridge. A bridge that maps colors and border-color but omits a load-bearing `background-color` can produce individually correct property values while still failing the visual metaphor.
 
-**P041: value-display-stable-dims — A component that displays a mutable value must not resize as the value changes:** Bootstrap's native `<select>` sizes to its full option set automatically; a custom trigger backed by a `<button>` intrinsically sizes to current content and shifts surrounding layout on each selection change. Any component whose rendered value changes during interaction (Select, ComboBox, DatePicker, etc.) must size its container to accommodate the full range of possible values — not the currently displayed value. For finite option sets, use a hidden sizer element (a visually-hidden `<span>` containing all option labels, `aria-hidden`); for open-ended inputs, `width: 100%` or an explicit width. Unstable control dimensions produce reflow on every interaction.
+**P041: value-display-stable-dims — A trigger that displays a selected value from a finite option set must size to its widest option, not its current value:** Bootstrap's native `<select>` sizes to the full option set automatically; a custom trigger backed by a `<button>` intrinsically sizes to the currently displayed value and shifts surrounding layout on each selection change. For any component with a finite, enumerable option set (Select, RadioGroup, etc.), embed a visually-hidden `<span aria-hidden="true">` inside the trigger containing all option labels — the longest label sets the intrinsic width and the trigger never reflows. Do not use an external width container, inline style, or `width: 100%` as a substitute; these do not reproduce the native sizing behaviour and P048 prohibits inline styles. This principle applies only to finite option sets; components that accept typed input (ComboBox, DatePicker, etc.) have different sizing constraints addressed separately.
 
 **P042: right-anchor-indicator — In any flex row with a content region and a trailing indicator, pin the indicator to the right edge:** When a flex container holds a label, value, or text region alongside a trailing indicator (caret, chevron, icon, badge), use `justify-content: space-between` on the container or `margin-left: auto` on the indicator. The content region should expand to fill available space; the indicator should not drift with content length. Applies to any flex row with a trailing indicator: trigger buttons, list items, accordion headers, nav links, or similar. P024 addresses caret rotation on open/close; this principle addresses caret placement.
 
@@ -328,6 +343,8 @@ If the Bootstrap equivalent for a component or interaction state cannot be ident
 **P046: rac-class-replace — RAC replaces `className` entirely when a string is provided — do not assume the default RAC class co-exists:** When a React Aria component receives a plain string `className` (e.g. `className="form-select"`), it renders with only that string as the element's class — the default `.react-aria-{Component}` class is dropped entirely. The default class is only used as a fallback when `className` is `undefined`. Bridge selectors must be written against the provided class, not the default RAC class. Any bridge that relies on `.react-aria-Button` on a trigger that was given `className="form-select"` will never match. Use the RAC component root's own attributes (e.g. `data-trigger="Select"`, `.react-aria-Select`) as the scope anchor instead.
 
 **P047: augments-import — Mirror stories must explicitly import `augments.scss`:** The pixel diff script navigates to each story in isolation — it does not share a bundle with other stories. `augments.scss` loads as a side-effect of reference story imports during a normal Storybook session, but that import chain is not present when the script renders a mirror story alone. Any mirror story that depends on styles from `augments.scss` must import it directly: `import '../bootstrap-reference/augments.scss'`. Omitting this causes visual diffs against the reference that are pure import failures, not styling gaps.
+
+**P048: no-inline-style — Do not use inline `style=` attributes except in the following rare story-harness cases:** (1) `minHeight` on a story container that must reserve vertical space for a floating overlay (popover, dropdown, tooltip, modal) that would otherwise clip outside the iframe; (2) `position: static` (or an equivalent position override) on an element that is normally floated or absolutely positioned, used to place it in document flow for a static specimen display. These exceptions apply only in story files — never in component TSX or bridge CSS. Any use of an inline style must be accompanied by an inline comment explaining why the exception applies, and must be declared in the iteration review notes with the same explanation. Do not use inline styles to paper over a missing CSS implementation, to hard-code a measured pixel value, or to work around a sizing problem that P041 or a bridge selector should solve.
 
 **P032: title-case-labels — Variants story labels must be title-cased — never raw prop strings:** When a Variants story maps over prop values to render each variant (e.g. `{VARIANTS.map(v => <Button variant={v}>{v}</Button>)}`), labels render lowercase because prop values are lowercase strings. Always title-case the label: either capitalize the first letter (`v.charAt(0).toUpperCase() + v.slice(1)`) or use Bootstrap's documented display name. Do not pass the raw prop string as the visible label.
 

@@ -200,6 +200,123 @@ Both implementation quality and visual comparison methodology are in scope.
 
 ---
 
+## Multi-Agent Batch Workflow
+
+For batches of multiple components, use a three-tier agent hierarchy to conserve primary agent context and maximize parallelism.
+
+### Architecture
+
+```
+Primary agent (orchestrator)
+├── Dispatches component sub-agents — one per component (staggered, background)
+└── Monitors completion notifications; compiles final batch report
+
+Component sub-agent (one per component)
+├── Reads: this skill doc + component taxonomy + component-decisions.md
+├── Runs the story-level implementation pipeline (see below)
+├── Dispatches comparison sub-sub-agents (background, one per story)
+├── Writes findings to agent/{component}-findings.md
+└── Reports final status to primary
+
+Comparison sub-sub-agent (fire-and-forget)
+├── Receives: specimen manifest + diff paths + taxonomy path + CSS path
+├── Runs pixel diff, reads all three output images (reference, impl, diff)
+├── Develops and validates a theory for each failure
+└── Returns structured findings report
+```
+
+### Dispatching (orchestrator behavior)
+
+Stagger component sub-agents: dispatch the next after the previous one has started its first comparison run. This avoids write conflicts and keeps the orchestrator's coordination state simple.
+
+Each component sub-agent prompt must be fully self-contained. Include:
+- Component name and paths to: this skill doc, component taxonomy, `agent/component-decisions.md`, Bootstrap KB
+- Path to write findings: `agent/{component}-findings.md`
+- Instruction to report completion status when all mirror stories are clean and final stories are written
+
+While sub-agents are running: if there is remaining implementation work in the current queue, proceed with it. Otherwise state "Awaiting sub-agent results" and wait.
+
+### Story-level pipeline (component sub-agent behavior)
+
+For each mirror story:
+1. Implement CSS and write the mirror story
+2. Launch a comparison sub-sub-agent for that story (`run_in_background: true`)
+3. Proceed to the next mirror story without waiting
+
+On comparison notification:
+- Read the findings from `agent/{component}-findings.md` (written by the sub-sub-agent)
+- Fix identified CSS issues
+- Re-dispatch comparison if fixes were applied
+- **CSS fix scope warning:** if a fix modifies a shared selector (e.g., the base trigger class), that fix may affect other stories whose comparisons are already running or complete — flag and rerun comparisons for any story that uses the modified selector
+
+After all mirror stories are clean:
+- Write the final styled stories (no comparison needed — mirror story coverage is sufficient)
+- Append a completion summary to `agent/{component}-findings.md`
+- Notify primary orchestrator
+
+### Comparison sub-sub-agent prompt template
+
+The prompt must be fully self-contained:
+
+```
+You are performing a visual regression check for a single story of the [ComponentName] component.
+
+## Task
+
+1. Run the pixel diff command below.
+2. Read all three output images (reference.png, implementation.png, diff.png) using the Read tool.
+3. For each red region in diff.png, identify which specimen produced it and describe where
+   the red appears (border, background, text, icon, etc.).
+4. Consult the component taxonomy at [taxonomy path] to name sub-parts correctly.
+5. Develop a theory of the CSS cause.
+6. Validate the theory: read [CSS path] and confirm whether the expected selector/property
+   is present, missing, or incorrect. Cite the specific line.
+7. Write findings to [findings doc path] in the format below.
+8. Report completion status.
+
+## Specimens (in story order)
+
+1. [Label — e.g. Trigger — default]
+2. [Label — e.g. Trigger — hover]
+...
+
+## Paths
+
+- Diff output dir:   [absolute path]
+- Component CSS:     [absolute path]
+- Taxonomy doc:      [absolute path]
+- Findings doc:      [absolute path — agent/{component}-findings.md]
+
+## Pixel diff command
+
+node scripts/compare-stories.mjs \
+  --reference [reference-story-id] \
+  --impl      [mirror-story-id] \
+  --out       [output-dir] \
+  --threshold 0.005
+
+## Findings doc format (append under a ## Story: [name] heading)
+
+**Run:** [N] | **Status:** pass / fail / pending-fix
+
+PASS: [specimen numbers]
+
+FAIL:
+- Specimen [N] ([label]): Red at [location]. Theory: [selector/property] is [missing/wrong value].
+  Validated: [yes/no — cite file:line].
+
+UNRESOLVED:
+- Specimen [N]: [describe what is visible but not explained]
+```
+
+### Per-component findings doc
+
+`agent/{component}-findings.md` is written by comparison sub-sub-agents and read by the component sub-agent. One file per component — no shared state between components, no write conflicts.
+
+The primary orchestrator does not read findings docs directly; it receives only the component sub-agent's final status report.
+
+---
+
 ## Principles
 
 **Goal:** Replace project CSS with Bootstrap. Bootstrap becomes the source of truth for all or most styling of the React Aria test components.

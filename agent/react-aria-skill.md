@@ -5,7 +5,7 @@ iteration: 0
 
 # React Aria + Bootstrap Skill
 
-This file is the single source of truth for the styling-implementation experiment: workflow, principles, and visual comparison methodology. Updated only via experiment-branch debriefs — do not update it from the integration branch directly.
+This file is the single source of truth for the styling-implementation experiment: workflow, principles, and visual comparison methodology.
 
 ---
 
@@ -14,11 +14,6 @@ This file is the single source of truth for the styling-implementation experimen
 ### Overview
 
 Goal: Implement Bootstrap-styled React Aria components that visually match the Bootstrap reference stories, verified via pixel diff and vision comparison.
-
-Each iteration works through a fixed component set in three phases:
-- **Phase 1 — Scaffolding:** Cut experiment branch, stub files.
-- **Phase 2 — Per-component implementation:** Read taxonomy → implement TSX → write bridge selectors → write stories → run visual comparison → fix deltas. Pause for user review after each component.
-- **Phase 3 — Debrief and close-out:** User reviews in Storybook, agent extracts principles, files merged to integration branch.
 
 **Visual regression tooling:** Loki was incompatible with Storybook 9. Visual regression uses `scripts/compare-stories.mjs` (Playwright + pixelmatch). The script compares two live stories directly — no baseline management needed. See [Visual Comparison Workflow](#visual-comparison-workflow) for usage.
 
@@ -222,7 +217,8 @@ Comparison sub-sub-agent (fire-and-forget)
 ├── Receives: specimen manifest + diff paths + taxonomy path + CSS path
 ├── Runs pixel diff, reads all three output images (reference, impl, diff)
 ├── Develops and validates a theory for each failure
-└── Returns structured findings report
+├── Writes findings to agent/{component}-findings.md
+└── Notifies component sub-agent on completion
 ```
 
 ### Dispatching (orchestrator behavior)

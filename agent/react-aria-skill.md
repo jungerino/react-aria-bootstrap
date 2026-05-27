@@ -117,11 +117,11 @@ lsof -ti tcp:6006 | xargs kill -9
 yarn storybook &
 ```
 
-Wait for the new instance to serve `index.json` with the stub story IDs before proceeding to Phase 2. This is required because adding a new glob creates a new webpack entry point, which HMR cannot handle — it requires a clean rebuild. Doing this once at scaffolding time means Phase 2 only ever makes content changes that HMR handles correctly.
+Wait for the new instance to serve `index.json` with the stub story IDs before proceeding to Phase 2. Adding a new glob creates a new webpack entry point that HMR cannot handle — a clean rebuild is required. Doing this once at scaffolding time means Phase 2 only ever makes content changes that HMR handles correctly.
 
 ### Phase 2 — Per-component work sequence
 
-Repeat for each component. **Pause for user review after each component** — do not proceed without sign-off.
+Repeat for each component. User review happens after the full component set is complete (Phase 3).
 
 **2a. Read and internalize inputs**
 

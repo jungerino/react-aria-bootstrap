@@ -5,7 +5,7 @@ iteration: 0
 
 # React Aria + Bootstrap Skill
 
-This file is the single source of truth for the styling-implementation experiment: workflow, principles, and visual comparison methodology.
+This file is the single source of truth for the styling-implementation workflow, principles, and visual comparison methodology.
 
 ---
 
@@ -19,12 +19,14 @@ Goal: Implement Bootstrap-styled React Aria components that visually match the B
 
 ### Branch naming
 
-- `sub-agent-styling` — integration branch
-- `sub-agent-styling_N` — experiment branches
+- `{experiment-name}` — integration branch
+- `{experiment-name}_N` — experiment branches (N = 0, 1, 2, …)
+
+`{experiment-name}` is the current integration branch name (e.g. `sub-agent-styling`).
 
 ### Session start
 
-On a `styling-implementation_*` branch, load at session start:
+On an experiment branch (`{experiment-name}_N`), load at session start:
 
 1. `agent/react-aria-skill.md` — this document; the single source of truth for workflow and principles
 2. `agent/component-decisions.md` — resolved decisions; implementation must honor every entry for components in scope
@@ -35,7 +37,7 @@ Then create a TodoWrite enumerating every step in the current phase before doing
 
 ### Phase 1 — Cut experiment branch
 
-Cut `styling-implementation_N` from `styling-implementation`. Two first commits:
+Cut `{experiment-name}_N` from `{experiment-name}`. Two first commits:
 
 **1. Create review stub** — `agent/review-styling-iteration-N.md`:
 
@@ -64,7 +66,7 @@ status: in-progress
 
 ## Skill update status
 - [ ] `agent/react-aria-skill.md` updated
-- [ ] Finalized component files merged to `styling-implementation`
+- [ ] Finalized component files merged to `{experiment-name}`
 - [ ] `CLAUDE.md` iteration counter incremented (if applicable)
 ```
 
@@ -102,7 +104,7 @@ export default meta;
 // Mirror stories implemented in Phase 2 — must match reference story layout exactly
 ```
 
-Commit message: `chore: stub files for styling-implementation_N ({Component1}, {Component2})`
+Commit message: `chore: stub files for {experiment-name}_N ({Component1}, {Component2})`
 
 **3. Add story globs to `.storybook/main.js`** — add one glob entry per component (e.g. `stories/bootstrap-test/{ComponentName}/**`) in the same scaffolding commit. This must happen before any implementation work begins.
 
@@ -183,15 +185,15 @@ Both implementation quality and visual comparison methodology are in scope.
    - Refine or correct existing principles
    - Update the Visual Comparison Workflow section if the comparison process changed
 2. Tick off the Skill Update Status checklist in the review file.
-3. Merge finalized files to `styling-implementation` (file-by-file checkout, not cherry-pick):
+3. Merge finalized files to `{experiment-name}` (file-by-file checkout, not cherry-pick):
    ```bash
-   git checkout styling-implementation_N -- agent/react-aria-skill.md
-   git checkout styling-implementation_N -- agent/review-styling-iteration-N.md
-   git checkout styling-implementation_N -- src/bootstrap-test/{ComponentName}.tsx
-   git checkout styling-implementation_N -- stories/bootstrap-test/{ComponentName}/{ComponentName}.stories.tsx
-   git checkout styling-implementation_N -- stories/bootstrap-test/{ComponentName}/{ComponentName}.mirror.stories.tsx
+   git checkout {experiment-name}_N -- agent/react-aria-skill.md
+   git checkout {experiment-name}_N -- agent/review-styling-iteration-N.md
+   git checkout {experiment-name}_N -- src/bootstrap-test/{ComponentName}.tsx
+   git checkout {experiment-name}_N -- stories/bootstrap-test/{ComponentName}/{ComponentName}.stories.tsx
+   git checkout {experiment-name}_N -- stories/bootstrap-test/{ComponentName}/{ComponentName}.mirror.stories.tsx
    ```
-   Commit to `styling-implementation`: `feat: merge iteration N styled components ({Component1}, {Component2})`
+   Commit to `{experiment-name}`: `feat: merge iteration N styled components ({Component1}, {Component2})`
 
 ---
 

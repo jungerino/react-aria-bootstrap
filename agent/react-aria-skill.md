@@ -15,12 +15,12 @@ This file is the single source of truth for the styling-implementation experimen
 
 Goal: Implement Bootstrap-styled React Aria components that visually match the Bootstrap reference stories, verified via pixel diff and vision comparison.
 
-**Visual regression tooling:** Loki was incompatible with Storybook 9. Visual regression uses `scripts/compare-stories.mjs` (Playwright + pixelmatch). The script compares two live stories directly — no baseline management needed. See [Visual Comparison Workflow](#visual-comparison-workflow) for usage.
+**Visual regression tooling:** `scripts/compare-stories.mjs` (Playwright + pixelmatch) — compares two live stories directly, no baseline management. See [Visual Comparison Workflow](#visual-comparison-workflow).
 
 ### Branch naming
 
-- `styling-implementation` — integration branch (cut from `mapping-and-references`; includes reference stories and taxonomies)
-- `styling-implementation_N` — experiment branches
+- `sub-agent-styling` — integration branch
+- `sub-agent-styling_N` — experiment branches
 
 ### Session start
 

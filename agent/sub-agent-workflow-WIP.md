@@ -46,7 +46,7 @@ Final-stories sub-agent (fresh, one per component)
 
 ## Primary Agent (Orchestrator)
 
-Dispatch all component sub-agents simultaneously. The per-component, per-story file structure eliminates write conflicts; Storybook and Playwright are stateless with respect to concurrency. Staggering is not required.
+Dispatch all component sub-agents simultaneously.
 
 **Note:** The Claude Code harness may impose a cap on concurrent background agents. This has not been verified empirically. If agents appear to be silently queued, test by launching 5 simultaneously and observing behavior.
 

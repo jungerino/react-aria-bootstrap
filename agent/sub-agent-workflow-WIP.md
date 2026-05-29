@@ -195,6 +195,16 @@ After all stories have reached `Status = Pass`, run one final round of sub-sub-a
 
 ---
 
+## Final Story Implementations
+
+After all mirror stories pass the final verification sweep, the component sub-agent writes the final styled stories. These are the actual end product — the production-ready Bootstrap-themed stories that will ship with the component library.
+
+Mirror stories exist only to drive comparison; final stories are what users and consumers see. Because every sub-part, state, and variant has been validated through the mirror story process by this point, final story implementation should be straightforward and low-error: apply the same CSS that made the mirror stories pass, construct the story files to the standard conventions, no comparison step needed.
+
+**Context window consideration:** Whether the final story step is handled by the same component sub-agent or handed off to a fresh agent depends on how much context headroom remains after the mirror story cycle. If context is running low, the sub-agent should produce a handoff and stop rather than attempting final stories in a degraded state. The primary orchestrator is responsible for deciding whether to dispatch a new agent for this step.
+
+---
+
 ## Sub-Sub-Agent
 
 ### Inputs

@@ -14,22 +14,32 @@ Working design document for the three-tier agent architecture intended to scale 
 ```
 Primary agent (orchestrator)
 ├── Dispatches component sub-agents — one per component (staggered)
-└── Receives final status per component; compiles batch report
+├── Event loop: advances each component through verification and final stories
+│   as completions arrive, without waiting for all components to finish
+└── Surfaces problems to user; compiles batch report when all done
 
 Component sub-agent (one per component)
 ├── Reads: skill doc, component taxonomy (incl. Decisions section), Bootstrap KB
-├── Implements each mirror story
+├── Implements each mirror story (with CSS extraction before each comparison)
 ├── Maintains component-wide findings doc: agent/reference-stories/{component}-findings.md
 ├── Dispatches comparison sub-sub-agents (background, one per story)
-├── Cycles through story findings docs until all Pass or any Stuck
-└── Alerts user on Stuck; reports completion to primary on all-Pass
+├── Cycles through story findings docs until all Pass or any Stuck/Timeout
+├── Runs final verification sweep when all stories Pass
+└── Reports status to primary on completion (all-Pass or problem)
 
-Comparison sub-sub-agent (fire-and-forget)
+Comparison sub-sub-agent (one per story iteration)
 ├── Runs pixel diff (Playwright + pixelmatch)
 ├── Reads all three output images (reference, implementation, diff)
 ├── Identifies failing specimens and sub-parts using the taxonomy
-├── Develops and validates a CSS theory
-└── Writes findings to story findings doc; retires
+├── Develops and validates a CSS theory using matched CSS + overrides
+├── Writes findings to story findings doc
+└── Notifies component sub-agent on completion; retires
+
+Final-stories sub-agent (fresh, one per component)
+├── Launched by primary after component sub-agent passes final verification sweep
+├── Reads: skill doc, component taxonomy, validated CSS
+├── Implements final styled stories with full context headroom
+└── Reports completion to primary
 ```
 
 ---
@@ -38,9 +48,27 @@ Comparison sub-sub-agent (fire-and-forget)
 
 Stagger component sub-agents: dispatch the next after the previous one has started its first comparison. Avoids resource contention and keeps coordination state simple.
 
-Each sub-agent prompt must be fully self-contained — see Sub-Agent Inputs below.
+Each sub-agent prompt must be fully self-contained — see Component Sub-Agent Inputs below.
 
-While sub-agents are running, if any remaining implementation work exists in the current queue, proceed with it. Otherwise: "Awaiting sub-agent results."
+**Event loop** (while any component sub-agents are running):
+
+```
+on notification from component sub-agent:
+  if status == verification-sweep-passed:
+    launch fresh final-stories sub-agent for this component (background)
+
+  if status == Stuck or Timeout:
+    surface to user immediately with component name and stuck story
+    continue waiting for other components
+
+  if status == final-stories-done:
+    log completion for this component
+
+if all components have reported final-stories-done:
+  compile batch report; present to user
+```
+
+The primary agent advances each component independently as notifications arrive — it does not wait for all components to finish before moving any of them forward. While waiting with nothing to advance, state: "Awaiting sub-agent results."
 
 ---
 
@@ -176,7 +204,7 @@ repeat:
   for each story in registry:
     if Status == Pass: skip
     if Status == In review: skip (sub-sub-agent running)
-    if Status == Stuck: STOP — alert user
+    if Status == Stuck: STOP — report to primary agent
     if Status == Fail:
       read story findings doc
       rework CSS per findings
@@ -185,8 +213,8 @@ repeat:
       re-launch sub-sub-agent (background)
       re-check CSS change scope — if shared selector modified:
         flag affected stories; relaunch their sub-sub-agents too
-  if all Pass: proceed to Final Verification
-  if any Stuck: stop
+  if all Pass: proceed autonomously to Final Verification Sweep
+  if any Stuck or Timeout: stop — report to primary agent
   // else: some still In review — loop again (sub-sub-agents are running)
 ```
 
@@ -204,11 +232,17 @@ After all stories have reached `Status = Pass`, run one final round of sub-sub-a
 
 ## Final Story Implementations
 
-After all mirror stories pass the final verification sweep, the component sub-agent writes the final styled stories. These are the actual end product — the production-ready Bootstrap-themed stories that will ship with the component library.
+The component sub-agent's job ends after the final verification sweep. Final styled stories — the actual deliverable — are written by a **fresh final-stories sub-agent** launched by the primary agent.
 
-Mirror stories exist only to drive comparison; final stories are what users and consumers see. Because every sub-part, state, and variant has been validated through the mirror story process by this point, final story implementation should be straightforward and low-error: apply the same CSS that made the mirror stories pass, construct the story files to the standard conventions, no comparison step needed.
+Rationale: by the time the mirror cycle is complete, the component sub-agent has accumulated substantial context (diff analysis, rework history, intermediate state) that is irrelevant to final story authorship. A fresh agent starts with full context headroom and only what it needs: the skill doc, the component taxonomy (with the validated CSS decisions), and the story conventions.
 
-**Context window consideration:** Whether the final story step is handled by the same component sub-agent or handed off to a fresh agent depends on how much context headroom remains after the mirror story cycle. If context is running low, the sub-agent should produce a handoff and stop rather than attempting final stories in a degraded state. The primary orchestrator is responsible for deciding whether to dispatch a new agent for this step.
+Because every sub-part, state, and variant has been validated through the mirror story process, final story implementation should be straightforward and low-error — no comparison step needed.
+
+**Inputs for the final-stories sub-agent:**
+- Skill doc
+- Component taxonomy: `agent/reference-stories/{component}-taxonomy.md` (includes Decisions section)
+- Component-wide findings doc: `agent/reference-stories/{component}-findings.md` (work log provides full CSS history)
+- Story conventions (from Storybook MCP or skill doc)
 
 ---
 

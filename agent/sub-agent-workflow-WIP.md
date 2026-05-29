@@ -33,7 +33,7 @@ Comparison sub-sub-agent (one per story iteration)
 ├── Identifies failing specimens and sub-parts using the taxonomy
 ├── Develops and validates a CSS theory using matched CSS + overrides
 ├── Writes findings to story findings doc
-└── Notifies component sub-agent on completion; retires
+└── Notifies component sub-agent on completion (automatic via run_in_background); retires
 
 Final-stories sub-agent (fresh, one per component)
 ├── Launched by primary after component sub-agent passes final verification sweep
@@ -199,28 +199,44 @@ Per-story, per-iteration entries written by the sub-agent after each rework:
 
 ## Cycling Loop
 
-After all initial implementations are complete, the sub-agent cycles:
+The cycling loop is **notification-driven** — the sub-agent waits for completion notifications from sub-sub-agents rather than polling. A `ScheduleWakeup` watchdog guards against silent failures.
+
+After all initial story implementations are complete (all sub-sub-agents already launched):
 
 ```
-repeat:
-  for each story in registry:
-    if Status == Pass: skip
-    if Status == In review: skip (sub-sub-agent running)
-    if Status == Stuck: STOP — report to primary agent
-    if Status == Fail:
-      read story findings doc
-      rework CSS per findings
-      update story front matter: Status = In review
-      update component findings doc (registry + work log)
-      re-launch sub-sub-agent (background)
-      re-check CSS change scope — if shared selector modified:
-        flag affected stories; relaunch their sub-sub-agents too
-  if all Pass: proceed autonomously to Final Verification Sweep
-  if any Stuck or Timeout: stop — report to primary agent
-  // else: some still In review — loop again (sub-sub-agents are running)
+schedule ScheduleWakeup (20 min)   // initial watchdog
+
+on sub-sub-agent notification:
+  read story findings doc
+  update component findings registry
+
+  if Status == Stuck:
+    report to primary agent; stop
+
+  if Status == Fail:
+    rework CSS per findings
+    update story front matter: Status = In review
+    update component findings doc (registry + work log)
+    re-check CSS change scope — if shared selector modified:
+      flag affected stories; relaunch their sub-sub-agents too
+    re-launch sub-sub-agent (background)
+    reset watchdog: schedule new ScheduleWakeup (20 min)
+
+  if Status == Pass:
+    if all stories Pass: cancel watchdog intent; proceed to Final Verification Sweep
+    else: reset watchdog: schedule new ScheduleWakeup (20 min)
+
+on ScheduleWakeup:
+  if any stories still In review:
+    mark those stories Timeout in registry
+    report to primary agent; stop
+  else:
+    ignore (stale wakeup — all sub-sub-agents already completed)
 ```
 
-**On notification vs. polling:** The cycling loop above is polling-based — the sub-agent loops and reads findings docs directly, requiring no completion callbacks from sub-sub-agents. This is simpler to reason about and avoids the need for an explicit notification mechanism. Trade-off: slightly less responsive than a notification-driven approach if there are long gaps between sub-sub-agent completions. Given the loop is reading small files, polling cost is negligible.
+**On ScheduleWakeup:** `ScheduleWakeup` has no cancel mechanism. "Cancel watchdog intent" above means: when the wakeup eventually fires, the `else` branch handles it as a stale wakeup. The 20-minute window resets on every sub-sub-agent notification, so the watchdog only fires if no sub-sub-agent has reported in 20 consecutive minutes — the definition of a silent failure.
+
+**Status values** (per-story front matter): `In review` | `Pass` | `Fail` | `Stuck` | `Timeout`
 
 ---
 

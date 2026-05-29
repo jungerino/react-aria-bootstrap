@@ -70,7 +70,7 @@ if all components have reported final-stories-done:
   compile batch report; present to user
 ```
 
-The primary agent advances each component independently as notifications arrive — it does not wait for all components to finish before moving any of them forward. While waiting with nothing to advance, state: "Awaiting sub-agent results."
+The primary agent advances each component independently as notifications arrive — it does not wait for all components to finish before moving any of them forward.
 
 ---
 

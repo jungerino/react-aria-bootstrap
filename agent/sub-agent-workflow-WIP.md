@@ -13,7 +13,7 @@ Working design document for the three-tier agent architecture intended to scale 
 
 ```
 Primary agent (orchestrator)
-├── Dispatches component sub-agents — one per component (staggered)
+├── Dispatches component sub-agents — one per component, simultaneously
 ├── Event loop: advances each component through verification and final stories
 │   as completions arrive, without waiting for all components to finish
 └── Surfaces problems to user; compiles batch report when all done
@@ -46,7 +46,9 @@ Final-stories sub-agent (fresh, one per component)
 
 ## Primary Agent (Orchestrator)
 
-Stagger component sub-agents: dispatch the next after the previous one has started its first comparison. Avoids resource contention and keeps coordination state simple.
+Dispatch all component sub-agents simultaneously. The per-component, per-story file structure eliminates write conflicts; Storybook and Playwright are stateless with respect to concurrency. Staggering is not required.
+
+**Note:** The Claude Code harness may impose a cap on concurrent background agents. This has not been verified empirically. If agents appear to be silently queued, test by launching 5 simultaneously and observing behavior.
 
 Each sub-agent prompt must be fully self-contained — see Component Sub-Agent Inputs below.
 

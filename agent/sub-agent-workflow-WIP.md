@@ -258,7 +258,8 @@ Because every sub-part, state, and variant has been validated through the mirror
 - Skill doc
 - Component taxonomy: `agent/reference-stories/{component}-taxonomy.md` (includes Decisions section)
 - Component-wide findings doc: `agent/reference-stories/{component}-findings.md` (work log provides full CSS history)
-- Story conventions (from Storybook MCP or skill doc)
+- Story format conventions: call `get-storybook-story-instructions` via Storybook MCP
+- Story content principles: this skill doc (specimen layout, state coverage, Bootstrap-specific patterns)
 
 ---
 

@@ -188,12 +188,8 @@ Per-story, per-iteration entries written by the sub-agent after each rework:
 
 **CSS changes made:**
 - [selector/property]: [old value] → [new value] (file:line)
-- Shared selectors modified: [list — triggers shared-selector recheck]
+- Shared selectors modified: [list] → stories reset to In review and relaunched: [list]
 ```
-
-**Open question:** What else belongs in the work log? Current candidates:
-- Story implementation order
-- Cross-story impacts (which stories were rechecked due to a shared-selector change)
 
 ---
 
@@ -218,7 +214,7 @@ on sub-sub-agent notification:
     update story front matter: Status = In review
     update component findings doc (registry + work log)
     re-check CSS change scope — if shared selector modified:
-      flag affected stories; relaunch their sub-sub-agents too
+      set affected stories to Status = In review; relaunch their sub-sub-agents too
     re-launch sub-sub-agent (background)
     reset watchdog: schedule new ScheduleWakeup (20 min)
 

@@ -59,7 +59,7 @@ on notification from component sub-agent:
   if status == verification-sweep-passed:
     launch fresh final-stories sub-agent for this component (background)
 
-  if status == Stuck or Timeout:
+  if status == Stuck or Timeout or Context exhausted:
     surface to user immediately with component name and stuck story
     continue waiting for other components
 
@@ -117,7 +117,7 @@ After all stories are implemented, begin the cycling loop.
 **Front matter (maintained by sub-sub-agent):**
 
 ```yaml
-Status: In review | Pass | Fail | Stuck
+Status: In review | Pass | Fail | Stuck | Context exhausted
 Iteration: <n>
 Stuck: <n>   # consecutive iterations that failed to improve Diff%
 ```
@@ -130,6 +130,7 @@ Stuck: <n>   # consecutive iterations that failed to improve Diff%
 - Sub-sub-agent completes, diff fails, no improvement: `Status = Fail`, `Iteration++`, `Stuck++`
 - After rework by sub-agent: `Status = In review`
 - When `Stuck` reaches threshold (default: 3): `Status = Stuck`
+- Sub-sub-agent detects context compression: `Status = Context exhausted`
 
 **Body (appended per iteration by sub-sub-agent):**
 
@@ -210,7 +211,7 @@ on sub-sub-agent notification:
   read story findings doc
   update component findings registry
 
-  if Status == Stuck:
+  if Status == Stuck or Context exhausted:
     report to primary agent; stop
 
   if Status == Fail:
@@ -236,7 +237,9 @@ on ScheduleWakeup:
 
 **On ScheduleWakeup:** `ScheduleWakeup` has no cancel mechanism. "Cancel watchdog intent" above means: when the wakeup eventually fires, the `else` branch handles it as a stale wakeup. The 20-minute window resets on every sub-sub-agent notification, so the watchdog only fires if no sub-sub-agent has reported in 20 consecutive minutes — the definition of a silent failure.
 
-**Status values** (per-story front matter): `In review` | `Pass` | `Fail` | `Stuck` | `Timeout`
+**On context compression (sub-agent level):** If the sub-agent itself detects that its prior conversation context has been compressed/summarized by the harness, it should report `Context exhausted` to the primary agent and stop — same handling as `Stuck`. Do not continue work after compression; quality is unreliable. Detection mechanism: the agent observes that earlier messages in its context have been replaced by a summary. There is no programmatic API to query remaining context %; any agent that reports a specific percentage is estimating or confabulating.
+
+**Status values** (per-story front matter): `In review` | `Pass` | `Fail` | `Stuck` | `Timeout` | `Context exhausted`
 
 ---
 
@@ -297,6 +300,12 @@ Script outputs:
 
 - Pass: diff% < 0.5%
 - Fail: diff% ≥ 0.5%
+
+### Context compression
+
+If the sub-sub-agent detects that its prior conversation context has been compressed/summarized by the harness, it must write `Status: Context exhausted` to the story findings doc and exit. Do not attempt further analysis — quality after compression is unreliable.
+
+Detection: the agent observes that earlier messages in its context have been replaced by a summary. There is no API to query remaining context %; any agent reporting a specific percentage is estimating or confabulating.
 
 ---
 

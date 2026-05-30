@@ -80,7 +80,6 @@ The sub-agent prompt must include:
 
 - This skill doc
 - Component taxonomy: `agent/reference-stories/{component}-taxonomy.md` (includes a `## Decisions` section)
-- Relevant entries from `agent/component-decisions.md` for the assigned component
 - Bootstrap KB index: `agent/bootstrap-kb/README.md` — sub-agent loads relevant KB files as needed
 - Path to mirror stories file: `stories/bootstrap-test/{ComponentName}/{ComponentName}.mirror.stories.tsx`
 - Path to write the component findings doc: `agent/reference-stories/{component}-findings.md`

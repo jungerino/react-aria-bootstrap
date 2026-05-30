@@ -242,7 +242,7 @@ on ScheduleWakeup:
 
 After all stories have reached `Status = Pass`, run one final round of sub-sub-agent comparisons across all stories. Rationale: fixing story N may have introduced a regression in story M via a shared selector, and the cycling loop only rechecks stories when the sub-agent knows a shared selector was modified. The final sweep catches anything that slipped through.
 
-**Open question:** Should the final sweep use the same pass/fail threshold (0.5%), or a tighter threshold to catch subtle regressions? Current thinking: same threshold for consistency.
+The final sweep uses the same pass/fail threshold (0.5%) as the cycling loop.
 
 ---
 

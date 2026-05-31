@@ -127,7 +127,7 @@ When a React Aria structural variant has no Bootstrap modifier class equivalent,
 
 When the mapping encounters a genuine fork — multiple legitimate Bootstrap variants for the same semantic role, or a React Aria feature with multiple viable Bootstrap implementation paths — do not resolve it unilaterally. Record each open question in the **`## Phase 1 — Taxonomy decisions`** section of the current `agent/review-iteration-N.md`, at the top of the component's subsection, under a **Decisions needed** heading. Stop short of recommending an answer. Do not put a Decisions needed section in the taxonomy file itself.
 
-Once the user resolves a decision, record the answer in `agent/component-decisions.md` (one component section per component; resolved decisions only — no open questions). The review doc retains the original questions as a historical record.
+Once the user resolves a decision, record the answer in the `## Decisions` section of the component's taxonomy doc (`agent/reference-stories/{component}-taxonomy.md`). The review doc retains the original questions as a historical record.
 
 **Four trigger patterns** must elevate items to Decisions needed:
 

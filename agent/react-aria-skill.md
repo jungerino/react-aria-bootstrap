@@ -29,8 +29,7 @@ Goal: Implement Bootstrap-styled React Aria components that visually match the B
 On an experiment branch (`{experiment-name}_N`), load at session start:
 
 1. `agent/react-aria-skill.md` — this document; the single source of truth for workflow and principles
-2. `agent/component-decisions.md` — resolved decisions; implementation must honor every entry for components in scope
-3. `agent/reference-stories/{component}-taxonomy.md` — for each component in this iteration
+2. `agent/reference-stories/{component}-taxonomy.md` — for each component in this iteration; the `## Decisions` section is authoritative for resolved design decisions
 4. `agent/bootstrap-kb/` — Bootstrap reference; load via `README.md` then selectively per component
 
 Then create a TodoWrite enumerating every step in the current phase before doing anything else.
@@ -126,7 +125,7 @@ Repeat for each component. User review happens after the full component set is c
 **2a. Read and internalize inputs**
 
 1. Read `agent/reference-stories/{component}-taxonomy.md` in full.
-2. Read `agent/component-decisions.md` entry for this component.
+2. Read the `## Decisions` section of the component taxonomy.
 3. Call `mcp__react-aria__get_react_aria_page` for the component. Cross-check: every `data-*` attribute in the docs must appear in the taxonomy's state mappings.
 4. Load Bootstrap KB: `components.md` entry for the matched Bootstrap component → `states.md` → `patterns.md` if a DOM conflict entry exists.
 5. **Review all principles in this skill** before writing any code. Flag any principle with structural or sizing implications (P008, P010, P016, P040, P041, P042) — these must be addressed during TSX/bridge implementation, not discovered at diff time.
@@ -135,7 +134,7 @@ Repeat for each component. User review happens after the full component set is c
 
 - Apply `className` render-prop pattern (P002) for Bootstrap classes.
 - Use `variantClassMap` for variant props (P007); read Bootstrap docs before finalizing the variant set.
-- Honor all entries in `component-decisions.md`; these are pre-resolved — do not re-derive them.
+- Honor all decisions in the taxonomy's `## Decisions` section; these are pre-resolved — do not re-derive them.
 - Apply Bootstrap component classes (P013); reserve utility classes for genuine one-off cases.
 - Address all structural and sizing principles identified in step 2a (e.g. P041 hidden sizer for value-displaying triggers).
 

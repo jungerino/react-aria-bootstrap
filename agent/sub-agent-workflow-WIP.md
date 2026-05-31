@@ -232,7 +232,7 @@ on ScheduleWakeup:
 
 **On ScheduleWakeup:** `ScheduleWakeup` has no cancel mechanism. "Cancel watchdog intent" above means: when the wakeup eventually fires, the `else` branch handles it as a stale wakeup. The 20-minute window resets on every sub-sub-agent notification, so the watchdog only fires if no sub-sub-agent has reported in 20 consecutive minutes — the definition of a silent failure.
 
-**On context compression (sub-agent level):** If the sub-agent itself detects that its prior conversation context has been compressed/summarized by the harness, it should report `Context exhausted` to the primary agent and stop — same handling as `Stuck`. Do not continue work after compression; quality is unreliable. Detection mechanism: the agent observes that earlier messages in its context have been replaced by a summary. There is no programmatic API to query remaining context %; any agent that reports a specific percentage is estimating or confabulating.
+**On context compression (sub-agent level):** If the sub-agent itself detects that its prior conversation context has been compressed/summarized by the harness, it should report `Context exhausted` to the primary agent and stop — same handling as `Stuck`. Do not continue work after compression; quality is unreliable. Detection: the agent observes that earlier messages in its context have been replaced by a summary.
 
 **Status values** (per-story front matter): `In review` | `Pass` | `Fail` | `Stuck` | `Timeout` | `Context exhausted`
 
@@ -301,7 +301,7 @@ Script outputs:
 
 If the sub-sub-agent detects that its prior conversation context has been compressed/summarized by the harness, it must write `Status: Context exhausted` to the story findings doc and exit. Do not attempt further analysis — quality after compression is unreliable.
 
-Detection: the agent observes that earlier messages in its context have been replaced by a summary. There is no API to query remaining context %; any agent reporting a specific percentage is estimating or confabulating.
+Detection: the agent observes that earlier messages in its context have been replaced by a summary.
 
 ---
 

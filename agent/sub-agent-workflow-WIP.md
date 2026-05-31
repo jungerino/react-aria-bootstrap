@@ -48,7 +48,7 @@ Final-stories sub-agent (fresh, one per component)
 
 Dispatch all component sub-agents simultaneously.
 
-**Note:** The Claude Code harness may impose a cap on concurrent background agents. This has not been verified empirically. If agents appear to be silently queued, test by launching 5 simultaneously and observing behavior.
+**Note:** The Claude Code harness may impose a cap on concurrent background agents. At full scale (primary + 5 component sub-agents + multiple concurrent sub-sub-agents per component) the total could exceed 25 simultaneous agents. If the harness queues rather than immediately runs a spawned agent, that agent may sit silent long enough to trip the ScheduleWakeup watchdog, producing a false Timeout. This is recoverable — the user sees it and can relaunch — but may occur without indicating a true problem. Monitor on first real run; no design change needed until the failure mode is observed.
 
 Each sub-agent prompt must be fully self-contained — see Component Sub-Agent Inputs below.
 

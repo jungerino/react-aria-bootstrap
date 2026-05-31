@@ -199,119 +199,258 @@ Both implementation quality and visual comparison methodology are in scope.
 
 ## Multi-Agent Batch Workflow
 
-For batches of multiple components, use a three-tier agent hierarchy to conserve primary agent context and maximize parallelism.
+For batches of multiple components, use a three-tier agent hierarchy.
 
 ### Architecture
 
 ```
 Primary agent (orchestrator)
-├── Dispatches component sub-agents — one per component (staggered, background)
-└── Monitors completion notifications; compiles final batch report
+├── Dispatches component sub-agents — one per component, simultaneously
+├── Event loop: advances each component independently as completions arrive
+└── Surfaces problems to user; compiles batch report when all done
 
 Component sub-agent (one per component)
-├── Reads: this skill doc + component taxonomy + component-decisions.md
-├── Runs the story-level implementation pipeline (see below)
+├── Reads: this skill doc, component taxonomy (incl. Decisions section), Bootstrap KB index
+├── Implements each mirror story (with CSS extraction before each comparison)
+├── Maintains component-wide findings doc: agent/reference-stories/{component}-findings.md
 ├── Dispatches comparison sub-sub-agents (background, one per story)
-├── Writes findings to agent/{component}-findings.md
-└── Reports final status to primary
+├── Cycles until all stories Pass or any Stuck / Timeout / Context exhausted
+├── Runs final verification sweep when all stories Pass
+└── Reports status to primary on completion
 
-Comparison sub-sub-agent (fire-and-forget)
-├── Receives: specimen manifest + diff paths + taxonomy path + CSS path
-├── Runs pixel diff, reads all three output images (reference, impl, diff)
-├── Develops and validates a theory for each failure
-├── Writes findings to agent/{component}-findings.md
-└── Notifies component sub-agent on completion
+Comparison sub-sub-agent (one per story iteration)
+├── Runs pixel diff (Playwright + pixelmatch)
+├── Reads all three output images (reference, implementation, diff)
+├── Identifies failing specimens using the taxonomy
+├── Develops and validates a CSS theory using matched CSS + overrides
+├── Writes findings to story findings doc
+└── Notifies component sub-agent on completion; retires
+
+Final-stories sub-agent (fresh, one per component)
+├── Launched by primary after component sub-agent passes final verification sweep
+├── Reads: this skill doc, component taxonomy, component-wide findings doc
+└── Implements final styled stories
 ```
 
-### Dispatching (orchestrator behavior)
+### Primary Agent
 
-Stagger component sub-agents: dispatch the next after the previous one has started its first comparison run. This avoids write conflicts and keeps the orchestrator's coordination state simple.
+Dispatch all component sub-agents simultaneously.
 
-Each component sub-agent prompt must be fully self-contained. Include:
-- Component name and paths to: this skill doc, component taxonomy, `agent/component-decisions.md`, Bootstrap KB
-- Path to write findings: `agent/{component}-findings.md`
-- Instruction to report completion status when all mirror stories are clean and final stories are written
+**Note:** The harness may cap concurrent background agents. At full scale (primary + 5 component sub-agents + multiple concurrent sub-sub-agents) the total can exceed 25. If the harness queues agents silently, a queued sub-sub-agent may sit long enough to trip the ScheduleWakeup watchdog, producing a false Timeout — recoverable but noisy. Monitor on first real run.
 
-While sub-agents are running: if there is remaining implementation work in the current queue, proceed with it. Otherwise state "Awaiting sub-agent results" and wait.
+Each sub-agent prompt must be fully self-contained — see Component Sub-Agent Inputs.
 
-### Story-level pipeline (component sub-agent behavior)
+**Event loop** (while any component sub-agents are running):
+
+```
+on notification from component sub-agent:
+  if status == verification-sweep-passed:
+    launch fresh final-stories sub-agent for this component (background)
+
+  if status == Stuck, Timeout, or Context exhausted:
+    surface to user immediately with component name and stuck story
+    continue waiting for other components
+
+  if status == final-stories-done:
+    log completion for this component
+
+if all components have reported final-stories-done:
+  compile batch report; present to user
+```
+
+### Component Sub-Agent Inputs
+
+- This skill doc
+- Component taxonomy: `agent/reference-stories/{component}-taxonomy.md` (includes `## Decisions` section)
+- Bootstrap KB index: `agent/bootstrap-kb/README.md` — load relevant KB files as needed
+- Path to mirror stories file: `stories/bootstrap-test/{ComponentName}/{ComponentName}.mirror.stories.tsx`
+- Path to component findings doc: `agent/reference-stories/{component}-findings.md`
+
+### Story-Level Pipeline
 
 For each mirror story:
+
 1. Implement CSS and write the mirror story
-2. Launch a comparison sub-sub-agent for that story (`run_in_background: true`)
-3. Proceed to the next mirror story without waiting
+2. Run CSS extraction:
+   ```
+   node scripts/extract-story-css.mjs \
+     --story {mirror-story-id} \
+     --out   agent/reference-stories/mirror-css/{component}-{story}.css
+   ```
+3. Create story findings doc at `agent/reference-stories/{component}-{story}-findings.md`:
+   - `Status: In review` / `Iteration: 0` / `Stuck: 0`
+4. Launch comparison sub-sub-agent (`run_in_background: true`)
+5. Proceed to the next mirror story without waiting
 
-On comparison notification:
-- Read the findings from `agent/{component}-findings.md` (written by the sub-sub-agent)
-- Fix identified CSS issues
-- Re-dispatch comparison if fixes were applied
-- **CSS fix scope warning:** if a fix modifies a shared selector (e.g., the base trigger class), that fix may affect other stories whose comparisons are already running or complete — flag and rerun comparisons for any story that uses the modified selector
+After all stories are implemented, begin the cycling loop.
 
-After all mirror stories are clean:
-- Write the final styled stories (no comparison needed — mirror story coverage is sufficient)
-- Append a completion summary to `agent/{component}-findings.md`
-- Notify primary orchestrator
+### Per-Story Findings Doc
 
-### Comparison sub-sub-agent prompt template
+**Path:** `agent/reference-stories/{component}-{story}-findings.md`
 
-The prompt must be fully self-contained:
+**Front matter:**
+
+```yaml
+Status: In review | Pass | Fail | Stuck | Timeout | Context exhausted
+Iteration: <n>
+Stuck: <n>
+```
+
+**Status transitions:**
+
+- Initial: `In review`
+- Sub-sub-agent completes, diff passes: `Status = Pass`, `Iteration++`, `Stuck = 0`
+- Sub-sub-agent completes, diff fails, improved: `Status = Fail`, `Iteration++`, `Stuck = 0`
+- Sub-sub-agent completes, diff fails, no improvement: `Status = Fail`, `Iteration++`, `Stuck++`
+- After rework by sub-agent: `Status = In review`
+- When `Stuck` reaches threshold (default: 3): `Status = Stuck`
+- Sub-sub-agent detects context compression: `Status = Context exhausted`
+
+**Body (appended per iteration by sub-sub-agent):**
 
 ```
-You are performing a visual regression check for a single story of the [ComponentName] component.
+## Iteration {N}
 
-## Task
+**Diff%:** {value} | **Status:** pass / fail
 
-1. Run the pixel diff command below.
-2. Read all three output images (reference.png, implementation.png, diff.png) using the Read tool.
-3. For each red region in diff.png, identify which specimen produced it and describe where
-   the red appears (border, background, text, icon, etc.).
-4. Consult the component taxonomy at [taxonomy path] to name sub-parts correctly.
-5. Develop a theory of the CSS cause.
-6. Validate the theory: read [CSS path] and confirm whether the expected selector/property
-   is present, missing, or incorrect. Cite the specific line.
-7. Write findings to [findings doc path] in the format below.
-8. Report completion status.
+### Specimens
 
-## Specimens (in story order)
-
-1. [Label — e.g. Trigger — default]
-2. [Label — e.g. Trigger — hover]
-...
-
-## Paths
-
-- Diff output dir:   [absolute path]
-- Component CSS:     [absolute path]
-- Taxonomy doc:      [absolute path]
-- Findings doc:      [absolute path — agent/{component}-findings.md]
-
-## Pixel diff command
-
-node scripts/compare-stories.mjs \
-  --reference [reference-story-id] \
-  --impl      [mirror-story-id] \
-  --out       [output-dir] \
-  --threshold 0.005
-
-## Findings doc format (append under a ## Story: [name] heading)
-
-**Run:** [N] | **Status:** pass / fail / pending-fix
-
-PASS: [specimen numbers]
+PASS: [specimen labels]
 
 FAIL:
-- Specimen [N] ([label]): Red at [location]. Theory: [selector/property] is [missing/wrong value].
-  Validated: [yes/no — cite file:line].
+- Specimen [label]: Red at [location].
+  Theory: [selector/property] is [missing/wrong value].
+  Validated: [yes/no — cite file:line]
 
 UNRESOLVED:
-- Specimen [N]: [describe what is visible but not explained]
+- Specimen [label]: [describe what is visible but unexplained]
 ```
 
-### Per-component findings doc
+### Component-Wide Findings Doc
 
-`agent/{component}-findings.md` is written by comparison sub-sub-agents and read by the component sub-agent. One file per component — no shared state between components, no write conflicts.
+**Path:** `agent/reference-stories/{component}-findings.md`
 
-The primary orchestrator does not read findings docs directly; it receives only the component sub-agent's final status report.
+**Story Registry** (updated after each sub-sub-agent run):
+
+| Story | Status | Iteration | Stuck | Diff% |
+|-------|--------|-----------|-------|-------|
+| trigger-states | Fail | 2 | 0 | 1.3% |
+| open-states | Pass | 1 | 0 | 0.2% |
+
+**Work Log** (per-story, per-iteration, written by sub-agent after each rework):
+
+```
+## {story} — Iteration {N}
+
+**Sub-sub-agent findings:** (copied from story findings doc)
+- Specimen [label]: [theory + validation]
+
+**Principles consulted:**
+- [Cite specific skill principles or component decisions that guided the fix]
+
+**CSS changes made:**
+- [selector/property]: [old value] → [new value] (file:line)
+- Shared selectors modified: [list] → stories reset to In review and relaunched: [list]
+```
+
+### Cycling Loop
+
+Notification-driven. A `ScheduleWakeup` watchdog guards against silent failures.
+
+After all initial stories are implemented:
+
+```
+schedule ScheduleWakeup (20 min)
+
+on sub-sub-agent notification:
+  read story findings doc
+  update component findings registry
+
+  if Status == Stuck or Context exhausted:
+    report to primary agent; stop
+
+  if Status == Fail:
+    rework CSS per findings
+    update story front matter: Status = In review
+    update component findings doc (registry + work log)
+    re-check CSS change scope — if shared selector modified:
+      set affected stories to Status = In review; relaunch their sub-sub-agents too
+    re-launch sub-sub-agent (background)
+    reset watchdog: schedule new ScheduleWakeup (20 min)
+
+  if Status == Pass:
+    if all stories Pass: proceed to Final Verification Sweep
+    else: reset watchdog: schedule new ScheduleWakeup (20 min)
+
+on ScheduleWakeup:
+  if any stories still In review:
+    mark those stories Timeout in registry
+    report to primary agent; stop
+  else:
+    ignore (stale wakeup)
+```
+
+`ScheduleWakeup` has no cancel mechanism — the watchdog only fires if no sub-sub-agent has reported in 20 consecutive minutes (the window resets on every notification).
+
+**On context compression (sub-agent level):** If the sub-agent detects that its prior context has been compressed/summarized, report `Context exhausted` to the primary and stop. Detection: earlier messages have been replaced by a summary.
+
+### Final Verification Sweep
+
+After all stories reach `Pass`, launch one final round of sub-sub-agent comparisons across all stories using the same 0.5% threshold. This catches regressions from shared-selector changes that slipped through the cycling loop.
+
+### Final Story Implementations
+
+Handled by a **fresh final-stories sub-agent** launched by the primary after the verification sweep passes.
+
+**Inputs:**
+- This skill doc
+- Component taxonomy: `agent/reference-stories/{component}-taxonomy.md`
+- Component-wide findings doc: `agent/reference-stories/{component}-findings.md`
+- Story format conventions: call `get-storybook-story-instructions` via Storybook MCP
+- Story content principles: this skill doc (specimen layout, state coverage, Bootstrap-specific patterns)
+
+### Sub-Sub-Agent
+
+**Inputs:**
+- Mirror story URL: `?path=/story/bootstrap-test-mirror-{component}--{story}`
+- Reference story URL: `?path=/story/bootstrap-reference-{component}--{story}`
+- Story findings doc: `agent/reference-stories/{component}-{story}-findings.md`
+- Component taxonomy: `agent/reference-stories/{component}-taxonomy.md`
+- Component mirror stories TSX: `stories/bootstrap-test/{ComponentName}/{ComponentName}.mirror.stories.tsx`
+- Bootstrap overrides: `src/scss/_bootstrap-overrides.scss`
+- Matched Bootstrap CSS: `agent/reference-stories/mirror-css/{component}-{story}.css`
+
+**Pixel diff command:**
+
+```
+node scripts/compare-stories.mjs \
+  --reference {reference-story-id} \
+  --impl      {mirror-story-id} \
+  --out       .story-diffs/{component}/{story} \
+  --threshold 0.005
+```
+
+**Pass/fail threshold:** diff% < 0.5% = Pass; ≥ 0.5% = Fail
+
+**Context compression:** If the sub-sub-agent detects that its prior context has been compressed/summarized, write `Status: Context exhausted` to the story findings doc and exit. Detection: earlier messages have been replaced by a summary.
+
+### CSS Extraction Script
+
+```
+node scripts/extract-story-css.mjs \
+  --story {mirror-story-id} \
+  --out   agent/reference-stories/mirror-css/{component}-{story}.css
+```
+
+Re-run on every implementation iteration — new selectors may be introduced. Output is git-tracked and overwritten each run.
+
+### Configurable Knobs
+
+| Parameter | Default | Notes |
+|-----------|---------|-------|
+| Stuck counter threshold | 3 | Consecutive non-improving iterations before Status = Stuck |
+| Pass/fail threshold | 0.5% | Diff% cutoff |
+| pixelmatch threshold | 0.005 | Per-pixel color sensitivity |
 
 ---
 

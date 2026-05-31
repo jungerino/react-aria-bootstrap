@@ -96,3 +96,13 @@ iteration: 0
 ### Confidence: Medium
 
 *Core trigger/popover/item mapping is clear per patterns.md 2.2. The dual-counterpart trigger strategy (M014) is well-documented. Medium confidence because the Popover positioning interaction with Bootstrap's `.dropdown-menu` positioning model requires implementation testing to confirm — particularly whether React Aria's inline positioning styles will conflict with Bootstrap's class-based positioning approach.*
+
+## Decisions
+
+**Trigger button styling strategy (M014):** Remove `.btn` from the trigger entirely and use `.form-select` class alone, relying on direct selector bridges for all states. Full state CSS written from scratch without inheriting `.btn` token behavior.
+
+**FieldError visibility:** Let React Aria control rendering — FieldError only renders when invalid. No always-present hidden element.
+
+**Popover positioning:** Use React Aria's placement props to position the popover below the trigger, matching Bootstrap's default dropdown placement.
+
+**Validation state — valid:** Skip entirely. Out of scope for this mapping.

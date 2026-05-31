@@ -95,3 +95,17 @@ These sub-parts use Button, so they inherit Button's state mappings from the But
 ### Confidence: Medium
 
 *Calendar has no Bootstrap counterpart. The CalendarCell-as-`.btn` analogy holds for token reuse but cannot use the `.btn` class directly due to table element conflicts. Overall approach is custom CSS using Bootstrap token values — the mapping is structurally sound but requires design decisions for cell shape, today indicator, and sizing that are not resolvable from Bootstrap's component system alone.*
+
+## Decisions
+
+**Cell shape:** Circle — `border-radius: 9999px` via custom CSS in `augments.scss`.
+
+**Date cell and nav button base class:** Both use `.btn.btn-outline-secondary.btn-sm`. `--bs-btn-color` overridden to `--bs-body-color` for correct light/dark theme response. `--bs-btn-border-color`, `--bs-btn-hover-border-color`, and `--bs-btn-active-border-color` overridden to `transparent` — the 2px border exists only to prevent layout shift when the today indicator appears.
+
+**Cell and nav button sizing:** Both 2.5em × 2.5em with `padding: 0` and `display: flex; align-items: center; justify-content: center`. Explicit dimensions guarantee a perfect square regardless of content width.
+
+**"Today" visual indicator:** Border ring — `border: 2px solid var(--bs-primary)`. All cells carry the same border thickness at all times (transparent by default) to prevent layout shift.
+
+**Outside-month cells:** Show muted — display with `.text-muted` color rather than hiding.
+
+**Unavailable date styling:** `text-decoration: line-through` + `color: var(--bs-danger-text-emphasis)`.

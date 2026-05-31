@@ -88,3 +88,19 @@ iteration: 0
 ### Confidence: High
 
 *Section sub-part and numbered list group have no Bootstrap counterpart, but the core Root + Item mapping is unambiguous.*
+
+## Decisions
+
+**Grid layout variant (`layout="grid"`):** Custom CSS in `augments.scss`. Expose `grid-template-columns` as `--list-group-grid-columns` (default 3). No gap between items. Border and corner radius via the "background-as-border" pattern: `gap` and `padding` both set to `--bs-list-group-border-width`; `background-color` set to `--bs-list-group-border-color`. Container background shows through gap (internal grid lines) and padding (outer border). No item-level borders.
+
+**Grid corner radii:** `overflow: hidden` clipping is unreliable for grid children and fights Bootstrap's last-child border-radius rule. Instead, explicit inner radii on the four corner items: `calc(--bs-list-group-border-radius - --bs-list-group-border-width)`. `:first-child` and `:last-child` cover two corners; `:nth-child(3)` and `:nth-last-child(3)` cover the other two (hardcoded for the default 3-column count).
+
+**Section header visual:** Custom CSS based on Bootstrap's `.dropdown-header` pattern (not a non-interactive list item or divider). Background: `--bs-secondary-bg` (gray-200). `--bs-tertiary-bg` (gray-100) was rejected as too subtle to distinguish headers from items.
+
+**Numbered list group:** Out of scope.
+
+**Sectioned list border model:** When sections are present, the outer border and border-radius belong on the `.list-group` container (via `.list-group-sectioned` modifier), not on individual items. Items and section headers use only internal bottom borders. This prevents the broken-border appearance caused by non-item section header elements lacking side borders.
+
+**Contextual item colors:** Excluded from scope. Bootstrap's `.list-group-item-{variant}` per-item color classes are not exposed as a prop or passthrough.
+
+**Selection indicator:** Single-select has no indicator — selection expressed purely via `.active` token styling (background + text color change). Multi-select (`selectionMode="multiple"`) uses Bootstrap's `.form-check-input` checkbox pattern as the sole selection indicator; `.active` background fill is NOT applied — the checked checkbox is sufficient.

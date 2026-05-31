@@ -60,3 +60,9 @@ iteration: 0
 
 ### Confidence: High
 
+## Decisions
+
+**Variant API:** Single combined `variant` prop accepting all 16 values — solid variants (`"primary"`, `"secondary"`, `"success"`, `"danger"`, `"warning"`, `"info"`, `"light"`, `"dark"`) and outline variants (`"outline-primary"`, `"outline-secondary"`, etc.). No separate `outline` boolean prop.
+
+**`isPending` spinner rendering:** Spinner passed as children. The component switches between its normal children and the spinner child when `[data-pending]` is active. Matches React Aria's Vanilla CSS example pattern.
+

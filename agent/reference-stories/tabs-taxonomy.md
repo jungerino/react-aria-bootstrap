@@ -88,3 +88,13 @@ iteration: 0
 ### Confidence: High
 
 *Core TabList → `.nav.nav-tabs` and Tab → `.nav-link` mappings are direct. The panel visibility conflict (`.tab-pane` vs. `[data-inert]`) is well-understood and resolvable via compound selector. SelectionIndicator is additive (React Aria feature, not required by Bootstrap's model). The main open decision is which Bootstrap nav style to use as default — a design choice, not a mapping ambiguity.*
+
+## Decisions
+
+**Default tab style:** `.nav-underline` — thin underline on the active tab, no surrounding border.
+
+**SelectionIndicator:** Suppress — `display: none`. Active tab indication handled entirely by Bootstrap's `.nav-underline` token-based active border on the Tab itself.
+
+**Panel visibility strategy:** Skip `.tab-pane` entirely. TabPanel baseline is `display: block`; inactive panels hidden via `.react-aria-TabPanel[data-inert] { display: none }`. No Bootstrap visibility mechanism used.
+
+**Vertical orientation:** Custom CSS in `augments.scss`. The `.nav-underline` active underline (normally a bottom border) is repositioned to the right edge of the tab — a sidescore for the vertical layout.

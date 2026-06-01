@@ -52,7 +52,7 @@ This is a component library that layers **Bootstrap 5 visual styling** on top of
 **Test component set (iteration 0):** Button, ListBox, Select, Calendar, Tabs
 
 **Experiment docs:**
-- [Iteration Protocol](./agent/iteration-protocol.md) — how to run an iteration
+- [Iteration Protocol](./agent/iteration-protocol.md) — how to start and close out iterations for each experiment
 - [Mapping and References Skill](./agent/mapping-and-references-skill.md) — growing skill: taxonomy and story construction principles
 - [Bootstrap KB Index](./agent/bootstrap-kb/README.md) — Bootstrap knowledge base master index
 
@@ -105,7 +105,7 @@ Never assume component properties without verification through these tools.
 - [Project Vision](./agent/project-vision.md) — End goal, roadmap, and key architectural decisions
 
 ### Experiment
-- [Iteration Protocol](./agent/iteration-protocol.md) — Prescribed workflow for each mapping-and-references iteration
+- [Iteration Protocol](./agent/iteration-protocol.md) — How to start and close out iterations for each experiment (sub-agent-styling and mapping-and-references)
 - [Mapping and References Skill](./agent/mapping-and-references-skill.md) — Growing skill: taxonomy and story construction principles
 ### Knowledge Files
 - [React Aria Skill](./agent/react-aria-skill.md) — Workflow, principles, and visual comparison methodology for styling-implementation iterations; **load at session start on `styling-implementation_*` branches**

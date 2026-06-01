@@ -91,7 +91,7 @@ export default meta;
 Mirror story stub:
 ```tsx
 import type { Meta, StoryObj } from '@storybook/react';
-import { withBootstrapTest } from '../../_decorators';
+import { withBootstrapTest } from '../_decorators';
 
 const meta: Meta = {
   title: 'Bootstrap Test Mirror/{ComponentName}',

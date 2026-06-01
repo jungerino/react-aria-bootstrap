@@ -418,6 +418,7 @@ Handled by a **fresh final-stories sub-agent** launched by the primary after the
 - Component mirror stories TSX: `stories/bootstrap-test/{ComponentName}/{ComponentName}.mirror.stories.tsx`
 - Bootstrap overrides: `src/scss/_bootstrap-overrides.scss`
 - Matched Bootstrap CSS: `agent/reference-stories/mirror-css/{component}-{story}.css`
+  — `.faux-*` rules in this file (e.g. `.btn.faux-hover`) define the target visual appearance for interactive states; use them as the reference when assessing the corresponding `[data-*]` bridge rule. See the state mapping table for the `faux-*` → `data-*` correspondence.
 
 **Pixel diff command:**
 

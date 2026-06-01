@@ -2,5 +2,6 @@ node_modules/
 .DS_Store
 storybook-static/
 .claude/
+!.claude/settings.json
 .yarn/install-state.gz
 .story-diffs/

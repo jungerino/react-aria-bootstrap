@@ -200,6 +200,17 @@ Both implementation quality and visual comparison methodology are in scope.
 
 For batches of multiple components, use a three-tier agent hierarchy.
 
+### Never substitute for a blocked child agent
+
+This rule applies at every level of the hierarchy.
+
+If a child agent cannot proceed — due to a permissions error, context exhaustion, or any other blocker — it must report the blocker to its parent immediately and stop. The parent does the same: it surfaces the blocker to its own parent (or to the user, if it is the primary). No agent silently resolves a blocker or takes over implementation work from a blocked child. Blockers always propagate up to the user.
+
+Specifically:
+- **Primary agent:** if a component sub-agent reports a blocker, surface it to the user and stop waiting for that component. Do not implement TSX, bridge CSS, or stories in its place.
+- **Component sub-agent:** if a comparison sub-sub-agent reports a blocker, report it to the primary and stop. Do not run the comparison yourself or substitute your own analysis for the sub-sub-agent's diff output.
+- **All agents:** a permissions error is a blocker like any other. Report it; do not attempt a workaround.
+
 ### Architecture
 
 ```

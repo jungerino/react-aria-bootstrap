@@ -22,6 +22,8 @@
     "@storybook/react": "^9.0.18",
     "@storybook/react-webpack5": "^9.0.18",
     "@types/bootstrap": "^5",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
     "@vueless/storybook-dark-mode": "^9.0.6",
     "clsx": "^2.1.1",
     "lightningcss-loader": "^2.1.0",

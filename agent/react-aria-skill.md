@@ -215,8 +215,8 @@ Specifically:
 
 ```
 Primary agent (orchestrator)
-├── Dispatches component sub-agents — one per component, simultaneously
-├── Event loop: advances each component independently as completions arrive
+├── Dispatches component sub-agents — one at a time (serial)
+├── Waits for each component to complete before starting the next
 └── Surfaces problems to user; compiles batch report when all done
 
 Component sub-agent (one per component)
@@ -244,27 +244,29 @@ Final-stories sub-agent (fresh, one per component)
 
 ### Primary Agent
 
-Dispatch all component sub-agents simultaneously.
+**Dispatch component sub-agents serially — one at a time.** Wait for a component sub-agent to report `final-stories-done` (or a terminal error) before launching the next. This ensures the full concurrency budget is available to each component's sub-sub-agents and avoids silent queuing that is indistinguishable from a stuck agent.
 
-**Note:** The harness may cap concurrent background agents. At full scale (primary + 5 component sub-agents + multiple concurrent sub-sub-agents) the total can exceed 25. If the harness queues agents silently, a queued sub-sub-agent may sit long enough to trip the ScheduleWakeup watchdog, producing a false Timeout — recoverable but noisy. Monitor on first real run.
+**Concurrency note:** Parallel dispatch can be used if the total agent count (primary + component sub-agents + their concurrent sub-sub-agents) comfortably fits within the harness concurrency limit. In practice this means a single-component batch only. Do not dispatch multiple components in parallel until the ceiling is confirmed to be sufficient.
 
 Each sub-agent prompt must be fully self-contained — see Component Sub-Agent Inputs.
 
-**Event loop** (while any component sub-agents are running):
+**Loop** (once per component, in order):
 
 ```
-on notification from component sub-agent:
+launch component sub-agent (foreground — wait for completion)
+
+on completion:
   if status == verification-sweep-passed:
-    launch fresh final-stories sub-agent for this component (background)
+    launch final-stories sub-agent (foreground — wait for completion)
 
   if status == Stuck, Timeout, or Context exhausted:
     surface to user immediately with component name and stuck story
-    continue waiting for other components
+    stop — do not proceed to next component
 
   if status == final-stories-done:
-    log completion for this component
+    log completion; proceed to next component
 
-if all components have reported final-stories-done:
+when all components done:
   compile batch report; present to user
 ```
 
@@ -443,6 +445,10 @@ node scripts/compare-stories.mjs \
 
 **Pass/fail threshold:** diff% < 0.5% = Pass; ≥ 0.5% = Fail
 
+**Image analysis:** After every diff run, use the `Read` tool to load `reference.png`, `implementation.png`, and `diff.png` from the output directory and describe what is visible in each. Exit code alone is not sufficient — a small animated element can produce a non-zero diff while the rest of the story is pixel-perfect. If any of the three files is missing, that is a script failure — report it and stop; do not estimate or invent results. A run is only clean when all three files exist, have been read via tool call, and `diff.png` contains no red regions outside of the animation exception below.
+
+**Animation exception:** If after reading all three images the diff is localized to a single element and both screenshots show that element is visually correct but at different animation frames (e.g. a spinner at different rotation positions), treat the story as passing regardless of diff%. All four conditions must hold: (1) the diff region is fully contained within one element; (2) both screenshots show that element present and styled correctly; (3) the element is recognizably in an animated state (spinner, progress indicator, looping animation); (4) the rest of the story outside that element shows no red in diff.png. If any condition is uncertain, do not apply this exception — flag it as a design decision for the user instead.
+
 **Context compression:** If the sub-sub-agent detects that its prior context has been compressed/summarized, write `Status: Context exhausted` to the story findings doc and exit. Detection: earlier messages have been replaced by a summary.
 
 ### CSS Extraction Script
@@ -543,7 +549,16 @@ transform: (prefix, selector) => {
 
 **P023: css-native-visual — Let Bootstrap render CSS-native visual elements — don't add a JSX icon:** When Bootstrap renders a visual indicator via a pseudo-element (`::before`, `::after`) or `background-image` (e.g. dropdown caret, checkbox checkmark, breadcrumb separator), do not add a JSX icon alongside it. Remove any existing JSX icon and do not suppress the pseudo-element with `content: none` or similar. Adding both produces duplicates; suppressing Bootstrap's version loses the dark mode and theme token wiring it carries.
 
-**P024: caret-flip — Directional caret flip for expandable elements:** Any caret on an element that opens a popover, dropdown, or disclosure must rotate 180° when open. Read open state from `[data-open]` on the component root or `[aria-expanded="true"]` on the trigger. Use `transform: rotate(180deg)` — do not swap icon variants or toggle icon visibility.
+**P024: caret-flip — Directional caret flip for expandable elements:** Any caret on an element that opens a popover, dropdown, or disclosure must rotate 180° when open. Read open state from `[data-open]` on the component root or `[aria-expanded="true"]` on the trigger. When the caret is a real element (pseudo-element or child), use `transform: rotate(180deg)` — do not swap icon variants or toggle icon visibility. When the caret is a `background-image` (e.g. `.form-select`), `transform` has no effect on the image — override the CSS custom property instead, and provide a second rule for dark mode:
+```scss
+.react-aria-Select[data-open] .react-aria-Button {
+  --bs-form-select-bg-img: url("...upward arrow SVG (dark stroke)...");
+}
+[data-bs-theme=dark] .react-aria-Select[data-open] .react-aria-Button {
+  --bs-form-select-bg-img: url("...upward arrow SVG (light stroke)...");
+}
+```
+Background-image swaps cannot be transitioned — the caret snaps. This matches Bootstrap's own `.form-select` behaviour.
 
 **P025: hardcode-show — Hardcode `.show` on Bootstrap overlay elements:** Bootstrap JS toggles overlay visibility by adding/removing `.show` on elements like `.dropdown-menu`, `.collapse`, and `.modal`. React Aria manages visibility by mounting/unmounting the element instead. When using Bootstrap overlay classes, hardcode `.show` permanently — React Aria's mount/unmount provides the visibility control; `.show` just ensures Bootstrap's visible styles are always active when the element exists in the DOM.
 
@@ -571,7 +586,38 @@ transform: (prefix, selector) => {
 
 **P043: visual-metaphor-completeness — Verify that the rendered output reproduces Bootstrap's full visual metaphor, not just individual state properties:** Bootstrap components produce many of their characteristic effects through coordinated CSS across multiple elements — negative margins that create visual connections, pseudo-element indicators, overlapping backgrounds that occlude borders, etc. Correctly bridging color and border-color properties for each state is necessary but not sufficient. After writing all bridge rules, ask: "does the rendered component tell the same visual story Bootstrap intends?" Check the full coordinated effect, not just that each mapped property is correct in isolation. Two categories of properties must both be present: (1) properties Bootstrap applies to all instances of an element (e.g. structural margins, z-index) — these come from Bootstrap's own CSS automatically and must be verified to still work through the React Aria DOM; (2) properties Bootstrap applies via `.active` or state classes — these are not triggered by React Aria and must be explicitly included in the `[data-*]` bridge. A bridge that maps colors and border-color but omits a load-bearing `background-color` can produce individually correct property values while still failing the visual metaphor.
 
-**P041: value-display-stable-dims — A trigger that displays a selected value from a finite option set must size to its widest option, not its current value:** Bootstrap's native `<select>` sizes to the full option set automatically; a custom trigger backed by a `<button>` intrinsically sizes to the currently displayed value and shifts surrounding layout on each selection change. For any component with a finite, enumerable option set (Select, RadioGroup, etc.), embed a visually-hidden `<span aria-hidden="true">` inside the trigger containing all option labels — the longest label sets the intrinsic width and the trigger never reflows. Do not use an external width container, inline style, or `width: 100%` as a substitute; these do not reproduce the native sizing behaviour and P048 prohibits inline styles. This principle applies only to finite option sets; components that accept typed input (ComboBox, DatePicker, etc.) have different sizing constraints addressed separately.
+**P041: value-display-stable-dims — A trigger that displays a selected value from a finite option set must size to its widest option, not its current value:** Bootstrap's native `<select>` sizes to the full option set automatically; a custom trigger backed by a `<button>` intrinsically sizes to the currently displayed value and shifts layout on each selection change. Fix: render a hidden sizer inside the trigger containing all option labels as individual block children — the browser resolves the widest one without JS measurement.
+
+```scss
+.trigger { display: flex; flex-direction: column; }
+.trigger .option-sizer {
+  display: block;
+  visibility: hidden;
+  height: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+```
+```tsx
+<Button className="trigger">
+  <ValueDisplay />
+  <span className="option-sizer" aria-hidden="true">
+    {options.map((label) => <div key={label}>{label}</div>)}
+  </span>
+</Button>
+```
+
+Do not use Bootstrap's `.visually-hidden` — it sets `position: absolute; width: 1px`, removing the sizer from layout flow. This principle applies only to finite option sets; typed-input components (ComboBox, DatePicker) have different sizing constraints.
+
+**P049: rac-trigger-width — Consume RAC's `--trigger-width` to match dropdown width to trigger width:** React Aria measures the trigger element via ResizeObserver and sets `--trigger-width` as an inline CSS custom property on the Popover element. Consuming it makes the dropdown menu match the trigger width, which native `<select>` does automatically but a custom popover does not.
+
+```scss
+.dropdown-menu[data-trigger="Select"] {
+  width: var(--trigger-width);
+}
+```
+
+This is RAC structural behaviour, not a Bootstrap state bridge — no `data-*` attribute is involved. Apply to any component where the dropdown or popover should match its trigger width (Select, ComboBox, etc.). The `[data-trigger="Select"]` attribute is set by RAC on the Popover automatically — no TSX change needed.
 
 **P042: right-anchor-indicator — In any flex row with a content region and a trailing indicator, pin the indicator to the right edge:** When a flex container holds a label, value, or text region alongside a trailing indicator (caret, chevron, icon, badge), use `justify-content: space-between` on the container or `margin-left: auto` on the indicator. The content region should expand to fill available space; the indicator should not drift with content length. Applies to any flex row with a trailing indicator: trigger buttons, list items, accordion headers, nav links, or similar. P024 addresses caret rotation on open/close; this principle addresses caret placement.
 
@@ -602,7 +648,6 @@ If the Bootstrap equivalent for a component or interaction state cannot be ident
 
 **P031: state-stories — State stories:** Add separate stories for `Disabled`, `Invalid`, and `WithDescription` where applicable. These benefit from independent Controls panel manipulation and make state coverage explicit.
 
-**P045: diff-png-required — Analyse all three output images after every pixel diff run — exit code alone is not sufficient:** The default compare-stories threshold (10%) is too lenient to catch localised styling failures like a missing focus ring or background color on a small control in a mostly-white iframe. Always run with `--threshold 0.005` (0.5%) and after every run use the `Read` tool to load `reference.png`, `implementation.png`, and `diff.png` from the output directory and describe what is visible in each. If any of the three files is missing after the script exits, that is a script failure — report it and stop; do not estimate or invent results. A run is only clean when all three files exist, have been read via tool call, and `diff.png` contains no red regions.
 
 **P044: faux-state-class — Simulate non-declarative interactive states in mirror stories using `.faux-*` CSS:** Reference stories simulate interactive states (focus, hover, pressed) using `.faux-*` CSS classes on native HTML elements (e.g. `.faux-focus` on `<select>`). Mirror stories must match this coverage — do not omit an interactive state specimen just because the state cannot be triggered via React Aria props. The pattern: (1) add a `.faux-[state]` bridge rule in `_bootstrap-overrides.scss` (P003) applying the same property values Bootstrap uses for the equivalent native pseudo-class; if the RAC component replaces `className` entirely (preventing the faux class from landing on the component root), wrap the component in a `.faux-[state]-scope` div and scope the bridge rule to that wrapper; (2) wrap the component in the story with that div (or pass `className="faux-[state]"` where the class lands on a stable outer element). This is symmetric with how reference stories fake state on native elements and requires no changes to the component's core API.
 

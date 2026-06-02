@@ -471,12 +471,13 @@ Re-run on every implementation iteration — new selectors may be introduced. Ou
 
 **P001: compound-sel — Compound selectors:** Retain the `.react-aria-*` class on every element alongside Bootstrap classes for specificity and non-conflicting React Aria CSS. Example: `.react-aria-Button.btn.btn-primary`.
 
-**P002: class-in-tsx — Bootstrap className in TSX:** Style components by adding Bootstrap classes to the `className` attribute using the render-prop form:
+**P002: class-in-tsx — Bootstrap className in TSX:** Style components by adding Bootstrap classes to the `className` attribute. The render-prop callback receives `RenderProps & { defaultClassName: string }` — use `defaultClassName` to preserve the RAC base class:
 ```tsx
-<Button className={(className) => `${className} btn btn-primary`}>
+<Button className={({ defaultClassName }) => `${defaultClassName ?? ''} btn btn-primary`.trim()}>
   Click me
 </Button>
 ```
+Do not interpolate the callback argument directly (e.g. `(className) => \`${className} btn\``) — `className` is the whole RenderProps object and produces `[object Object] btn`. As an alternative, a plain string that includes the RAC class explicitly also works and is simpler (see P046).
 
 **P003: scss-bridge — SCSS bridge selectors (`_bootstrap-overrides.scss`):** Map React Aria `data-*` attributes to Bootstrap's interaction styles. Bootstrap is authoritative for interaction states.
 ```scss

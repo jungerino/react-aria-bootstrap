@@ -37,7 +37,7 @@ This is a component library that layers **Bootstrap 5 visual styling** on top of
 
 ## Experiment: Mapping and References
 
-**Current experiment iteration:** 2 *(iteration 1 complete — Button (validated), Select (implementation only; visual validation deferred to iteration 2))*
+**Current experiment iteration:** 2 *(iteration 1 — Button complete (all 4 stories 0.00%); Select visual validation complete (all 5 stories pass), finalization pending: registry, phase 2 review notes, final-stories agent)*
 
 **What this is:** An iterative experiment to develop a reusable agent skill for producing per-component taxonomy documents (sub-part identification, state mappings with bridge strategy, DOM conflicts, variants, decisions needed) and Storybook reference stories in a single consolidated pass. Principles accumulate in `agent/mapping-and-references-skill.md`.
 

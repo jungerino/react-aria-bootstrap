@@ -200,16 +200,13 @@ Both implementation quality and visual comparison methodology are in scope.
 
 For batches of multiple components, use a three-tier agent hierarchy.
 
-### Never substitute for a blocked child agent
+### Two rules that override everything else
 
-This rule applies at every level of the hierarchy.
+**1. Sub-agent failures are the product. Completing the work is not.**
+This experiment refines the workflow. A failed sub-agent's raw return is valuable signal. Completing its work destroys that signal.
 
-If a child agent cannot proceed — due to a permissions error, context exhaustion, or any other blocker — it must report the blocker to its parent immediately and stop. The parent does the same: it surfaces the blocker to its own parent (or to the user, if it is the primary). No agent silently resolves a blocker or takes over implementation work from a blocked child. Blockers always propagate up to the user.
-
-Specifically:
-- **Primary agent:** if a component sub-agent reports a blocker, surface it to the user and stop waiting for that component. Do not implement TSX, bridge CSS, or stories in its place.
-- **Component sub-agent:** if a comparison sub-sub-agent reports a blocker, report it to the primary and stop. Do not run the comparison yourself or substitute your own analysis for the sub-sub-agent's diff output.
-- **All agents:** a permissions error is a blocker like any other. Report it; do not attempt a workaround.
+**2. If a child's return is not the exact expected terminal phrase — stop and surface it.**
+Valid terminal phrases: `verification-sweep-passed`, `Stuck: {story}`, `Timeout: {story}`, `Context exhausted`. Anything else — partial output, unclear phrases, progress descriptions — is treated as `Context exhausted`. The next permitted action is to paste the raw return to the parent (or user) and stop. Do not read files, run commands, or do any work before that message.
 
 ### Architecture
 

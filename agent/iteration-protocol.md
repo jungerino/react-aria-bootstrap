@@ -4,32 +4,25 @@ title: Iteration Protocol
 
 # Iteration Protocol
 
-This document describes how to start and close out iterations for each ongoing experiment. In-iteration workflow details live in the experiment's skill doc.
+## Purpose and scope
+
+This protocol governs the cut → iterate → debrief → merge lifecycle for all iterative experiments in this project. In-iteration workflow details live in each experiment's skill doc. Per-experiment configuration (branch name, component set, skill doc path) belongs in the experiment's skill doc and `CLAUDE.md`, not here.
 
 ---
 
-# Sub-Agent Styling Experiment
+## Cutting a new iteration branch
 
-Experiment goal: Develop and validate a multi-agent workflow that produces Bootstrap-styled React Aria components verified via pixel diff against Bootstrap reference stories. Workflow and principles accumulate in `agent/react-aria-skill.md`.
+Cut `{iteration-branch}` (i.e. `{integration-branch}_N`) from `{integration-branch}`. Two first commits:
 
-## Branch naming
-
-- `sub-agent-styling` — integration branch; holds approved styled components, finalized mirror stories, and the growing skill doc
-- `sub-agent-styling_0`, `sub-agent-styling_1`, … — experiment branches; cut from `sub-agent-styling`
-
-## Cutting a new experiment branch
-
-Cut `sub-agent-styling_N` from `sub-agent-styling`. Two first commits:
-
-**Commit 1 — Review stub:** Create `agent/review-styling-iteration-N.md`:
+**Commit 1 — Review stub:** Create `agent/review-iteration-N.md`:
 
 ```markdown
 ---
-title: Review — Styling Iteration N
+title: Review — Iteration N
 status: in-progress
 ---
 
-# Review — Styling Iteration N
+# Review — Iteration N
 
 ## Components
 (list the component set for this iteration)
@@ -44,44 +37,78 @@ status: in-progress
 *(user fills in during debrief)*
 
 ## Principles extracted
-*(filled in during debrief — go into `agent/react-aria-skill.md`)*
+*(filled in during debrief)*
 
 ## Skill update status
-- [ ] `agent/react-aria-skill.md` updated
-- [ ] Finalized component files merged to `sub-agent-styling`
+- [ ] Skill knowledge files updated
+- [ ] Finalized component files merged to `{integration-branch}` (if approved)
 - [ ] `CLAUDE.md` iteration counter incremented (if applicable)
 ```
 
-Commit message: `chore: stub review-styling-iteration-N`
+Commit message: `chore: stub review-iteration-N`
 
-**Commit 2 — Component stubs:** For each component in the iteration's test set:
+**Commit 2 — Component stubs:** For each component in the iteration's test set, create stub files and add story globs per the experiment's skill doc (Phase 1 details live there).
 
-- `src/bootstrap-test/{ComponentName}.tsx` — bare React Aria component stub
-- `stories/bootstrap-test/{ComponentName}/{ComponentName}.stories.tsx` — standard story stub
-- `stories/bootstrap-test/{ComponentName}/{ComponentName}.mirror.stories.tsx` — mirror story stub
-- Add `stories/bootstrap-test/{ComponentName}/**` glob to `.storybook/main.js`
+Commit message: `chore: stub files for {iteration-branch} ({Component1}, {Component2})`
 
-See `agent/react-aria-skill.md` Phase 1 for stub file contents.
+After committing stubs, restart Storybook (`lsof -ti tcp:6006 | xargs kill -9 && yarn storybook &`) and wait for the new instance to serve the stub story IDs.
 
-Commit message: `chore: stub files for sub-agent-styling_N ({Component1}, {Component2})`
-
-After committing stubs, restart Storybook (`lsof -ti tcp:6006 | xargs kill -9 && yarn storybook &`) and wait for the new instance to serve the stub story IDs before beginning Phase 2.
+---
 
 ## In-iteration workflow
 
-See `agent/react-aria-skill.md` — Phase 2 (implementation), Phase 3 (debrief), and Multi-Agent Batch Workflow.
+See the experiment's skill doc — Phase 2 (implementation), Phase 3 (debrief), and multi-agent batch workflow details all live there.
+
+---
 
 ## After debrief — Merge to integration branch
 
-1. Update `agent/react-aria-skill.md`: add new principles, refine existing ones, tick off Skill Update Status checklist.
-2. Merge finalized files to `sub-agent-styling` (file-by-file checkout, not cherry-pick):
-   ```bash
-   git checkout sub-agent-styling_N -- agent/react-aria-skill.md
-   git checkout sub-agent-styling_N -- agent/review-styling-iteration-N.md
-   git checkout sub-agent-styling_N -- src/scss/_bootstrap-overrides.scss
-   git checkout sub-agent-styling_N -- src/bootstrap-test/{ComponentName}.tsx
-   git checkout sub-agent-styling_N -- stories/bootstrap-test/{ComponentName}/{ComponentName}.stories.tsx
-   git checkout sub-agent-styling_N -- stories/bootstrap-test/{ComponentName}/{ComponentName}.mirror.stories.tsx
-   ```
-   Commit: `feat: merge iteration N styled components ({Component1}, {Component2})`
-3. Increment `CLAUDE.md` iteration counter on `sub-agent-styling`.
+### Step 1 — Record all observations
+
+Write every debrief observation to `agent/review-iteration-N.md` before proceeding. Do not batch or defer.
+
+### Step 2 — Ask about component work
+
+Before executing any merge, ask the user:
+
+> "Should component work (styles, components, stories) be merged to `{integration-branch}`, in addition to knowledge files? If yes, which components?"
+
+Record the user's answer in `agent/review-iteration-N.md` under "User review", then proceed.
+
+### Step 3 — Update knowledge files
+
+Update the skill knowledge files as appropriate: add new principles, refine existing ones, update workflow or agent files if the process changed.
+
+### Step 4 — Merge knowledge files (always)
+
+Merge knowledge files to `{integration-branch}` (file-by-file checkout, not cherry-pick):
+
+```bash
+git checkout {iteration-branch} -- agent/react-aria-skill/SKILL.md
+git checkout {iteration-branch} -- agent/react-aria-skill/workflow.md
+git checkout {iteration-branch} -- agent/react-aria-skill/orchestrator.md
+git checkout {iteration-branch} -- agent/react-aria-skill/component-agent.md
+git checkout {iteration-branch} -- agent/react-aria-skill/comparison-agent.md
+git checkout {iteration-branch} -- agent/react-aria-skill/final-stories-agent.md
+git checkout {iteration-branch} -- agent/react-aria-skill/principles.md
+git checkout {iteration-branch} -- agent/review-iteration-N.md
+```
+
+If `CLAUDE.md` was updated during the iteration, add it to the checkout list.
+
+Commit: `feat: merge iteration N knowledge files`
+
+### Step 5 — Merge component work (only if approved in Step 2)
+
+If the user approved merging component work, check out the approved components:
+
+```bash
+git checkout {iteration-branch} -- src/scss/_bootstrap-overrides.scss
+git checkout {iteration-branch} -- src/bootstrap-test/{ComponentName}.tsx
+git checkout {iteration-branch} -- stories/bootstrap-test/{ComponentName}/{ComponentName}.stories.tsx
+git checkout {iteration-branch} -- stories/bootstrap-test/{ComponentName}/{ComponentName}.mirror.stories.tsx
+```
+
+Commit: `feat: merge iteration N styled components ({Component1}, {Component2})`
+
+**Default: component work does NOT merge.** Iteration branches produce component work to assess skill effectiveness. The components stay on the iteration branch unless explicitly approved.

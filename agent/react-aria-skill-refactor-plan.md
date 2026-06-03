@@ -192,3 +192,78 @@ After restructuring:
 3. Confirm each file is within its target line count; SKILL.md entry point stays under 150 lines
 4. Confirm CLAUDE.md session start instruction points to new location
 5. Dry-run check: starting from `orchestrator.md` alone, could a reasonable agent rationalize running a pixel diff? If yes, revise until the answer is no.
+
+---
+
+## Iteration Protocol Refactor
+
+`agent/iteration-protocol.md` is updated as part of this same branch. The protocol governs the experiment workflow across all experiments (not just react-aria-skill), so it stays as a standalone project document — it is not folded into the skill.
+
+### Change 1: Generalize branch name references
+
+Replace all hardcoded experiment names with placeholders so the protocol applies to any experiment:
+
+- `sub-agent-styling` → `{integration-branch}`
+- `sub-agent-styling_N` → `{iteration-branch}` (i.e. `{integration-branch}_N`)
+- Specific file paths that reference experiment names get the same treatment
+
+Remove the "Sub-Agent Styling Experiment" heading as a named section. The document becomes a single generic protocol; per-experiment configuration belongs in each experiment's skill doc and CLAUDE.md, not in the iteration protocol itself.
+
+### Change 2: Correct the merge workflow — knowledge files only by default
+
+The current protocol merges both knowledge files and component work (styles, components, stories) to the integration branch. This is wrong: iteration branches produce component work to assess skill effectiveness, not as a production deliverable. The component work stays on the iteration branch.
+
+**Knowledge files (merge by default):**
+- `agent/{skill-directory}/` — all files in the skill dir (updated for new structure)
+- `agent/review-iteration-N.md` — iteration review notes
+- `CLAUDE.md` — if updated during the iteration
+
+**Component work (does NOT merge by default):**
+- `src/scss/_bootstrap-overrides.scss`
+- `src/bootstrap-test/{ComponentName}.tsx`
+- `stories/bootstrap-test/{ComponentName}/`
+
+### Change 3: Add a component-work merge decision point
+
+At the end of the after-debrief workflow, insert an explicit decision step before the agent executes any merges:
+
+```markdown
+**Component work merge decision**
+- [ ] No (default) — knowledge files only; component work stays on {iteration-branch}
+- [ ] Yes — also merge component work for: {list components / files}
+```
+
+The user fills in this checkbox in the iteration review doc. The agent reads it before executing the merge and acts accordingly. As component work quality improves and merges become the norm, the default can be flipped in a future protocol revision.
+
+### Change 4: Update skill path references
+
+After the skill is restructured from a single file to a directory, the merge command changes. Current protocol:
+
+```bash
+git checkout {iteration-branch} -- agent/react-aria-skill.md
+```
+
+New protocol — enumerate the individual files:
+
+```bash
+git checkout {iteration-branch} -- agent/react-aria-skill/SKILL.md
+git checkout {iteration-branch} -- agent/react-aria-skill/workflow.md
+git checkout {iteration-branch} -- agent/react-aria-skill/orchestrator.md
+git checkout {iteration-branch} -- agent/react-aria-skill/component-agent.md
+git checkout {iteration-branch} -- agent/react-aria-skill/comparison-agent.md
+git checkout {iteration-branch} -- agent/react-aria-skill/final-stories-agent.md
+git checkout {iteration-branch} -- agent/react-aria-skill/principles.md
+```
+
+(Adjust if any files are added or removed during the skill restructure.)
+
+### Change 5: Separate generic structure from experiment specifics
+
+Restructure the document sections:
+
+1. **Purpose and scope** — brief intro: this protocol governs the cut/iterate/debrief/merge lifecycle for all iterative experiments; in-iteration workflow details live in each experiment's skill doc
+2. **Cutting a new iteration branch** — generic (placeholders)
+3. **In-iteration workflow** — one line: see the experiment's skill doc
+4. **After debrief — merge to integration branch** — generic, with the component-work decision point
+
+No per-experiment named sections.

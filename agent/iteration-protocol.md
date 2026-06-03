@@ -57,15 +57,15 @@ After committing stubs, restart Storybook (`lsof -ti tcp:6006 | xargs kill -9 &&
 
 ## In-iteration workflow
 
-See the experiment's skill doc — Phase 2 (implementation), Phase 3 (debrief), and multi-agent batch workflow details all live there.
+See the experiment's skill doc — Phase 2 (implementation), Phase 3 (debrief), and any batch workflow details all live there.
 
 ---
 
 ## After debrief — Merge to integration branch
 
-### Step 1 — Record all observations
+### Step 1 — Record observations and update knowledge files
 
-Write every debrief observation to `agent/review-iteration-N.md` before proceeding. Do not batch or defer.
+Write every debrief observation to `agent/review-iteration-N.md` before proceeding. Do not batch or defer. As part of the same step, update the skill knowledge files: add new principles extracted from observations, refine existing ones, and update workflow or agent files if the process changed.
 
 ### Step 2 — Ask about component work
 
@@ -75,11 +75,7 @@ Before executing any merge, ask the user:
 
 Record the user's answer in `agent/review-iteration-N.md` under "User review", then proceed.
 
-### Step 3 — Update knowledge files
-
-Update the skill knowledge files as appropriate: add new principles, refine existing ones, update workflow or agent files if the process changed.
-
-### Step 4 — Merge knowledge files (always)
+### Step 3 — Merge knowledge files (always)
 
 Merge knowledge files to `{integration-branch}` (file-by-file checkout, not cherry-pick):
 
@@ -98,7 +94,7 @@ If `CLAUDE.md` was updated during the iteration, add it to the checkout list.
 
 Commit: `feat: merge iteration N knowledge files`
 
-### Step 5 — Merge component work (only if approved in Step 2)
+### Step 4 — Merge component work (only if approved in Step 2)
 
 If the user approved merging component work, check out the approved components:
 

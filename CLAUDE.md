@@ -76,7 +76,7 @@ Never assume component properties without verification through these tools.
 
 ## Working Guidelines
 
-- **Session start**: Read `agent/todos.md` and summarize open items to the user at the start of every session. **On a `styling-implementation_*` branch:** also read `agent/react-aria-skill/SKILL.md` in full, then follow its session-start loading instructions for this tier before doing anything else. Do not rely on the handoff message alone to derive the step list — the skill is authoritative.
+- **Session start**: Read `agent/todos.md` and summarize open items to the user at the start of every session. When working on a skill-based experiment, read the relevant entry-point skill file (see Agent Documentation below) and follow its session-start loading instructions before doing anything else — the skill is authoritative.
 - **Honesty about limitations**: Do not make stuff up or provide invalid code. If uncertain, acknowledge it. "I don't know" is acceptable.
 - **Context exhaustion**: If context is running short or a mandatory step cannot be completed, produce a handoff summary and stop. Do not skip, approximate, or fabricate results for incomplete steps — a pending step is recoverable; a falsely-reported step is not.
 - **Markdown summaries**: When asked to "summarize in markdown", provide a concise summary enclosed in a code block using four backticks (```` ```` ````) so inner triple-backtick fences do not close the outer block.
@@ -105,10 +105,10 @@ Never assume component properties without verification through these tools.
 - [Project Vision](./agent/project-vision.md) — End goal, roadmap, and key architectural decisions
 
 ### Experiment
-- [Iteration Protocol](./agent/iteration-protocol.md) — How to start and close out iterations for each experiment (sub-agent-styling and mapping-and-references)
+- [Iteration Protocol](./agent/iteration-protocol.md) — How to start and close out iterations for any iterative experiment
 - [Mapping and References Skill](./agent/mapping-and-references-skill.md) — Growing skill: taxonomy and story construction principles
 ### Knowledge Files
-- [React Aria Skill](./agent/react-aria-skill/SKILL.md) — Entry point for the styling-implementation workflow; **load at session start on `styling-implementation_*` branches**, then follow its session-start loading instructions
+- [React Aria Skill](./agent/react-aria-skill/SKILL.md) — Entry point for the React Aria + Bootstrap styling experiment; load at session start when running a styling experiment, then follow its session-start loading instructions
 
 ### Bootstrap Knowledge Base
 - [KB Index](./agent/bootstrap-kb/README.md) — Master index and retrieval guide; load this first

@@ -225,15 +225,11 @@ The current protocol merges both knowledge files and component work (styles, com
 
 ### Change 3: Add a component-work merge decision point
 
-At the end of the after-debrief workflow, insert an explicit decision step before the agent executes any merges:
+At the end of the debrief — after all observations are recorded and principles extracted, but before any merge is executed — the agent explicitly asks the user:
 
-```markdown
-**Component work merge decision**
-- [ ] No (default) — knowledge files only; component work stays on {iteration-branch}
-- [ ] Yes — also merge component work for: {list components / files}
-```
+> "Should component work (styles, components, stories) be merged to the integration branch, in addition to knowledge files? If yes, which components?"
 
-The user fills in this checkbox in the iteration review doc. The agent reads it before executing the merge and acts accordingly. As component work quality improves and merges become the norm, the default can be flipped in a future protocol revision.
+The agent records the user's answer in the iteration review doc, then proceeds with the merge. If the answer is no, only knowledge files are merged. As component work quality improves and merges become the norm, the default framing can be adjusted in a future protocol revision — but the explicit ask remains.
 
 ### Change 4: Update skill path references
 

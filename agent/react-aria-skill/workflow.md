@@ -14,36 +14,9 @@ For multi-agent batch processing, see `orchestrator.md` and `component-agent.md`
 
 Cut `{experiment-name}_N` from `{experiment-name}`. Two first commits:
 
-**1. Create review stub** — `agent/review-styling-iteration-N.md`:
+**1. Create review stub** — `agent/review-iteration-N.md`. Use the template in `agent/iteration-protocol.md`.
 
-````markdown
----
-title: Review — Styling Iteration N
-status: in-progress
----
-
-# Review — Styling Iteration N
-
-## Components
-(list the component set for this iteration)
-
-## Phase 1 — Scaffolding notes
-*(agent fills in)*
-
-## Phase 2 — Implementation notes
-*(one entry per component, added after each component is reviewed)*
-
-## User review
-*(user fills in during debrief)*
-
-## Principles extracted
-*(filled in during debrief — go into `agent/react-aria-skill/principles.md`)*
-
-## Skill update status
-- [ ] `agent/react-aria-skill/principles.md` updated
-- [ ] Finalized component files merged to `{experiment-name}`
-- [ ] `CLAUDE.md` iteration counter incremented (if applicable)
-````
+Commit message: `chore: stub review-iteration-N`
 
 **2. Stub target files** for each component:
 - `src/bootstrap-test/{ComponentName}.tsx` — bare React Aria component, no className additions yet
@@ -155,26 +128,9 @@ Both implementation quality and visual comparison methodology are in scope.
 
 ---
 
-## After debrief — Merge to integration branch
+## After debrief
 
-1. Update `agent/react-aria-skill/principles.md`:
-   - Add new principles extracted from debrief (numbered sequentially after current highest)
-   - Refine or correct existing principles
-2. Tick off the Skill Update Status checklist in the review file.
-3. Merge finalized knowledge files to `{experiment-name}` (file-by-file checkout, not cherry-pick):
-   ```bash
-   git checkout {experiment-name}_N -- agent/react-aria-skill/SKILL.md
-   git checkout {experiment-name}_N -- agent/react-aria-skill/workflow.md
-   git checkout {experiment-name}_N -- agent/react-aria-skill/orchestrator.md
-   git checkout {experiment-name}_N -- agent/react-aria-skill/component-agent.md
-   git checkout {experiment-name}_N -- agent/react-aria-skill/comparison-agent.md
-   git checkout {experiment-name}_N -- agent/react-aria-skill/final-stories-agent.md
-   git checkout {experiment-name}_N -- agent/react-aria-skill/principles.md
-   git checkout {experiment-name}_N -- agent/review-styling-iteration-N.md
-   ```
-   For component work (styles, components, stories), see the iteration protocol — this requires an explicit decision.
-
-   Commit to `{experiment-name}`: `feat: merge iteration N knowledge files`
+Follow `agent/iteration-protocol.md` — it governs observation recording, knowledge file updates, the component work decision gate, and merge commands.
 
 ---
 

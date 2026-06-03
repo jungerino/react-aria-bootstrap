@@ -43,6 +43,14 @@ Dispatch component sub-agents **serially — one at a time.** Wait for each comp
 
 Each sub-agent prompt must be fully self-contained: component name, taxonomy path, findings doc path, and paths to the skill files the component agent should load.
 
+**Deriving paths from a component name:**
+- Taxonomy: `agent/reference-stories/{component}-taxonomy.md` (e.g. `button-taxonomy.md`)
+- Component-wide findings doc: `agent/reference-stories/{component}-findings.md`
+- Mirror stories TSX: `stories/bootstrap-test/{ComponentName}/{ComponentName}.mirror.stories.tsx`
+- Bootstrap overrides: `src/scss/_bootstrap-overrides.scss`
+
+`{component}` is lowercase (e.g. `button`, `select`); `{ComponentName}` is PascalCase (e.g. `Button`, `Select`).
+
 ---
 
 ## Loop

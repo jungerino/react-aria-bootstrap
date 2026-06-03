@@ -14,7 +14,7 @@ Entry point for the Bootstrap-styling workflow. Maps agent tiers, specifies per-
 |------|-------|-------------------|
 | 0 | Primary (Orchestrator) | Every component has reported `final-stories-done` and the batch report is delivered. |
 | 1 | Component Sub-Agent | All mirror stories pass the final verification sweep and `verification-sweep-passed` is reported. |
-| 1a | Final-Stories Sub-Agent | Standard and mirror stories are written and `final-stories-done` is reported. |
+| 1a | Final-Stories Sub-Agent | Standard stories are written and `final-stories-done` is reported. |
 | 2 | Comparison Sub-Sub-Agent | Findings are written to the story findings doc and the agent has exited. |
 
 ---
@@ -38,7 +38,6 @@ Each tier loads only the files listed for it. Loading files outside your tier is
 - `agent/react-aria-skill/SKILL.md`
 - `agent/react-aria-skill/final-stories-agent.md`
 - `agent/reference-stories/{component}-taxonomy.md`
-- `agent/reference-stories/{component}-findings.md`
 
 **Comparison sub-sub-agent (Tier 2):**
 - `agent/react-aria-skill/SKILL.md`
@@ -65,12 +64,15 @@ Each tier loads only the files listed for it. Loading files outside your tier is
 | Phrase | Source | Meaning |
 |--------|--------|---------|
 | `verification-sweep-passed` | Component sub-agent | All mirror stories passed final verification |
-| `final-stories-done` | Final-stories sub-agent | Standard + mirror stories written |
+| `final-stories-done` | Final-stories sub-agent | Standard stories written |
+| `findings-written` | Comparison sub-sub-agent | Findings doc updated; component agent reads doc Status for outcome |
 | `Stuck: {story}` | Component sub-agent | Cycling loop hit the stuck threshold |
 | `Timeout: {story}` | Component sub-agent | ScheduleWakeup watchdog fired before sub-sub-agent reported |
+| `Script failed: {story}` | Component sub-agent | Comparison pixel-diff script failed; check the story findings doc |
 | `Context exhausted` | Any agent | Agent detected context compression and stopped |
+| `Undefined return: {…}` | Any agent | Received a return matching no valid terminal phrase; content included for diagnosis |
 
-**On any non-matching return:** If a child agent's return does not exactly match one of the phrases above — partial output, unclear phrases, progress descriptions — treat it as `Context exhausted`. The only permitted next action is to paste the raw return to the parent (or user) and stop. Do not read files, run commands, or perform any work before that message.
+**On any non-matching return:** If a child agent's return does not exactly match one of the phrases above — partial output, unclear phrases, progress descriptions — report `Undefined return: {the return, or a one-sentence summary if longer}` to the parent (or user) and stop. Do not read files, run commands, or perform any work before that message.
 
 ---
 

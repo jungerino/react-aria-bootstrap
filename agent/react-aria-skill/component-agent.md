@@ -50,7 +50,10 @@ Complete these steps once for the component before the story-level pipeline:
 
 For each mirror story:
 
-1. Implement CSS and write the mirror story (see `principles.md` → Stories Conventions for conventions)
+1. Implement CSS and write the mirror story:
+   - One story per reference story in scope; story names must match reference story names exactly
+   - Replicate reference story layout: same wrapper classes (`ref-specimen-row`, `ref-flex-row`), same `specimen()` helper pattern, same variant order
+   - See `principles.md` → Stories Conventions for CSS conventions (faux states, augments import, inline style rules)
 2. Run CSS extraction:
    ```bash
    node scripts/extract-story-css.mjs \
@@ -89,11 +92,19 @@ After all initial stories are implemented:
 schedule ScheduleWakeup (20 min)
 
 on sub-sub-agent notification:
+  if notification != `findings-written`:
+    report `Undefined return: {notification}` to primary agent; stop
   read story findings doc
   update component findings registry
 
-  if Status == Stuck or Context exhausted:
-    report to primary agent; stop
+  if Status == Script failed:
+    report `Script failed: {story}` to primary agent; stop
+
+  if Status == Context exhausted:
+    report `Context exhausted` to primary agent; stop
+
+  if Status == Stuck:
+    report `Stuck: {story}` to primary agent; stop
 
   if Status == Fail:
     rework CSS per findings
@@ -111,7 +122,7 @@ on sub-sub-agent notification:
 on ScheduleWakeup:
   if any stories still In review:
     mark those stories Timeout in registry
-    report to primary agent; stop
+    report `Timeout: {story}` to primary agent; stop
   else:
     ignore (stale wakeup)
 ```
@@ -137,7 +148,7 @@ When all stories pass the sweep, report `verification-sweep-passed` to the prima
 **Front matter:**
 
 ```yaml
-Status: In review | Pass | Fail | Stuck | Timeout | Context exhausted
+Status: In review | Pass | Fail | Stuck | Timeout | Context exhausted | Script failed
 Iteration: <n>
 Stuck: <n>
 ```
@@ -151,6 +162,7 @@ Stuck: <n>
 - After rework by sub-agent: `Status = In review`
 - When `Stuck` reaches threshold (default: 3): `Status = Stuck`
 - Sub-sub-agent detects context compression: `Status = Context exhausted`
+- Sub-sub-agent encounters script failure: `Status = Script failed`
 
 **Body (appended per iteration by sub-sub-agent):**
 

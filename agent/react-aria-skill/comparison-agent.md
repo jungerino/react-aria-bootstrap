@@ -46,7 +46,7 @@ After every diff run, use the `Read` tool to load all three output images:
 - `.story-diffs/{component}/{story}/implementation.png`
 - `.story-diffs/{component}/{story}/diff.png`
 
-If any of the three files is missing, that is a script failure — write this to the findings doc and notify the component agent; stop. Do not estimate or invent results.
+If any of the three files is missing, that is a script failure — write `Status: Script failed` to the findings doc front matter, report `findings-written` to the component agent, and stop. Do not estimate or invent results.
 
 Describe what is visible in each image. A run is only clean when all three files exist, have been read via tool call, and `diff.png` contains no red regions outside of the animation exception below.
 
@@ -90,10 +90,10 @@ Then update the front matter:
 - Fail with improvement vs. prior iteration: `Status: Fail`, `Iteration: N+1`, `Stuck: 0`
 - Fail with no improvement: `Status: Fail`, `Iteration: N+1`, `Stuck: Stuck+1`
 
-Notify the component agent that the findings doc is written, then exit.
+Report `findings-written` to the component agent, then exit.
 
 ---
 
 ## Context Compression
 
-If you detect that your prior context has been compressed/summarized (earlier messages replaced by a summary), write `Status: Context exhausted` to the story findings doc front matter, notify the component agent, and exit.
+If you detect that your prior context has been compressed/summarized (earlier messages replaced by a summary), write `Status: Context exhausted` to the story findings doc front matter, report `findings-written` to the component agent, and exit.

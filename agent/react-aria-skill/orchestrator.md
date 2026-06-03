@@ -41,8 +41,6 @@ Before launching any agent, emit a delegation manifest listing every component a
 
 Dispatch component sub-agents **serially — one at a time.** Wait for each component sub-agent to report a terminal phrase before launching the next. This ensures the full concurrency budget is available to each component's comparison sub-sub-agents and avoids silent queuing.
 
-**Exception:** Parallel dispatch may be used only if the total agent count (primary + component sub-agents + their concurrent sub-sub-agents) comfortably fits within the harness concurrency limit. In practice this means a single-component batch only.
-
 Each sub-agent prompt must be fully self-contained: component name, taxonomy path, findings doc path, and paths to the skill files the component agent should load.
 
 ---
@@ -61,15 +59,15 @@ for each component:
     verification-sweep-passed
       → launch final-stories sub-agent (foreground — wait for completion)
 
-    Stuck / Timeout / Context exhausted
+    Stuck / Timeout / Script failed / Context exhausted / Undefined return
       → surface to user immediately with component name and phrase; stop
 
   on final-stories sub-agent completion:
     final-stories-done
       → log completion; update manifest; proceed to next component
 
-    anything else
-      → surface raw return to user immediately; stop
+    Undefined return: {…}
+      → surface to user immediately; stop
 
 when all components done:
   compile batch report; present to user
@@ -79,6 +77,6 @@ when all components done:
 
 ## Terminal Phrase Handling
 
-Valid terminal phrases and their meanings are defined in `SKILL.md`. Any return that does not exactly match a valid phrase — partial output, progress descriptions, unclear phrasing — is treated as `Context exhausted`.
+Valid terminal phrases and their meanings are defined in `SKILL.md`. Any return that does not exactly match a valid phrase — partial output, progress descriptions, unclear phrasing — must be reported as `Undefined return: {the return, or a one-sentence summary if longer}`.
 
-**On unexpected return:** Paste the raw return to the user and stop. Do not read files, run commands, or perform any work before that message.
+**On unexpected return:** Report `Undefined return: {…}` to the parent (or user) immediately and stop. Do not read files, run commands, or perform any work before that message.

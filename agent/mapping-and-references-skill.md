@@ -43,6 +43,10 @@ M004 (three-bridges) covers CSS-level bridges — pseudo-class, compound selecto
 
 Scan `agent/bootstrap-kb/components.md` for candidate components when a state implies content presence.
 
+### M018: elem-type-sub — Document element type substitutions in the DOM conflicts section
+
+When React Aria renders a different HTML element type than the Bootstrap counterpart assumes for a sub-part (e.g. `<span>` where Bootstrap expects `<label>`, `<div>` where Bootstrap expects `<button>`), record the substitution in the taxonomy's `DOM conflicts` section as a distinct category from structural conflicts (wrapper insertion, broken selector paths). For each substitution, record: (1) which element React Aria renders and which Bootstrap expects; (2) which Bootstrap component-level rules are invalidated — rules whose selectors scope to the original element type; (3) a flag that the component agent must audit `_reboot.scss` for additional invalidated rules. Identifying substitutions at taxonomy time ensures the component agent addresses them during implementation rather than discovering them in pixel-diff cycling.
+
 ### M014: dual-counterpart — When structural and semantic counterparts diverge, use both
 
 When M001 (dom-first) finds that the semantically obvious Bootstrap counterpart targets a different element type than React Aria renders, treat the two counterparts as serving separate concerns:

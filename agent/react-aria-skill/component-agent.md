@@ -18,6 +18,14 @@ Load at session start (provided in your dispatch prompt):
 4. `agent/reference-stories/{component}-taxonomy.md` — component taxonomy (incl. `## Decisions` section)
 5. `agent/bootstrap-kb/README.md` — Bootstrap KB index; load relevant KB files selectively per component
 
+Then run the task ID self-identification command below and record the result — you will include it in every Work Log entry:
+
+```bash
+PROJ="/private/tmp/claude-$(id -u)/-Users-josh-Library-CloudStorage-Dropbox-Github-react-aria-bootstrap"
+SESSION=$(ls -t "$PROJ" | head -1)
+ls -la "$PROJ/$SESSION/tasks/" | awk '/^l/{print $9; exit}' | sed 's/\.output$//'
+```
+
 Then create a TodoWrite enumerating every step before doing anything else.
 
 ---
@@ -64,6 +72,7 @@ For each mirror story:
 3. Create story findings doc at `agent/reference-stories/{component}-{story}-findings.md`:
    - Front matter: `Status: In review`, `Iteration: 0`, `Stuck: 0`
 4. Launch comparison sub-sub-agent (`run_in_background: true`) with the inputs listed below
+   - Immediately after launching, send the returned task ID to the comparison agent via `SendMessage`: "Your task ID for this run is `{task-id}`."
 5. Proceed to the next mirror story without waiting
 
 After all stories are implemented, begin the cycling loop.
@@ -96,6 +105,8 @@ on sub-sub-agent notification:
     report `Undefined return: {notification}` to primary agent; stop
   read story findings doc
   update component findings registry
+  append Work Log entry (see Component-Wide Findings Doc)
+    — if no code changes were made, write "Code changes made: None — [reason]"
 
   if Status == Script failed:
     report `Script failed: {story}` to primary agent; stop
@@ -107,13 +118,16 @@ on sub-sub-agent notification:
     report `Stuck: {story}` to primary agent; stop
 
   if Status == Fail:
-    rework CSS per findings
-    update story front matter: Status = In review
-    update component findings doc (registry + work log)
-    re-check CSS change scope — if shared selector modified:
-      set affected stories to Status = In review; relaunch their sub-sub-agents too
-    re-launch sub-sub-agent (background)
-    reset watchdog: schedule new ScheduleWakeup (20 min)
+    rework code per findings (bridge CSS and/or mirror TSX)
+    if no code change identified:
+      update story front matter: Status = Stuck
+      report `Stuck: {story}` to primary agent; stop
+    else:
+      update story front matter: Status = In review
+      re-check code change scope — if shared selectors modified:
+        set affected stories to Status = In review; relaunch their sub-sub-agents too
+      re-launch sub-sub-agent (background)
+      reset watchdog: schedule new ScheduleWakeup (20 min)
 
   if Status == Pass:
     if all stories Pass: proceed to Final Verification Sweep
@@ -169,7 +183,8 @@ Stuck: <n>
 ```
 ## Iteration {N}
 
-**Diff%:** {value} | **Status:** pass / fail
+**Task ID**: {task-id}
+**Diff%:** {value} | **Status:** pass / fail | **Stuck:** {n}
 
 ### Specimens
 
@@ -197,10 +212,12 @@ UNRESOLVED:
 | trigger-states | Fail | 2 | 0 | 1.3% |
 | open-states | Pass | 1 | 0 | 0.2% |
 
-**Work Log** (per-story, per-iteration, written by sub-agent after each rework):
+**Work Log** (per-story, per-iteration, written by sub-agent after every sub-sub-agent return):
 
 ```
-## {story} — Iteration {N}
+### {story} — Iteration {N}
+
+**Task ID**: {task-id}
 
 **Sub-sub-agent findings:** (copied from story findings doc)
 - Specimen [label]: [theory + validation]
@@ -208,8 +225,8 @@ UNRESOLVED:
 **Principles consulted:**
 - [Cite specific skill principles or component decisions that guided the fix]
 
-**CSS changes made:**
-- [selector/property]: [old value] → [new value] (file:line)
+**Code changes made:** (or "None — [reason]" if no changes)
+- [file:line]: [description]
 - Shared selectors modified: [list] → stories reset to In review and relaunched: [list]
 ```
 

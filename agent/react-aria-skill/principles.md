@@ -42,7 +42,7 @@ Reference for component sub-agents. Loaded by Tier 1 (component sub-agents) only
 - [P027 btn-non-button](#p027-btn-non-button) — `btn` on non-`<button>` interactive elements
 - [P028 btn-sm-dense](#p028-btn-sm-dense) — `btn-sm` in grid-constrained contexts
 
-### Extended Principles (P033–P043, P049)
+### Extended Principles (P033–P043, P049–P050)
 - [P033 verify-scss-vars](#p033-verify-scss-vars) — Verify Bootstrap SCSS variables before using
 - [P034 contrast-all-states](#p034-contrast-all-states) — Maintain ≥ 4.5:1 contrast through all interaction states
 - [P035 no-color-alone](#p035-no-color-alone) — Non-color attribute as primary state differentiator
@@ -55,6 +55,7 @@ Reference for component sub-agents. Loaded by Tier 1 (component sub-agents) only
 - [P042 right-anchor-indicator](#p042-right-anchor-indicator) — Pin trailing indicator to right edge in flex rows
 - [P043 visual-metaphor-completeness](#p043-visual-metaphor-completeness) — Verify full Bootstrap visual metaphor
 - [P049 rac-trigger-width](#p049-rac-trigger-width) — Consume RAC's `--trigger-width` for dropdown width
+- [P050 reboot-mismatch](#p050-reboot-mismatch) — Element type substitution invalidates Bootstrap reboot rules
 
 ### Stories Conventions (P029–P032, P044, P046–P048)
 - [P029 argtypes-control](#p029-argtypes-control) — Constrained argTypes for string union props
@@ -299,6 +300,10 @@ Do not use Bootstrap's `.visually-hidden` — it sets `position: absolute; width
 ```
 
 This is RAC structural behaviour, not a Bootstrap state bridge — no `data-*` attribute is involved. Apply to any component where the dropdown or popover should match its trigger width (Select, ComboBox, etc.). The `[data-trigger="Select"]` attribute is set by RAC on the Popover automatically — no TSX change needed.
+
+### P050: reboot-mismatch
+
+**Element type substitution invalidates Bootstrap reboot rules:** Bootstrap's `_reboot.scss` applies baseline CSS to specific HTML element types. When React Aria renders a different element type than the Bootstrap counterpart assumes for a sub-part, those rules load globally but do not match the substitute. During the preparation phase, for each sub-part where element types differ, read `src/scss/vendor/bootstrap-5.3.8/_reboot.scss` and identify rules scoped to the original element type. Apply the invalidated properties explicitly in the bridge — they will not take effect through the loaded stylesheet.
 
 ---
 

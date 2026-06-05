@@ -20,6 +20,7 @@ Provided in your dispatch prompt:
 - Bootstrap overrides file: `src/scss/_bootstrap-overrides.scss`
 - Matched Bootstrap CSS: `agent/reference-stories/mirror-css/{component}-{story}.css`
   — `.faux-*` rules in this file define the target visual appearance for interactive states; use them as the reference when assessing the corresponding `[data-*]` bridge rule. See the state mapping table in the taxonomy for the `faux-*` → `data-*` correspondence.
+- Your task ID: sent by the component agent via `SendMessage` immediately after your launch. Record it — you must include it in every iteration block you write.
 
 ---
 
@@ -63,6 +64,26 @@ If any condition is uncertain, do not apply this exception — flag it as a desi
 
 ---
 
+## Spatial Diff Reasoning
+
+**Spatial offset means missing spacing:** When `diff.png` shows one element displaced relative to its neighbor, or a gap present in the reference but absent in the implementation, reason as follows:
+
+1. Name the gap before theorizing: "the reference shows approximately N px between [A] and [B]; the implementation shows them [touching / N px closer]."
+2. Identify which element owns the gap. Scan the extracted CSS for `margin` or `padding` rules on that element.
+3. Check whether any of those rules use a bare element-type selector. Cross-check against the React Aria component's rendered DOM: if the rule targets an element type that React Aria substitutes with a different type, the rule loads globally but won't match the substitute — the spacing is invalidated.
+4. Check whether the spacing-receiving element has `display: inline` — inline elements discard `margin-top` and `margin-bottom`.
+5. State the root cause explicitly in the findings before writing the iteration block.
+
+---
+
+## Prior Iteration Review
+
+Before writing your findings, read all prior iteration blocks in the story findings doc. Find the last iteration block where `Stuck: 0` appears in the header line. Do not repeat any theory proposed in iterations after that point — they are the current stuck run and have been ruled out. Theories from before the last `Stuck: 0` may be revisited if relevant after subsequent code changes.
+
+If there are no prior iteration blocks, this rule does not apply.
+
+---
+
 ## Findings Output
 
 Append an Iteration block to the story findings doc:
@@ -70,7 +91,8 @@ Append an Iteration block to the story findings doc:
 ```
 ## Iteration {N}
 
-**Diff%:** {value} | **Status:** pass / fail
+**Task ID**: {task-id}
+**Diff%:** {value} | **Status:** pass / fail | **Stuck:** {n}
 
 ### Specimens
 
@@ -84,6 +106,8 @@ FAIL:
 UNRESOLVED:
 - Specimen [label]: [describe what is visible but unexplained]
 ```
+
+**Theory quality:** Every theory in a FAIL entry must be actionable — it must identify a specific selector or property to change in the bridge CSS or mirror TSX. Symptom descriptions ("Chromium renders X and Y differently," "sub-pixel rendering difference") are not actionable theories. If your initial read produces only a symptom, dig further: examine the extracted CSS for the relevant selector, check whether the element type matches what Bootstrap targets, check whether `display` or spacing properties are being silently discarded.
 
 Then update the front matter:
 - Pass: `Status: Pass`, `Iteration: N+1`, `Stuck: 0`

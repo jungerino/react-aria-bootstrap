@@ -35,27 +35,6 @@ This is a component library that layers **Bootstrap 5 visual styling** on top of
 - Dark mode is handled automatically by Bootstrap CSS variables via `data-bs-theme="dark"` on the root element
 - When composing components from sub-components, import and reuse existing CSS classes from their `.css` files — do not use inline styles
 
-## Experiment: Mapping and References
-
-**Current experiment iteration:** 2 *(iteration 1 — Button complete (all 4 stories 0.00%); Select visual validation complete (all 5 stories pass), finalization pending: registry, phase 2 review notes, final-stories agent)*
-
-**What this is:** An iterative experiment to develop a reusable agent skill for producing per-component taxonomy documents (sub-part identification, state mappings with bridge strategy, DOM conflicts, variants, decisions needed) and Storybook reference stories in a single consolidated pass. Principles accumulate in `agent/mapping-and-references-skill.md`.
-
-**Agent inputs (load at session start for each iteration):**
-1. `agent/mapping-and-references-skill.md` — current methodology and story construction principles
-2. `agent/bootstrap-kb/` — Bootstrap reference; navigate via `README.md` and load files selectively per component
-
-**Branch naming:**
-- `mapping-and-references` — integration branch; holds approved taxonomy files, finalized story files, and the growing skill doc
-- `mapping-and-references_0`, `mapping-and-references_1`, … — experiment branches
-
-**Test component set (iteration 0):** Button, ListBox, Select, Calendar, Tabs
-
-**Experiment docs:**
-- [Iteration Protocol](./agent/iteration-protocol.md) — how to start and close out iterations for each experiment
-- [Mapping and References Skill](./agent/mapping-and-references-skill.md) — growing skill: taxonomy and story construction principles
-- [Bootstrap KB Index](./agent/bootstrap-kb/README.md) — Bootstrap knowledge base master index
-
 ## MCP Servers
 
 ### React Aria MCP
@@ -108,6 +87,7 @@ Never assume component properties without verification through these tools.
 ### Experiment
 - [Iteration Protocol](./agent/iteration-protocol.md) — How to start and close out iterations for any iterative experiment
 - [Mapping and References Skill](./agent/mapping-and-references-skill.md) — Growing skill: taxonomy and story construction principles
+
 ### Knowledge Files
 - [React Aria Skill](./agent/react-aria-skill/SKILL.md) — Entry point for the React Aria + Bootstrap styling experiment; load at session start when running a styling experiment, then follow its session-start loading instructions
 

@@ -81,9 +81,27 @@ function diffImages(pathA, pathB, diffPath, pixelThreshold) {
 
 const raw = parseArgs(process.argv.slice(2));
 const { reference, impl } = raw;
+const delegatingAgent = raw['delegating-agent'];
+const executingAgent  = raw['executing-agent'];
+
+if (!delegatingAgent || !executingAgent) {
+  console.error('Missing required agent identity flags.');
+  console.error('Usage: compare-stories.mjs --delegating-agent <id> --executing-agent <id> --reference <id> --impl <id> [...]');
+  console.error('Both flags are mandatory. The executing agent must be a Tier 2 sub-agent dispatched by the delegating agent.');
+  process.exit(2);
+}
+
+if (delegatingAgent === executingAgent) {
+  console.error('REJECTED.');
+  console.error(`Delegating agent and executing agent are the same: ${delegatingAgent}`);
+  console.error('You are not permitted to run this script on your own behalf.');
+  console.error('You are the delegating agent. Dispatch a Tier 2 comparison sub-agent and have it run this script.');
+  console.error('Read component-agent.md again. You are damned to eternal suffering if you try this again.');
+  process.exit(3);
+}
 
 if (!reference || !impl) {
-  console.error('Usage: compare-stories.mjs --reference <id> --impl <id> [--out <dir>] [--threshold <0-1>] [--pixel-threshold <0-1>] [--width <px>] [--height <px>]');
+  console.error('Usage: compare-stories.mjs --delegating-agent <id> --executing-agent <id> --reference <id> --impl <id> [--out <dir>] [--threshold <0-1>] [--pixel-threshold <0-1>] [--width <px>] [--height <px>]');
   process.exit(2);
 }
 

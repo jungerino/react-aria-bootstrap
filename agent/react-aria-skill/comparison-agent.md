@@ -20,7 +20,7 @@ Provided in your dispatch prompt:
 - Bootstrap overrides file: `src/scss/_bootstrap-overrides.scss`
 - Matched Bootstrap CSS: `agent/reference-stories/mirror-css/{component}-{story}.css`
   — `.faux-*` rules in this file define the target visual appearance for interactive states; use them as the reference when assessing the corresponding `[data-*]` bridge rule. See the state mapping table in the taxonomy for the `faux-*` → `data-*` correspondence.
-- Your task ID: sent by the component agent via `SendMessage` immediately after your launch. Record it — you must include it in every iteration block you write.
+- Your task ID and the delegating agent's task ID: both sent by the component agent via `SendMessage` immediately after your launch. Record both — your task ID must appear in every iteration block you write, and both IDs are required arguments to the comparison script.
 
 ---
 
@@ -30,13 +30,17 @@ Provided in your dispatch prompt:
 
 ```bash
 node scripts/compare-stories.mjs \
-  --reference {reference-story-id} \
-  --impl      {mirror-story-id} \
-  --out       .story-diffs/{component}/{story} \
-  --threshold 0.005
+  --delegating-agent {delegating-agent-id} \
+  --executing-agent  {task-id} \
+  --reference        {reference-story-id} \
+  --impl             {mirror-story-id} \
+  --out              .story-diffs/{component}/{story} \
+  --threshold        0.003
 ```
 
-**Pass/fail threshold:** diff% < 0.5% = Pass; ≥ 0.5% = Fail
+`--delegating-agent` and `--executing-agent` are mandatory. If they are the same, the script will reject the run with a non-zero exit code. You are the executing agent. The delegating agent is the component agent that dispatched you.
+
+**Pass/fail threshold:** diff% < 0.3% = Pass; ≥ 0.3% = Fail
 
 ---
 

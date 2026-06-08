@@ -8,6 +8,14 @@ title: React Aria + Bootstrap Skill — Component Sub-Agent
 
 ---
 
+**Hard constraint — no exceptions:** You do not run pixel comparisons. You do not run `compare-stories.mjs`. You do not take screenshots. You do not diff images. You dispatch Tier 2 sub-agents and they do this work. If you run the script yourself it will reject you with a non-zero exit code. If you find another way to run comparisons yourself — Playwright directly, a different script, anything — you are still in violation of your role contract. There is no circumstance under which running a comparison yourself is acceptable. Delegate.
+
+---
+
+**Hard constraint — no exceptions:** All bridge selectors go in `src/scss/_bootstrap-overrides.scss`. Do not create new CSS or SCSS files in `stories/`. Do not write bridge rules anywhere else. Why: bridge rules in story-scoped files create split coverage, load inconsistently, and are invisible to future agents. Story-specific layout utilities (fixed pixel widths, static specimen positioning) belong in the mirror story TSX as className assignments or as a minimal import — not as bridge CSS.
+
+---
+
 ## Session-Start Inputs
 
 Load at session start (provided in your dispatch prompt):
@@ -45,6 +53,7 @@ Complete these steps once for the component before the story-level pipeline:
 - Use `variantClassMap` for variant props (P007); read Bootstrap docs before finalizing the variant set.
 - Honor all taxonomy `## Decisions` entries.
 - Apply Bootstrap component classes (P013); reserve utility classes for genuine one-off cases.
+- For each interactive element React Aria renders as a non-anchor/non-button (list items, option items, trigger divs, etc.): verify the chosen Bootstrap class provides `cursor: pointer` on that element type. Bootstrap classes designed for `<a>` or `<button>` elements do not deliver pointer cursor on `<div>` — add it explicitly in the bridge (P011).
 - Address all structural and sizing principles flagged in P1.
 
 **P3. Write base bridge selectors:**
@@ -72,7 +81,8 @@ For each mirror story:
 3. Create story findings doc at `agent/reference-stories/{component}-{story}-findings.md`:
    - Front matter: `Status: In review`, `Iteration: 0`, `Stuck: 0`
 4. Launch comparison sub-sub-agent (`run_in_background: true`) with the inputs listed below
-   - Immediately after launching, send the returned task ID to the comparison agent via `SendMessage`: "Your task ID for this run is `{task-id}`."
+   - Immediately after launching, send both IDs to the comparison agent via `SendMessage`: "Your task ID for this run is `{tier2-task-id}`. The delegating agent ID is `{your-own-task-id}`."
+   - The comparison agent needs both to satisfy the `--delegating-agent` / `--executing-agent` script arguments. If the two IDs match, the script will reject the run.
 5. Proceed to the next mirror story without waiting
 
 After all stories are implemented, begin the cycling loop.
@@ -88,6 +98,7 @@ Each comparison sub-sub-agent prompt must include:
 - Bootstrap overrides: `src/scss/_bootstrap-overrides.scss`
 - Matched Bootstrap CSS: `agent/reference-stories/mirror-css/{component}-{story}.css`
   — `.faux-*` rules in this file define the target visual appearance for interactive states; see the taxonomy state mapping table for the `faux-*` → `data-*` correspondence
+- Your own task ID (the delegating agent ID): sent via `SendMessage` immediately after launch — the comparison agent passes this as `--delegating-agent` to the comparison script
 
 ---
 
@@ -149,7 +160,15 @@ on ScheduleWakeup:
 
 ## Final Verification Sweep
 
-After all stories reach `Pass`, launch one final round of sub-sub-agent comparisons across all stories using the same 0.5% threshold. This catches regressions from shared-selector changes that slipped through the cycling loop.
+After all stories reach `Pass`, before launching the final sweep:
+
+**Pre-completion check — CSS file placement:**
+```bash
+git diff --name-only $(git merge-base HEAD main)..HEAD | grep 'stories/.*\.scss'
+```
+If any new SCSS files appear in `stories/`, move their bridge rules to `src/scss/_bootstrap-overrides.scss` and delete the story-scoped files before proceeding.
+
+Then launch one final round of sub-sub-agent comparisons across all stories using the same 0.3% threshold. This catches regressions from shared-selector changes that slipped through the cycling loop.
 
 When all stories pass the sweep, report `verification-sweep-passed` to the primary agent.
 
@@ -237,5 +256,5 @@ UNRESOLVED:
 | Parameter | Default | Notes |
 |-----------|---------|-------|
 | Stuck counter threshold | 3 | Consecutive non-improving iterations before Status = Stuck |
-| Pass/fail threshold | 0.5% | Diff% cutoff |
+| Pass/fail threshold | 0.3% | Diff% cutoff |
 | pixelmatch threshold | 0.005 | Per-pixel color sensitivity |

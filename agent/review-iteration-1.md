@@ -59,8 +59,8 @@ Added two mandatory flags: `--delegating-agent {id}` and `--executing-agent {id}
 **Hard constraint block (`component-agent.md`):**
 Added a single unambiguous constraint immediately after the role contract, covering not just `compare-stories.mjs` but any alternative comparison method (Playwright directly, a different script, etc.). One statement at the top is more authoritative than repeated warnings per section.
 
-**Self-identification bug (not yet fixed):**
-The self-identification command in `component-agent.md` returns the alphabetically first symlink in the tasks/ directory, not necessarily the current agent's own ID. This caused the Tabs agent to mis-identify as the ListBox agent. This does not break the enforcement check (Tier 2 has a genuinely different ID regardless), but it corrupts task ID records in findings docs. Fix deferred.
+**Self-identification bug (fixed):**
+The self-identification command in `component-agent.md` returned the alphabetically first symlink in the tasks/ directory, not necessarily the current agent's own ID. This caused the Tabs agent to mis-identify as the ListBox agent. Fixed by adding `-t` to sort by creation time (newest first) — the current agent's symlink is always the most recently created. One-character change: `ls -la` → `ls -lat`.
 
 ## User review
 

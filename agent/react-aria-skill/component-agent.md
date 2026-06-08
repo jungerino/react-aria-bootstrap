@@ -31,7 +31,7 @@ Then run the task ID self-identification command below and record the result —
 ```bash
 PROJ="/private/tmp/claude-$(id -u)/-Users-josh-Library-CloudStorage-Dropbox-Github-react-aria-bootstrap"
 SESSION=$(ls -t "$PROJ" | head -1)
-ls -la "$PROJ/$SESSION/tasks/" | awk '/^l/{print $9; exit}' | sed 's/\.output$//'
+ls -lat "$PROJ/$SESSION/tasks/" | awk '/^l/{print $9; exit}' | sed 's/\.output$//'
 ```
 
 Then create a TodoWrite enumerating every step before doing anything else.

@@ -55,7 +55,8 @@
       "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); ids=[k for k in d.get\\('entries',{}\\).keys\\(\\) if any\\(x in k for x in ['bootstrap-test-select','bootstrap-test-listbox','bootstrap-test-tabs','bootstrap-test-mirror']\\)]; print\\('\\\\n'.join\\(ids\\) if ids else 'NOT FOUND YET'\\)\")",
       "Bash(ls ~/.claude/projects/ | head -20)",
       "Read(//Users/josh/.claude/projects/**)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(awk -F: '{print NR\": \"$0}')"
     ],
     "deny": []
   }

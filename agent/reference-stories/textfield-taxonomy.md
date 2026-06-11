@@ -94,4 +94,12 @@ React Aria renders a real `<input>` (or `<textarea>`) and a real `<label>` — e
 
 ## Decisions
 
-*(to be filled after user resolves M016 items in `agent/review-textfield.md`)*
+**Floating labels:** Include. Implement a floating-label specimen by reversing `<Label>`/`<Input>` DOM order within a `.form-floating` wrapper. The `~` sibling combinator requires `<input>` to precede `<label>`.
+
+**Size variants:** Expose as a prop on the Bootstrap-themed TextField component (consistent with Select decision). Modifier classes `.form-control-sm` / `.form-control-lg` applied to the Input.
+
+**Valid state:** Skip entirely. Out of scope for this mapping (consistent with Select decision).
+
+**TextArea:** Include as a variant specimen in the TextField reference stories (Option A). Same `<TextField>` root with `<TextArea>` child instead of `<Input>` — no separate taxonomy entry.
+
+**Plaintext read-only:** Exclude. `.form-control-plaintext` is out of scope; standard `.form-control[readonly]` is sufficient.

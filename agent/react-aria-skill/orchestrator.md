@@ -41,15 +41,61 @@ Before launching any agent, emit a delegation manifest listing every component a
 
 Dispatch component sub-agents **serially — one at a time.** Wait for each component sub-agent to report a terminal phrase before launching the next. This ensures the full concurrency budget is available to each component's comparison sub-sub-agents and avoids silent queuing.
 
-Each sub-agent prompt must be fully self-contained: component name, taxonomy path, findings doc path, and paths to the skill files the component agent should load.
+---
 
-**Deriving paths from a component name:**
-- Taxonomy: `agent/reference-stories/{component}-taxonomy.md` (e.g. `button-taxonomy.md`)
-- Component-wide findings doc: `agent/reference-stories/{component}-findings.md`
-- Mirror stories TSX: `stories/bootstrap-test/{ComponentName}/{ComponentName}.mirror.stories.tsx`
-- Bootstrap overrides: `src/scss/_bootstrap-overrides.scss`
+## Dispatch Prompt Template
 
-`{component}` is lowercase (e.g. `button`, `select`); `{ComponentName}` is PascalCase (e.g. `Button`, `Select`).
+Use this template **verbatim** when launching a component sub-agent. Replace `{component}` (lowercase), `{ComponentName}` (PascalCase), and `N` (iteration number). Do not add, remove, or paraphrase steps — the template is intentionally minimal so that `component-agent.md` remains the sole task definition.
+
+```
+You are a Tier 1 Component Sub-Agent for the React Aria + Bootstrap styling experiment.
+
+**Component:** {ComponentName}
+**Working directory:** `/Users/josh/Library/CloudStorage/Dropbox/Github/react-aria-bootstrap`
+
+## Before reading any files
+
+1. Use ToolSearch (`query: "select:TodoWrite"`) to load the TodoWrite tool.
+2. Run the task ID self-identification command:
+   PROJ="/private/tmp/claude-$(id -u)/-Users-josh-Library-CloudStorage-Dropbox-Github-react-aria-bootstrap"
+   SESSION=$(ls -t "$PROJ" | head -1)
+   ls -lat "$PROJ/$SESSION/tasks/" | awk '/^l/{print $9; exit}' | sed 's/\.output$//'
+3. Create a TodoWrite enumerating every step in `component-agent.md` before doing any other work.
+
+## Session-start files (read in this order)
+
+1. `agent/react-aria-skill/SKILL.md`
+2. `agent/react-aria-skill/component-agent.md` — your complete task definition; follow it exactly
+3. `agent/react-aria-skill/principles.md`
+4. `agent/reference-stories/{component}-taxonomy.md`
+5. `agent/bootstrap-kb/README.md`
+
+## Key paths
+
+| Artifact | Path |
+|----------|------|
+| Component impl | `src/bootstrap-test/{ComponentName}.tsx` |
+| Standard stories | `stories/bootstrap-test/{ComponentName}/{ComponentName}.stories.tsx` |
+| Mirror stories | `stories/bootstrap-test/{ComponentName}/{ComponentName}.mirror.stories.tsx` |
+| Bootstrap overrides | `src/scss/_bootstrap-overrides.scss` |
+| Component findings doc | `agent/reference-stories/{component}-findings.md` |
+| Review file | `agent/review-iteration-N.md` |
+
+## Terminal phrases
+
+Return exactly one of:
+- `verification-sweep-passed`
+- `Stuck: {story}`
+- `Script failed: {story}`
+- `Context exhausted`
+
+`component-agent.md` is your task definition. Do not derive your steps from this prompt.
+```
+
+**Deriving path values from a component name:**
+- `{component}` is lowercase (e.g. `button`, `select`)
+- `{ComponentName}` is PascalCase (e.g. `Button`, `Select`)
+- `N` is the current iteration number (e.g. `0`, `1`)
 
 ---
 

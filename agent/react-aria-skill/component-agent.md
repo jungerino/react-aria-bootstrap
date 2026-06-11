@@ -4,11 +4,7 @@ title: React Aria + Bootstrap Skill — Component Sub-Agent
 
 # Component Sub-Agent
 
-**Role contract:** Your task is complete when all mirror stories for your component reach Pass on the final verification sweep and you report `verification-sweep-passed` to the primary agent. Your task is NOT complete when a story passes — that is an intermediate milestone. You do not run pixel diffs. You dispatch comparison agents and act on their findings.
-
----
-
-**Hard constraint — no exceptions:** You do not run pixel comparisons. You do not run `compare-stories.mjs`. You do not take screenshots. You do not diff images. You dispatch Tier 2 sub-agents and they do this work. If you run the script yourself it will reject you with a non-zero exit code. If you find another way to run comparisons yourself — Playwright directly, a different script, anything — you are still in violation of your role contract. There is no circumstance under which running a comparison yourself is acceptable. Delegate.
+**Role contract:** Your task is complete when all mirror stories for your component pass the final verification sweep and you report `verification-sweep-passed` to the primary agent. You own the full per-component lifecycle: implementation, pixel diff comparison, iterative self-correction, and findings documentation. You run `compare-stories.mjs` directly — there is no Tier 2.
 
 ---
 
@@ -26,7 +22,7 @@ Load at session start (provided in your dispatch prompt):
 4. `agent/reference-stories/{component}-taxonomy.md` — component taxonomy (incl. `## Decisions` section)
 5. `agent/bootstrap-kb/README.md` — Bootstrap KB index; load relevant KB files selectively per component
 
-Then run the task ID self-identification command below and record the result — you will include it in every Work Log entry:
+Then run the task ID self-identification command below and record the result — you will include it in every findings doc iteration block and Work Log entry:
 
 ```bash
 PROJ="/private/tmp/claude-$(id -u)/-Users-josh-Library-CloudStorage-Dropbox-Github-react-aria-bootstrap"
@@ -63,7 +59,7 @@ Complete these steps once for the component before the story-level pipeline:
 
 ---
 
-## Story-Level Pipeline
+## Phase A — Story Implementation
 
 For each mirror story:
 
@@ -80,124 +76,98 @@ For each mirror story:
    Re-run on every implementation iteration — new selectors may be introduced. Output is git-tracked and overwritten each run.
 3. Create story findings doc at `agent/reference-stories/{component}-{story}-findings.md`:
    - Front matter: `Status: In review`, `Iteration: 0`, `Stuck: 0`
-4. Launch comparison sub-sub-agent (`run_in_background: true`) with the inputs listed below
-   - Immediately after launching, send both IDs to the comparison agent via `SendMessage`: "Your task ID for this run is `{tier2-task-id}`. The delegating agent ID is `{your-own-task-id}`."
-   - The comparison agent needs both to satisfy the `--delegating-agent` / `--executing-agent` script arguments. If the two IDs match, the script will reject the run.
-5. Proceed to the next mirror story without waiting
 
-After all stories are implemented, begin the cycling loop.
-
-### Comparison Sub-Agent Dispatch Inputs
-
-Each comparison sub-sub-agent prompt must include:
-- Mirror story URL: `?path=/story/bootstrap-test-mirror-{component}--{story}`
-- Reference story URL: `?path=/story/bootstrap-reference-{component}--{story}`
-- Story findings doc: `agent/reference-stories/{component}-{story}-findings.md`
-- Component taxonomy: `agent/reference-stories/{component}-taxonomy.md`
-- Component mirror stories TSX: `stories/bootstrap-test/{ComponentName}/{ComponentName}.mirror.stories.tsx`
-- Bootstrap overrides: `src/scss/_bootstrap-overrides.scss`
-- Matched Bootstrap CSS: `agent/reference-stories/mirror-css/{component}-{story}.css`
-  — `.faux-*` rules in this file define the target visual appearance for interactive states; see the taxonomy state mapping table for the `faux-*` → `data-*` correspondence
-- Your own task ID (the delegating agent ID): sent via `SendMessage` immediately after launch — the comparison agent passes this as `--delegating-agent` to the comparison script
+After all mirror stories are implemented, begin Phase B — Comparison Loop.
 
 ---
 
-## Cycling Loop
+## Phase B — Comparison Loop
 
-Notification-driven. A `ScheduleWakeup` watchdog guards against silent failures.
+### Inception
 
-After all initial stories are implemented:
+Before making any code changes, run `compare-stories.mjs` for every story in one pass. This generates `reference.png`, `implementation.png`, and `diff.png` for each story:
 
-```
-schedule ScheduleWakeup (20 min)
-
-on sub-sub-agent notification:
-  if notification != `findings-written`:
-    report `Undefined return: {notification}` to primary agent; stop
-  read story findings doc
-  update component findings registry
-  append Work Log entry (see Component-Wide Findings Doc)
-    — if no code changes were made, write "Code changes made: None — [reason]"
-
-  if Status == Script failed:
-    report `Script failed: {story}` to primary agent; stop
-
-  if Status == Context exhausted:
-    report `Context exhausted` to primary agent; stop
-
-  if Status == Stuck:
-    report `Stuck: {story}` to primary agent; stop
-
-  if Status == Fail:
-    rework code per findings (bridge CSS and/or mirror TSX)
-    if no code change identified:
-      update story front matter: Status = Stuck
-      report `Stuck: {story}` to primary agent; stop
-    else:
-      update story front matter: Status = In review
-      re-check code change scope — if shared selectors modified:
-        set affected stories to Status = In review; relaunch their sub-sub-agents too
-      re-launch sub-sub-agent (background)
-      reset watchdog: schedule new ScheduleWakeup (20 min)
-
-  if Status == Pass:
-    if all stories Pass: proceed to Final Verification Sweep
-    else: reset watchdog: schedule new ScheduleWakeup (20 min)
-
-on ScheduleWakeup:
-  if any stories still In review:
-    mark those stories Timeout in registry
-    report `Timeout: {story}` to primary agent; stop
-  else:
-    ignore (stale wakeup)
-```
-
-`ScheduleWakeup` has no cancel mechanism — the watchdog only fires if no sub-sub-agent has reported in 20 consecutive minutes (the window resets on every notification).
-
-**On context compression:** If you detect that your prior context has been compressed/summarized (earlier messages replaced by a summary), report `Context exhausted` to the primary agent and stop.
-
----
-
-## Final Verification Sweep
-
-After all stories reach `Pass`, before launching the final sweep:
-
-**Pre-completion check — CSS file placement:**
 ```bash
-git diff --name-only $(git merge-base HEAD main)..HEAD | grep 'stories/.*\.scss'
+node scripts/compare-stories.mjs \
+  --reference {reference-story-id} \
+  --impl      {mirror-story-id} \
+  --out       .story-diffs/{component}/{story} \
+  --threshold 0.003
 ```
-If any new SCSS files appear in `stories/`, move their bridge rules to `src/scss/_bootstrap-overrides.scss` and delete the story-scoped files before proceeding.
 
-Then launch one final round of sub-sub-agent comparisons across all stories using the same 0.3% threshold. This catches regressions from shared-selector changes that slipped through the cycling loop.
+After the first pass, read `.story-diffs/{component}/{story}/reference.png` for **every** story. Do this once — **never re-read `reference.png` again for the rest of the session.** Reference stories do not change; re-reading them on each pass wastes ~3,500 tokens per story.
 
-When all stories pass the sweep, report `verification-sweep-passed` to the primary agent.
+Record exit code and diff% for each story. Stories with exit code 0 are immediately `Pass` — log them and move on. Stories with exit code 1 enter the fix loop.
 
 ---
 
-## Per-Story Findings Doc
+### Image Read Rules (hard constraint)
 
-**Path:** `agent/reference-stories/{component}-{story}-findings.md`
+| Image | When to read |
+|-------|-------------|
+| `reference.png` | **Once at Phase B inception.** Never again. |
+| `diff.png` | On any failure. Re-read after each fix attempt to check for change. |
+| `implementation.png` | **Only** after a fix attempt that produced no visible change in `diff.png` (i.e., you tried and missed — the diff looks the same). `reference.png` in context plus `diff.png` is sufficient to diagnose most failures; read `implementation.png` only when the fix had no effect and you need to see what is actually rendering to understand why. Do not read before attempting a fix. |
 
-**Front matter:**
+---
 
-```yaml
-Status: In review | Pass | Fail | Stuck | Timeout | Context exhausted | Script failed
-Iteration: <n>
-Stuck: <n>
+### Fix Loop
+
+For each failing story, repeat until Pass or Stuck threshold is reached:
+
+```
+read diff.png
+  → describe what is visible: which specimen, which anatomical region, visible red
+  → apply fix to bridge CSS and/or mirror TSX
+  → re-run scripts/extract-story-css.mjs for this story (keep mirror CSS current)
+  → re-run compare-stories.mjs for this story
+    → exit 0: mark Pass; update findings doc; done with this story
+    → exit 1 and diff.png changed: continue loop
+    → exit 1 and diff.png unchanged: read implementation.png; continue loop
+  → if no fix can be identified: increment Stuck counter
+      → if Stuck >= threshold (default 3): write Status = Stuck; report `Stuck: {story}` to primary agent; stop
+  → write iteration block to findings doc after every pass (pass or fail)
 ```
 
-**Status transitions:**
+**Shared selector changes:** If a fix modifies bridge selectors that could affect other stories, re-run `compare-stories.mjs` for those stories too and update their findings.
 
-- Initial: `In review`
-- Sub-sub-agent completes, diff passes: `Status = Pass`, `Iteration++`, `Stuck = 0`
-- Sub-sub-agent completes, diff fails, improved: `Status = Fail`, `Iteration++`, `Stuck = 0`
-- Sub-sub-agent completes, diff fails, no improvement: `Status = Fail`, `Iteration++`, `Stuck++`
-- After rework by sub-agent: `Status = In review`
-- When `Stuck` reaches threshold (default: 3): `Status = Stuck`
-- Sub-sub-agent detects context compression: `Status = Context exhausted`
-- Sub-sub-agent encounters script failure: `Status = Script failed`
+**Script failure:** If any of `reference.png`, `implementation.png`, or `diff.png` is missing after a script run, write `Status: Script failed` to the findings doc front matter, then report `Script failed: {story}` to the primary agent and stop.
 
-**Body (appended per iteration by sub-sub-agent):**
+---
+
+### Spatial Diff Reasoning
+
+When `diff.png` shows one element displaced relative to its neighbor, or a gap present in the reference but absent in the implementation:
+
+1. Name the gap before theorizing: "the reference shows approximately N px between [A] and [B]; the implementation shows them [touching / N px closer]."
+2. Identify which element owns the gap. Scan the extracted CSS for `margin` or `padding` rules on that element.
+3. Check whether any of those rules use a bare element-type selector. Cross-check against the React Aria component's rendered DOM: if the rule targets an element type that React Aria substitutes with a different type, the rule loads globally but won't match the substitute.
+4. Check whether the spacing-receiving element has `display: inline` — inline elements discard `margin-top` and `margin-bottom`.
+
+---
+
+### Animation Exception
+
+If the diff is localized to a single element where both screenshots show that element visually correct but at different animation frames (spinner, progress indicator, looping animation), treat the story as passing regardless of diff%. All four conditions must hold:
+
+1. The diff region is fully contained within one element
+2. Both screenshots show that element present and styled correctly
+3. The element is recognizably in an animated state
+4. The rest of the story outside that element shows no red in `diff.png`
+
+If any condition is uncertain, do not apply this exception — flag it as a design decision in the findings doc.
+
+---
+
+### Prior Iteration Review
+
+Before writing findings for a new pass, review all prior iteration blocks in the story findings doc. Find the last iteration block where `Stuck: 0` appears. Do not repeat any theory proposed in iterations after that point — they are the current stuck run and have been ruled out. Theories from before the last `Stuck: 0` may be revisited if relevant after subsequent code changes.
+
+---
+
+### Findings Doc Updates
+
+Append an Iteration block after each comparison pass:
 
 ```
 ## Iteration {N}
@@ -210,9 +180,105 @@ Stuck: <n>
 PASS: [specimen labels]
 
 FAIL:
-- Specimen [label]: Red at [location].
-  Theory: [selector/property] is [missing/wrong value].
-  Validated: [yes/no — cite file:line]
+- Specimen [label]: Red at [location]. Fix attempted: [description of what was changed].
+
+UNRESOLVED:
+- Specimen [label]: [describe what is visible but unexplained]
+```
+
+**Observations, not conclusions.** Record what is visible — where the red appears, which specimen, which anatomical region, diff% — and what fix you applied. Your reasoning lives in your conversation context. The findings doc is the observable record, not a theory log.
+
+Update front matter:
+- Pass: `Status: Pass`, `Iteration: N+1`, `Stuck: 0`
+- Fail, improved vs. prior: `Status: Fail`, `Iteration: N+1`, `Stuck: 0`
+- Fail, no improvement: `Status: Fail`, `Iteration: N+1`, `Stuck++`
+- After a code fix: `Status: In review`
+- When Stuck reaches threshold: `Status: Stuck`
+
+---
+
+### Component-Wide Registry Updates
+
+After each story pass, update the Story Registry table in `agent/reference-stories/{component}-findings.md`. Append a Work Log entry after every comparison pass:
+
+```
+### {story} — Iteration {N}
+
+**Task ID**: {task-id}
+
+**Observations:** (copied from story findings doc FAIL/UNRESOLVED entries)
+
+**Principles consulted:**
+- [Cite specific skill principles or component decisions that guided the fix]
+
+**Code changes made:** (or "None — [reason]" if no changes)
+- [file:line]: [description]
+- Shared selectors modified: [list] → affected stories re-run: [list]
+```
+
+---
+
+### Context Compression
+
+If you detect that your prior context has been compressed/summarized (earlier messages replaced by a summary), report `Context exhausted` to the primary agent and stop.
+
+---
+
+## Final Verification Sweep
+
+After all stories reach `Pass`, before reporting completion:
+
+**Pre-completion check — CSS file placement:**
+```bash
+git diff --name-only $(git merge-base HEAD main)..HEAD | grep 'stories/.*\.scss'
+```
+If any new SCSS files appear in `stories/`, move their bridge rules to `src/scss/_bootstrap-overrides.scss` and delete the story-scoped files before proceeding.
+
+Run one final round of `compare-stories.mjs` across all stories with `--threshold 0.003`. This catches regressions from shared-selector changes that slipped through the fix loop. Do not re-read `reference.png` — it remains in context from Phase B inception.
+
+When all stories pass the sweep, report `verification-sweep-passed` to the primary agent.
+
+---
+
+## Per-Story Findings Doc
+
+**Path:** `agent/reference-stories/{component}-{story}-findings.md`
+
+**Written by:** This agent (Tier 1). Created during Phase A; populated during Phase B.
+
+**Front matter:**
+
+```yaml
+Status: In review | Pass | Fail | Stuck | Context exhausted | Script failed
+Iteration: <n>
+Stuck: <n>
+```
+
+**Status transitions:**
+
+- Initial: `In review`
+- Comparison pass, diff passes: `Status = Pass`, `Iteration++`, `Stuck = 0`
+- Comparison pass, diff fails, improved: `Status = Fail`, `Iteration++`, `Stuck = 0`
+- Comparison pass, diff fails, no improvement: `Status = Fail`, `Iteration++`, `Stuck++`
+- After rework by this agent: `Status = In review`
+- When `Stuck` reaches threshold (default: 3): `Status = Stuck`
+- Context compression detected: `Status = Context exhausted`
+- Script failure (missing output images): `Status = Script failed`
+
+**Body (appended per iteration by this agent):**
+
+```
+## Iteration {N}
+
+**Task ID**: {task-id}
+**Diff%:** {value} | **Status:** pass / fail | **Stuck:** {n}
+
+### Specimens
+
+PASS: [specimen labels]
+
+FAIL:
+- Specimen [label]: Red at [location]. Fix attempted: [description].
 
 UNRESOLVED:
 - Specimen [label]: [describe what is visible but unexplained]
@@ -224,29 +290,28 @@ UNRESOLVED:
 
 **Path:** `agent/reference-stories/{component}-findings.md`
 
-**Story Registry** (updated after each sub-sub-agent run):
+**Story Registry** (updated after each comparison pass):
 
 | Story | Status | Iteration | Stuck | Diff% |
 |-------|--------|-----------|-------|-------|
 | trigger-states | Fail | 2 | 0 | 1.3% |
 | open-states | Pass | 1 | 0 | 0.2% |
 
-**Work Log** (per-story, per-iteration, written by sub-agent after every sub-sub-agent return):
+**Work Log** (per-story, per-iteration, written by this agent after every comparison pass):
 
 ```
 ### {story} — Iteration {N}
 
 **Task ID**: {task-id}
 
-**Sub-sub-agent findings:** (copied from story findings doc)
-- Specimen [label]: [theory + validation]
+**Observations:** (copied from story findings doc FAIL/UNRESOLVED entries)
 
 **Principles consulted:**
 - [Cite specific skill principles or component decisions that guided the fix]
 
 **Code changes made:** (or "None — [reason]" if no changes)
 - [file:line]: [description]
-- Shared selectors modified: [list] → stories reset to In review and relaunched: [list]
+- Shared selectors modified: [list] → affected stories re-run: [list]
 ```
 
 ---

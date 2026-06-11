@@ -15,7 +15,6 @@ Entry point for the Bootstrap-styling workflow. Maps agent tiers, specifies per-
 | 0 | Primary (Orchestrator) | Every component has reported `final-stories-done` and the batch report is delivered. |
 | 1 | Component Sub-Agent | All mirror stories pass the final verification sweep and `verification-sweep-passed` is reported. |
 | 1a | Final-Stories Sub-Agent | Standard stories are written and `final-stories-done` is reported. |
-| 2 | Comparison Sub-Sub-Agent | Findings are written to the story findings doc and the agent has exited. |
 
 ---
 
@@ -39,12 +38,7 @@ Each tier loads only the files listed for it. Loading files outside your tier is
 - `agent/react-aria-skill/final-stories-agent.md`
 - `agent/reference-stories/{component}-taxonomy.md`
 
-**Comparison sub-sub-agent (Tier 2):**
-- `agent/react-aria-skill/SKILL.md`
-- `agent/react-aria-skill/comparison-agent.md`
-- `agent/reference-stories/{component}-taxonomy.md`
-
-`SKILL.md` and `orchestrator.md` are the only files loaded into the primary agent's context at session start. The primary agent does not load `component-agent.md`, `comparison-agent.md`, `final-stories-agent.md`, or `principles.md`.
+`SKILL.md` and `orchestrator.md` are the only files loaded into the primary agent's context at session start. The primary agent does not load `component-agent.md`, `final-stories-agent.md`, or `principles.md`.
 
 ---
 
@@ -65,9 +59,7 @@ Each tier loads only the files listed for it. Loading files outside your tier is
 |--------|--------|---------|
 | `verification-sweep-passed` | Component sub-agent | All mirror stories passed final verification |
 | `final-stories-done` | Final-stories sub-agent | Standard stories written |
-| `findings-written` | Comparison sub-sub-agent | Findings doc updated; component agent reads doc Status for outcome |
-| `Stuck: {story}` | Component sub-agent | Cycling loop hit the stuck threshold |
-| `Timeout: {story}` | Component sub-agent | ScheduleWakeup watchdog fired before sub-sub-agent reported |
+| `Stuck: {story}` | Component sub-agent | Fix loop hit the stuck threshold |
 | `Script failed: {story}` | Component sub-agent | Comparison pixel-diff script failed; check the story findings doc |
 | `Context exhausted` | Any agent | Agent detected context compression and stopped |
 | `Undefined return: {…}` | Any agent | Received a return matching no valid terminal phrase; content included for diagnosis |

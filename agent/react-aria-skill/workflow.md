@@ -75,7 +75,7 @@ Wait for the new instance to serve `index.json` with the stub story IDs before p
 
 ## Phase 2 — Per-component work sequence (single-agent path)
 
-Repeat for each component. For multi-agent batch processing, use `orchestrator.md` + `component-agent.md` instead of this path. User review happens after the full component set is complete (Phase 3).
+Repeat for each component. For multi-agent batch processing, use `orchestrator.md` + `component-agent.md` instead of this path; the component agent handles both implementation and comparison in one session — no separate comparison tier. User review happens after the full component set is complete (Phase 3).
 
 **2a. Read and internalize inputs**
 

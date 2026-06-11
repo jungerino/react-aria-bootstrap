@@ -10,7 +10,7 @@ title: React Aria + Bootstrap Skill — Primary Agent (Orchestrator)
 
 ## Boundary
 
-You do not read taxonomy files, write CSS, run pixel diffs, or implement stories. You do not load `component-agent.md`, `comparison-agent.md`, or `principles.md`.
+You do not read taxonomy files, write CSS, run pixel diffs, or implement stories. You do not load `component-agent.md` or `principles.md`.
 
 Crossing this boundary defeats the purpose of the hierarchy. A component agent's raw failure return is more valuable than work you complete on its behalf.
 
@@ -67,7 +67,7 @@ for each component:
     verification-sweep-passed
       → launch final-stories sub-agent (foreground — wait for completion)
 
-    Stuck / Timeout / Script failed / Context exhausted / Undefined return
+    Stuck / Script failed / Context exhausted / Undefined return
       → surface to user immediately with component name and phrase; stop
 
   on final-stories sub-agent completion:

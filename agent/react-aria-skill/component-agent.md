@@ -42,7 +42,8 @@ Complete these steps once for the component before the story-level pipeline:
 1. Read the taxonomy `## Decisions` section — pre-resolved decisions; do not re-derive them.
 2. Call `mcp__react-aria__get_react_aria_page` for the component. Cross-check: every `data-*` attribute in the docs must appear in the taxonomy's state mappings.
 3. Load Bootstrap KB: `components.md` entry for the matched Bootstrap component → `states.md` → `patterns.md` if a DOM conflict entry exists.
-4. Review all principles. Flag any with structural or sizing implications (P008, P010, P016, P040, P041, P042) — address during TSX/bridge implementation, not at diff time.
+4. Read the pre-extracted reference CSS for every story in scope: `agent/reference-stories/reference-css/{component}-{story}.css`. These files contain only the Bootstrap rules that applied to the rendered reference story DOM — they are the definitive list of CSS rules to replicate. Use them as your primary source for understanding target CSS rather than searching `bootstrap.css`. (`.faux-*` rules in these files show the target appearance for interactive states.)
+5. Review all principles. Flag any with structural or sizing implications (P008, P010, P016, P040, P041, P042) — address during TSX/bridge implementation, not at diff time.
 
 **P2. Implement TSX:**
 - Apply `className` render-prop pattern (P002) for Bootstrap classes.
@@ -128,6 +129,8 @@ read diff.png
       → if Stuck >= threshold (default 3): write Status = Stuck; report `Stuck: {story}` to primary agent; stop
   → write iteration block to findings doc after every pass (pass or fail)
 ```
+
+**Reference CSS vs mirror CSS gap analysis:** When a story fails and the diff alone doesn't pinpoint the cause, compare `agent/reference-stories/reference-css/{component}-{story}.css` (target) against `agent/reference-stories/mirror-css/{component}-{story}.css` (implementation). Rules present in the reference CSS but absent from the mirror CSS are likely missing bridge rules or className assignments.
 
 **Shared selector changes:** If a fix modifies bridge selectors that could affect other stories, re-run `compare-stories.mjs` for those stories too and update their findings.
 

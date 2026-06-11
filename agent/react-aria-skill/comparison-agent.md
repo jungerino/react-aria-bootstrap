@@ -1,3 +1,11 @@
+> **RETIRED — single-threaded-workflow (2026-06-10)**
+>
+> This agent tier has been eliminated. The comparison work it performed is now owned by the Tier 1 component agent directly. See `component-agent.md` — Phase B — Comparison Loop.
+>
+> Do not load this file in new sessions. It is preserved for historical reference only.
+
+---
+
 ---
 title: React Aria + Bootstrap Skill — Comparison Sub-Sub-Agent
 ---

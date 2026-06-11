@@ -231,6 +231,18 @@ Include all substantive sub-parts in a component's reference stories, even if th
 
 Reference stories depict what a correctly styled component should look like — they are visual targets. Never include specimens that show an incorrect, unstyled, or intermediate state as a contrast or "baseline." Implementation challenges are documented in the taxonomy's DOM conflicts and decisions-needed sections, not illustrated in reference stories.
 
+### P-S006: Extract reference CSS after each story is written
+
+After writing each story file and confirming Storybook renders it, run `scripts/extract-story-css.mjs` for that story and save the output to `agent/reference-stories/reference-css/{component}-{story}.css` (kebab-case, matching the story's title path). Storybook must be running on port 6006.
+
+```bash
+node scripts/extract-story-css.mjs "Bootstrap Reference/{Component}/{StoryName}"
+```
+
+This extracted file is the authoritative CSS target for the styling phase — the implementation agent loads it instead of grepping `bootstrap.css`.
+
+*Note: this is a procedural step, not a quality principle. It belongs here temporarily; if this skill gains workflow scaffolding, it moves to the workflow doc.*
+
 ---
 
 ## Open questions

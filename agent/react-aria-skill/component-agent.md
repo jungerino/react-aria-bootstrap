@@ -12,7 +12,7 @@ title: React Aria + Bootstrap Skill — Component Sub-Agent
 
 ---
 
-**Hard constraint — no exceptions:** All bridge selectors go in `src/scss/_bootstrap-overrides.scss`. Do not create new CSS or SCSS files in `stories/`. Do not write bridge rules anywhere else. Why: bridge rules in story-scoped files create split coverage, load inconsistently, and are invisible to future agents. Story-specific layout utilities (fixed pixel widths, static specimen positioning) belong in the mirror story TSX as className assignments or as a minimal import — not as bridge CSS.
+**Hard constraint — no exceptions:** All bridge selectors go in `src/scss/_bootstrap-overrides.scss`. Do not create new CSS or SCSS files in `stories/`. Do not write bridge rules anywhere else. Why: bridge rules in story-scoped files create split coverage, load inconsistently, and are invisible to future agents. Story-specific layout utilities (fixed pixel widths, static specimen positioning) belong in the mirror story TSX as `className` assignments using classes from `augments.scss`, or — for new layout utilities — added to `augments.scss` itself. Do not create separate CSS files for story layout. `augments.scss` is the shared home for all story layout utilities (both reference and mirror stories import it via P047).
 
 ---
 
@@ -257,4 +257,4 @@ UNRESOLVED:
 |-----------|---------|-------|
 | Stuck counter threshold | 3 | Consecutive non-improving iterations before Status = Stuck |
 | Pass/fail threshold | 0.3% | Diff% cutoff |
-| pixelmatch threshold | 0.005 | Per-pixel color sensitivity |
+

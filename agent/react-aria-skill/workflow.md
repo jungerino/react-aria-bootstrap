@@ -34,7 +34,10 @@ const meta: Meta = {
 };
 export default meta;
 
-// Stories to be implemented in Phase 2
+type Story = StoryObj<typeof meta>;
+
+// Placeholder — replaced in Phase 2
+export const Placeholder: Story = {};
 ```
 
 Mirror story stub:
@@ -49,7 +52,10 @@ const meta: Meta = {
 };
 export default meta;
 
-// Mirror stories implemented in Phase 2 — must match reference story layout exactly
+type Story = StoryObj<typeof meta>;
+
+// Placeholder — replaced in Phase 2
+export const Placeholder: Story = {};
 ```
 
 Commit message: `chore: stub files for {experiment-name}_N ({Component1}, {Component2})`
@@ -146,21 +152,21 @@ Reference story names vary — use the Storybook sidebar under "Bootstrap Refere
 
 ### Pixel diff command
 
-Always run with `--threshold 0.005` (0.5%):
+Always run with `--threshold 0.003` (0.3%):
 
 ```bash
 node scripts/compare-stories.mjs \
   --reference <reference-story-id> \
   --impl      <mirror-story-id> \
   --out       .story-diffs/<component>/<story> \
-  --threshold 0.005
+  --threshold 0.003
 ```
 
-The 0.5% threshold gives comfortable headroom over subpixel font rendering noise (~0.1–0.2%) while reliably catching missing styling.
+The 0.3% threshold catches structural sizing errors while remaining well above typical sub-pixel rendering noise (~0.1–0.2%).
 
 ### Fix loop (repeat until clean)
 
-1. Run pixel diff with `--threshold 0.005`
+1. Run pixel diff with `--threshold 0.003`
 2. Read `diff.png` — exit code alone is not sufficient. Red regions identify exactly which pixels differ. No red regions = clean.
 3. List every visual difference visible in `diff.png` and in the reference/implementation screenshots
 4. Classify each difference:
@@ -208,4 +214,4 @@ Before delivering iteration work, verify:
 - [ ] Unmapped components/states are logged with alternatives
 - [ ] All string-union props have constrained `argTypes` (inline-radio, explicit options)
 - [ ] React Aria documentation was read for each component; all props with layout, orientation, selection-mode, or variant semantics are implemented with bridge rules and stories (P038)
-- [ ] Visual comparison completed: each component pixel-diffed with `--threshold 0.005`; all runs exit 0; `diff.png` inspected for every story and contains no red regions
+- [ ] Visual comparison completed: each component pixel-diffed with `--threshold 0.003` (0.3%); all runs exit 0; `diff.png` inspected for every story and contains no red regions

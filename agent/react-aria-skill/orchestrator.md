@@ -53,14 +53,14 @@ You are a Tier 1 Component Sub-Agent for the React Aria + Bootstrap styling expe
 **Component:** {ComponentName}
 **Working directory:** `/Users/josh/Library/CloudStorage/Dropbox/Github/react-aria-bootstrap`
 
-## Before reading any files
+## Required deliverables
 
-1. Use ToolSearch (`query: "select:TodoWrite"`) to load the TodoWrite tool.
-2. Run the task ID self-identification command:
-   PROJ="/private/tmp/claude-$(id -u)/-Users-josh-Library-CloudStorage-Dropbox-Github-react-aria-bootstrap"
-   SESSION=$(ls -t "$PROJ" | head -1)
-   ls -lat "$PROJ/$SESSION/tasks/" | awk '/^l/{print $9; exit}' | sed 's/\.output$//'
-3. Create a TodoWrite enumerating every step in `component-agent.md` before doing any other work.
+These files must exist before you run `compare-stories.mjs` for the first time. Create them in Phase A — do not proceed to Phase B until they are written.
+
+- `agent/reference-stories/{component}-findings.md`
+- `agent/reference-stories/{component}-{story}-findings.md` for each story in scope
+
+You cannot report a terminal phrase without them.
 
 ## Session-start files (read in this order)
 

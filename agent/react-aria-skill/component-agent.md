@@ -30,8 +30,6 @@ SESSION=$(ls -t "$PROJ" | head -1)
 ls -lat "$PROJ/$SESSION/tasks/" | awk '/^l/{print $9; exit}' | sed 's/\.output$//'
 ```
 
-Then create a TodoWrite enumerating every step before doing anything else.
-
 ---
 
 ## Preparation Phase
@@ -61,6 +59,18 @@ Complete these steps once for the component before the story-level pipeline:
 ---
 
 ## Phase A — Story Implementation
+
+**Before the per-story loop**, create the component-wide findings doc:
+
+- Path: `agent/reference-stories/{component}-findings.md`
+- Initialize with an empty Story Registry table and a `## Work Log` header:
+
+```markdown
+| Story | Status | Iteration | Stuck | Diff% |
+|-------|--------|-----------|-------|-------|
+
+## Work Log
+```
 
 For each mirror story:
 

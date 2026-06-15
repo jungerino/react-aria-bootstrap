@@ -58,6 +58,9 @@
       "WebSearch",
       "Bash(awk -F: '{print NR\": \"$0}')"
     ],
-    "deny": []
+    "deny": [],
+    "additionalDirectories": [
+      "/Users/josh/.claude/plans"
+    ]
   }
 }

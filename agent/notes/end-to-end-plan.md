@@ -1,7 +1,5 @@
 # End-to-End Workflow Standardization — Planning Doc
 
-Working document for this session. We'll refine this as we work through the questions and design decisions below.
-
 ---
 
 ## Summary: What We're Trying to Accomplish
@@ -85,7 +83,11 @@ After all component agents complete, a reporting agent could aggregate per-compo
 
 **Not good candidates:** CSS extraction (fast, part of the fix loop), diff analysis (needs implementation context), story writing (needs full understanding of what was implemented).
 
-> **Decision:**
+> **Decision:** Final Verification Sweep is delegated to a lightweight sub-agent dispatched by the orchestrator after the component agent reports `implementation-complete`. The sweep is purely confirmatory (run `compare-stories.mjs`, report pass/fail) and needs no implementation context — freeing the component agent's context window from persisting to the end.
+>
+> Batch reporting is not worth the overhead — low value, low complexity, can be done inline.
+>
+> Everything else (implementation, bridge CSS, fix loop, story writing) stays with the component agent. The fix loop in particular requires continuous reasoning over what was just written; delegating any of it breaks the feedback loop that made `react-aria-skill-refactor` work.
 
 ---
 
@@ -151,15 +153,7 @@ Currently there are M-codes (mapping principles), P-codes (styling principles), 
 
 **Q6. What are the final canonical paths?**
 
-The rough notes flag several changes needed. Proposed target — mark up with corrections:
-
-| Current | Proposed |
-|---------|----------|
-| `src/bootstrap-test/` | `src/styled-components/` |
-| `stories/bootstrap-test/` | `stories/react-aria-bootstrap/` |
-| `stories/bootstrap-test/bootstrap-reference/` | `stories/react-aria-bootstrap/reference/` |
-| `agent/reference-stories/` | `agent/component-taxonomies/` (per rough notes) |
-| `augments.scss` (location unclear) | `stories/react-aria-bootstrap/augments.scss`? |
+The rough notes flag several changes needed.
 
 > **Decision:**
 >
@@ -233,8 +227,6 @@ Both the rough notes and the `single-threaded-workflow` entry flag this as needi
 ---
 
 ## Workflow Spec Draft
-
-*(To be filled in after questions are resolved)*
 
 ### Stage 1: Bootstrap Knowledge Base
 
@@ -318,25 +310,33 @@ grep "bootstrap-kb-skill" CLAUDE.md               # TOC entry present
 
 ---
 
-## Prerequisites
+## Implementation Tasks
+
+*(Phase 3 — to be broken out into a separate plan after spec is approved)*
+
+---
+
+## Appendix
+
+### A: Prerequisites
 
 Environment settings and tooling that must be in place before the workflow can run. The spec should include this as a setup checklist for new contributors and implementing agents.
 
-### Environment settings
+#### Environment settings
 
 | Setting | Value | Where | Why |
 |---------|-------|--------|-----|
 | `CLAUDE_CODE_ENABLE_TASKS` | `1` | `~/.claude/settings.json` `env` block | Enables Task tools (`TaskCreate`, `TaskUpdate`, etc.) in place of deprecated `TodoWrite` |
 | `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` | `1` (future) | `~/.claude/settings.json` `env` block | Required for shared task lists and `SendMessage` between agents; experimental — not needed for current serial two-tier workflow |
 
-### MCP servers
+#### MCP servers
 
 | Server | Required for |
 |--------|-------------|
 | `react-aria` MCP | Taxonomy phase — `mcp__react-aria__get_react_aria_page` for component docs |
 | `storybook` MCP | Reference story and mirror story validation |
 
-### Tooling
+#### Tooling
 
 | Tool | Version / notes |
 |------|----------------|
@@ -347,11 +347,11 @@ Environment settings and tooling that must be in place before the workflow can r
 
 ---
 
-## Compliance and Enforcement Patterns
+### B: Compliance and Enforcement Patterns
 
 Consistent patterns the spec should define and apply across all agent tiers. The goal is structural enforcement — making non-compliance harder than compliance — rather than behavioral prohibition ("you must not…").
 
-### 1. Success conditions over prohibitions
+#### 1. Success conditions over prohibitions
 
 Frame each agent's role contract as a completion condition, not a list of forbidden actions. Task-completion bias is stronger than prohibition-following.
 
@@ -360,7 +360,7 @@ Frame each agent's role contract as a completion condition, not a list of forbid
 
 Already applied in `component-agent.md`. Must be consistently applied in all tier files.
 
-### 2. `disallowedTools` / `tools` in subagent definitions
+#### 2. `disallowedTools` / `tools` in subagent definitions
 
 The parent agent controls each sub-agent's tool roster via frontmatter. This is structural — the sub-agent physically cannot use a denied tool, regardless of motivation.
 
@@ -368,21 +368,21 @@ The parent agent controls each sub-agent's tool roster via frontmatter. This is 
 - Component agent sub-agent definition should deny `Agent` — prevents it from spawning its own sub-agents
 - Apply the principle of least capability: each tier gets only the tools it needs
 
-### 3. Required deliverable artifacts as gate conditions
+#### 3. Required deliverable artifacts as gate conditions
 
 An agent cannot proceed to its next step without producing a specific artifact. The artifact's existence is verifiable by the orchestrator or the spec.
 
-- Component agent must create `agent/reference-stories/{component}-findings.md` before Phase B
+- Component agent must create `agent/review/{component}-findings.md` before Phase B
 - Component agent must append an iteration block to the findings doc after every comparison pass (not batched at end)
 - Final-stories agent must produce committed story files before reporting `final-stories-done`
 
-### 4. Settings.json deny rules
+#### 4. Settings.json deny rules
 
 For the hardest constraints — things that must never happen regardless of agent reasoning — add a `deny` rule in `.claude/settings.json`. This is OS-level enforcement that no prompt can override.
 
 Example from prior experiments: `Bash(node scripts/compare-stories.mjs *)` in the deny list for orchestrator sessions.
 
-### 5. Task tools for pipeline tracking (NEW)
+#### 5. Task tools for pipeline tracking
 
 With `CLAUDE_CODE_ENABLE_TASKS=1`, agents use `TaskCreate` / `TaskUpdate` / `TaskList` instead of `TodoWrite`. Apply as follows:
 
@@ -391,16 +391,10 @@ With `CLAUDE_CODE_ENABLE_TASKS=1`, agents use `TaskCreate` / `TaskUpdate` / `Tas
 - **Cross-agent visibility:** Confirmed for Agent Teams (shared task list at `~/.claude/tasks/{team-name}/`). For regular sub-agents (Agent tool), Tasks are session-scoped — the orchestrator cannot directly read a sub-agent's tasks. Terminal phrases remain the primary cross-agent signal; Tasks are a within-agent tracking aid.
 - **Future:** When Agent Teams become stable (`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`), the shared task list enables the orchestrator to monitor all component agents' task states directly, and `TaskCompleted` hooks can enforce quality gates.
 
-### 6. Hooks for quality gates (future / Agent Teams)
+#### 6. Hooks for quality gates (future / Agent Teams)
 
 When Agent Teams are enabled, three hooks can enforce compliance:
 
 - `TeammateIdle`: runs when a teammate is about to go idle. Exit code 2 sends feedback and keeps the teammate working — use to enforce incomplete deliverables.
 - `TaskCompleted`: runs when a task is marked complete. Exit code 2 blocks completion — use to enforce quality criteria before a task can be closed.
 - `TaskCreated`: runs when a task is created. Exit code 2 blocks creation — use to enforce task naming conventions or required fields.
-
----
-
-## Implementation Tasks
-
-*(Phase 3 — to be broken out into a separate plan after spec is approved)*

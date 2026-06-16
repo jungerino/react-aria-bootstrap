@@ -205,7 +205,15 @@ The rough notes say the skill currently combines taxonomy + reference story prin
 
 Both the rough notes and the `single-threaded-workflow` entry flag this as needing validation. Is this still an open question, or has it been answered?
 
-> **Decision:**
+> **Decision: Validated, with one known gap and a new compliance pattern.**
+>
+> `scripts/extract-story-css.mjs` was audited and found to have significant gaps in its original form. The script was updated with a two-pass matching strategy:
+> - **Pass 1 — DOM element match:** strips `::pseudo-element` suffixes, then tests each rule against all elements including `document.documentElement` and `document.body`. This captures `:root { --bs-* }` variable declarations (via `documentElement.matches(':root')`) and `body` styles.
+> - **Pass 2 — class-pattern match:** collects every CSS class name from story elements and includes any rule whose `selectorText` contains one of those class names as a substring — regardless of dynamic pseudo-class state. This captures `.btn:hover`, `.btn:focus-visible`, `.btn-check:checked + .btn`, and similar rules that Pass 1 cannot match at page-load time.
+>
+> **Known remaining gap — `@media` wrapper loss:** When recursing into `@media` blocks, inner rules are extracted as bare `CSSStyleRule` text without the enclosing `@media (...)` wrapper. Responsive variants lose their breakpoint context. For Bootstrap component styling (most rules are at root level) this is a minor issue in practice, but an agent might find a rule in the extracted CSS without realising it only applies at a certain breakpoint.
+>
+> **New compliance pattern:** Extracted CSS is the agent's primary Bootstrap reference; `bootstrap.css` access is deny-listed. See Appendix B, Pattern 7.
 
 ---
 
@@ -222,7 +230,7 @@ Both the rough notes and the `single-threaded-workflow` entry flag this as needi
 | Q5 | ID system | Format: `{NS}{NNN}: slug`, steps of 10. Namespaces: K (KB), T (Taxonomy), R (Reference Stories), P (Implementation), W (Workflow). Full renumber on implementation. | |
 | Q6 | Directory structure | `src/react-aria-bootstrap/`, `stories/react-aria-bootstrap/reference/` + `mirror/`, `agent/taxonomies/` + `agent/review/`. `augments.scss` → `presentation.scss`. `_bootstrap-overrides.scss` → `_bootstrap-bridges.scss`. No `bootstrap-test` or `bootstrap-reference` anywhere. | |
 | Q7 | Mapping skill gaps | KB generation absent from `mapping-and-references-skill.md` — only retrieval (M003) is covered. New `agent/bootstrap-kb-skill.md` needed, sourced from `bootstrap-mapping:agent/bootstrap-mapping-plan.md` Tasks 1–6. Single skill file; adapt plan's checkboxes to principles + templates; update Q6 paths. | |
-| Q8 | Extracted CSS validation | | |
+| Q8 | Extracted CSS validation | Validated. Script updated with two-pass strategy (Pass 1: DOM match + `:root`/`body`; Pass 2: class-pattern for pseudo-class and compound selectors). Known gap: `@media` wrapper context lost on extraction. New compliance pattern: extracted CSS is primary reference; `bootstrap.css` deny-listed with gap protocol. | |
 
 ---
 
@@ -398,3 +406,17 @@ When Agent Teams are enabled, three hooks can enforce compliance:
 - `TeammateIdle`: runs when a teammate is about to go idle. Exit code 2 sends feedback and keeps the teammate working — use to enforce incomplete deliverables.
 - `TaskCompleted`: runs when a task is marked complete. Exit code 2 blocks completion — use to enforce quality criteria before a task can be closed.
 - `TaskCreated`: runs when a task is created. Exit code 2 blocks creation — use to enforce task naming conventions or required fields.
+
+#### 7. Extracted CSS primacy with gap protocol
+
+The component agent's primary Bootstrap CSS reference is the pre-extracted file at `agent/review/reference-css/{component}-{story}.css`. Direct access to `node_modules/bootstrap/dist/css/bootstrap.css` is structurally blocked.
+
+**Enforcement:** Add `Read(node_modules/bootstrap/dist/css/bootstrap.css)` to `disallowedTools` in the component agent's sub-agent definition (or to the project `.claude/settings.json` deny list). The agent physically cannot read `bootstrap.css`; any attempt produces a permission prompt that only the user can approve.
+
+**Gap protocol — when extracted CSS is insufficient:**
+
+1. **Log immediately** — append a "Extracted CSS Gaps" entry to `agent/review/{component}-findings.md` recording: the specific selector or property searched for, which extracted file was consulted, and why it was insufficient.
+2. **Signal the orchestrator** — output the terminal phrase `EXTRACTED-CSS-GAP: {description of what's missing}` so the orchestrator can surface it to the user rather than the agent silently proceeding.
+3. **Wait for permission** — the deny rule enforces the pause; the user sees the permission prompt and decides whether to allow the `bootstrap.css` read for this specific gap.
+
+**Known limitation — `@media` wrapper loss:** Extracted CSS includes rules that live inside `@media` blocks but strips the `@media (...)` wrapper. An agent may find a rule in the extracted file without realising it only applies at a specific breakpoint. The gap protocol does not help here — the agent won't know what it doesn't know. Skill files should note this and instruct agents to treat extracted responsive-utility rules with caution.

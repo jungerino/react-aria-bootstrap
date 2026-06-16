@@ -242,6 +242,8 @@ Both the rough notes and the `single-threaded-workflow` entry flag this as needi
 
 **Skill file:** `agent/bootstrap-kb-skill.md` (single file; an agent regenerating the KB loads it in full)
 
+**Full details:** `bootstrap-mapping:agent/bootstrap-mapping-plan.md` Tasks 1–6 is the authoritative source for KB generation. The skill file to be created in Phase 3 is derived directly from that plan — converting its checkbox steps to principles + templates and updating paths per Q6.
+
 **Primary sources (read-only):**
 - Bootstrap SCSS source: `src/scss/vendor/bootstrap-5.3.8/` — authoritative for token names, variable defaults, mixin structure
 - Compiled Bootstrap CSS: `node_modules/bootstrap/dist/css/bootstrap.css` — authoritative for the complete selector surface (mixin-generated selectors are only visible here, not in SCSS source)

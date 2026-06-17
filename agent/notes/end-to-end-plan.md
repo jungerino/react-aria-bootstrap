@@ -424,6 +424,151 @@ grep "bootstrap-kb-skill" CLAUDE.md               # TOC entry present
 ---
 
 ### Stage 4: Taxonomy + Reference Stories
+
+**Purpose:** Per-component stage run once per batch. For each component, produces a taxonomy doc, a Bootstrap reference story, and pre-extracted CSS for each story. These serve two roles downstream: the taxonomy doc is the mapping specification consumed by Stage 5; the reference story and its extracted CSS are the pixel-diff targets against which Stage 5's mirror stories are compared.
+
+**Skill file:** `agent/mapping-and-references-skill.md` (existing; refactored in Phase 3 per the changes listed below). Single file — the component sub-agent loads it in full at startup. Parts 1–4 of this skill govern taxonomy generation; Parts 5–6 govern reference story construction.
+
+**Architecture:** Two-tier (Tier 0 orchestrator + one Tier 1 component sub-agent at a time).
+
+- **Tier 0 (Orchestrator):** manages batch sequencing; relays Q&A between sub-agents and the user; resumes component sub-agents via `SendMessage`; is the sole point of user contact. After each component completes, appends that component's Decisions and Rationale to `agent/review/transferable-knowledge.md`.
+- **Tier 1 (Component sub-agent):** one per component, handles both Phase A (taxonomy) and Phase B (reference stories + CSS extraction) in a single session. Sub-agent transcripts persist across Q&A cycles; the orchestrator resumes them via `SendMessage` after each user-input round.
+- **Serial dispatch:** one component sub-agent at a time. Cross-component learning requires each component to complete before the next begins.
+- **`SendMessage` dependency:** resumption with preserved context requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` — already set for this purpose (see Appendix A).
+
+**Inputs:**
+- `agent/batch.md` — component list for this run
+- `agent/mapping-and-references-skill.md` — primary instruction set for taxonomy and reference story work
+- `agent/bootstrap-kb/` — loaded selectively (README first, then relevant component/state/pattern sections)
+- `node_modules/bootstrap/dist/css/bootstrap.css` — compiled CSS; required for selector verification (M007) and reproducing specimen HTML context (P-S002). The KB covers structure and class names but not the mixin-generated selector surface.
+- Bootstrap documentation site (`https://getbootstrap.com/docs/5.3/`) — source of reference story HTML; the agent fetches specific component docs pages via WebFetch to obtain example HTML for each story variant
+- `agent/review/transferable-knowledge.md` — aggregated cross-batch knowledge from all prior completed components (single file; maintained by orchestrator; empty on first batch)
+- React Aria MCP — component docs queried by the sub-agent during Phase A
+- `stories/react-aria-bootstrap/presentation.scss` — faux-state and layout CSS; sub-agent extends it as needed for new components
+
+**Outputs (per component):**
+- `agent/taxonomies/{Component}-taxonomy.md`
+- `stories/react-aria-bootstrap/reference/{Component}.reference.stories.tsx`
+- `agent/review/reference-css/{Component}-{StoryName}.css` — one file per story, extracted via `scripts/extract-story-css.mjs`
+
+**Orchestrator-maintained output (updated after each component):**
+- `agent/review/transferable-knowledge.md` — orchestrator appends the component's Decisions and Rationale section after `COMPONENT-STAGE-4-COMPLETE`
+
+**Human review points:**
+1. Answer taxonomy decisions block (surfaced by orchestrator after Phase A)
+2. Visual review of reference story in Storybook (approve or provide feedback after Phase B)
+
+**Completion condition:** Taxonomy doc finalized; reference story approved visually; CSS extracted for each story story. All committed before the orchestrator dispatches the next component sub-agent.
+
+---
+
+**Phase A: Taxonomy**
+
+Sub-agent:
+1. Read `agent/review/transferable-knowledge.md` (prior cross-batch learnings, if any)
+2. Query React Aria MCP for the component's variants, states, sub-elements, and props
+3. Load Bootstrap KB selectively: README → relevant component, states, and patterns sections
+4. Draft taxonomy: map each React Aria variant/state/sub-element to its Bootstrap counterpart, noting bridge strategy; verify selectors against `node_modules/bootstrap/dist/css/bootstrap.css`
+5. Identify decisions requiring user input → output terminal phrase `TAXONOMY-DECISIONS-NEEDED` with a structured decisions block
+
+Orchestrator surfaces decisions to user. User answers. Orchestrator resumes sub-agent via `SendMessage` with answers. Multiple Q&A cycles are supported.
+
+Sub-agent (continued):
+6. Incorporate answers; finalize taxonomy doc including a "Decisions and Rationale" section
+7. Write `agent/taxonomies/{Component}-taxonomy.md`
+8. Output terminal phrase `TAXONOMY-COMPLETE`
+
+Orchestrator appends the Decisions and Rationale section to `agent/review/transferable-knowledge.md`.
+
+---
+
+**Phase B: Reference Stories**
+
+Sub-agent:
+1. Fetch relevant Bootstrap documentation pages via WebFetch to obtain example HTML for each story variant
+2. Write reference story at `stories/react-aria-bootstrap/reference/{Component}.reference.stories.tsx`
+   - Import `../presentation.scss`
+   - Apply `withBootstrap` decorator from `../_decorators`
+   - Story title: `Bootstrap Reference/{ComponentName}`
+   - Cover all visual states from the taxonomy; use faux-state classes from `presentation.scss` where needed (add new faux-state classes to `presentation.scss` if required)
+   - Annotate each story with its Bootstrap docs source URL
+3. Output terminal phrase `REFERENCE-STORY-READY-FOR-REVIEW`
+
+Orchestrator prompts user to open Storybook and review. User responds with feedback or approval. Orchestrator resumes sub-agent via `SendMessage`. Multiple review cycles are supported.
+
+Sub-agent (continued):
+4. Apply feedback; loop back to `REFERENCE-STORY-READY-FOR-REVIEW` until approved
+5. For each approved story: run `node scripts/extract-story-css.mjs "Bootstrap Reference/{Component}/{StoryName}"` and save output to `agent/review/reference-css/{Component}-{StoryName}.css`
+6. Output terminal phrase `COMPONENT-STAGE-4-COMPLETE`
+
+---
+
+**Taxonomy doc structure** (`agent/taxonomies/{Component}-taxonomy.md`):
+
+The format is defined by the M-codes in `mapping-and-references-skill.md` and has been established through prior experiments (see `agent/reference-stories/*-taxonomy.md` for examples). The implementing agent follows the skill; the spec records the sections for reference only.
+
+```markdown
+---
+title: {Component} Taxonomy
+component: {Component}
+iteration: {N}
+---
+
+## {Component}
+
+**React Aria root class:** `.react-aria-{Component}`
+**Mapping type:** [1:1 | Composite — sub-part → counterpart, ...]
+
+### Sub-parts
+[Table: Sub-part | React Aria selector | Bootstrap counterpart | Primary Bootstrap classes]
+
+### Variants
+[Table: Dimension | React Aria | Bootstrap | Authority | Notes]
+
+### State mappings
+[Per sub-part: table of data-* attribute | sub-part | Bootstrap equivalent | bridge strategy]
+[Pseudo-class audit per sub-part: ACTIVE/INERT classification for each pseudo-class]
+
+### DOM conflicts
+[Table: Sub-part | Conflict type (CRITICAL/MAJOR/MINOR) | Bootstrap expects | React Aria renders | Resolution]
+
+### Reference story canvas
+[List of stories to write; grid columns; width constraints; layout and rendering notes]
+
+### Confidence
+[High/Medium/Low with rationale]
+
+## Decisions
+[Resolved user decisions from Q&A — these are the entries appended to transferable-knowledge.md]
+```
+
+---
+
+**Spawn prompt template (orchestrator → component sub-agent):**
+
+```
+Component: {ComponentName}
+
+Load and follow agent/mapping-and-references-skill.md.
+
+Cross-batch learnings from prior components: agent/review/transferable-knowledge.md
+(Read this before starting Phase A.)
+```
+
+---
+
+**Skill file changes required for Phase 3** (`agent/mapping-and-references-skill.md`):
+- Update all paths per Q6 (reference stories → `stories/react-aria-bootstrap/reference/`, taxonomy docs → `agent/taxonomies/`, extracted CSS → `agent/review/reference-css/`, `presentation.scss` replaces `augments.scss`, `withBootstrap` replaces `withBootstrapTest`)
+- Remove KB retrieval section (Part 5 of current file) — that content moves to `bootstrap-kb-skill.md`
+- Add: explicit instruction to fetch Bootstrap documentation pages via WebFetch for reference story HTML
+- Add: instruction to read `agent/review/transferable-knowledge.md` at session start
+- Add: Decisions and Rationale section to taxonomy doc template
+- Add: terminal phrase protocol (`TAXONOMY-DECISIONS-NEEDED`, `TAXONOMY-COMPLETE`, `REFERENCE-STORY-READY-FOR-REVIEW`, `COMPONENT-STAGE-4-COMPLETE`)
+- Add: `presentation.scss` import and `withBootstrap` decorator usage in reference story template
+- Retain: M007's `bootstrap.css` grep instruction for selector verification; P-S002's specimen HTML context requirement
+
+---
+
 ### Stage 5: Styled Components
 
 ---
@@ -445,7 +590,7 @@ Environment settings and tooling that must be in place before the workflow can r
 | Setting | Value | Where | Why |
 |---------|-------|--------|-----|
 | `CLAUDE_CODE_ENABLE_TASKS` | `1` | `~/.claude/settings.json` `env` block | Enables Task tools (`TaskCreate`, `TaskUpdate`, etc.) in place of deprecated `TodoWrite` |
-| `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` | `1` (future) | `~/.claude/settings.json` `env` block | Required for shared task lists and `SendMessage` between agents; experimental — not needed for current serial two-tier workflow |
+| `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` | `1` | `~/.claude/settings.json` `env` block | Required for `SendMessage`, which the orchestrator uses to resume component sub-agents with preserved context after user Q&A. Already set. Experimental — does not require using the full agent-teams UX. |
 
 #### MCP servers
 

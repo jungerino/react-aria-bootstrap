@@ -314,6 +314,61 @@ grep "bootstrap-kb-skill" CLAUDE.md               # TOC entry present
 ---
 
 ### Stage 2: Storybook Setup
+
+**Purpose:** One-time setup. Creates the canonical `stories/react-aria-bootstrap/` directory tree, moves shared files to their Q6 paths, and updates Storybook config to cover all three story categories. After this stage Storybook starts cleanly; no component stories exist yet (expected — they are added in Stages 4 and 5).
+
+**Skill file:** None. This is a short mechanical checklist; the spec below is the complete instruction set.
+
+**Inputs:** None from prior stages — all changes are to existing config and shared files.
+
+**Outputs:**
+- `stories/react-aria-bootstrap/` (with `reference/` and `mirror/` subdirectories)
+- `stories/react-aria-bootstrap/_decorators.tsx` — moved from `stories/bootstrap-test/_decorators.tsx`, export renamed
+- `stories/react-aria-bootstrap/presentation.scss` — moved from `stories/bootstrap-test/bootstrap-reference/augments.scss`
+- `.storybook/main.js` — story glob updated
+- `.storybook/preview.js` — decorator applied globally
+
+**Human review:** Start Storybook (`yarn storybook`) and confirm the backgrounds switcher correctly toggles Bootstrap light/dark mode. No stories are expected yet.
+
+**Implementation checklist:**
+
+1. **Create directories**
+   ```
+   stories/react-aria-bootstrap/
+   stories/react-aria-bootstrap/reference/
+   stories/react-aria-bootstrap/mirror/
+   ```
+
+2. **Move and rename `_decorators.tsx`**
+   - Source: `stories/bootstrap-test/_decorators.tsx`
+   - Destination: `stories/react-aria-bootstrap/_decorators.tsx`
+   - Rename the export: `withBootstrapTest` → `withBootstrap`
+   - Do not change the implementation — the dark mode mapping works correctly as written; do not alter it.
+
+3. **Move `presentation.scss`**
+   - Source: `stories/bootstrap-test/bootstrap-reference/augments.scss`
+   - Destination: `stories/react-aria-bootstrap/presentation.scss`
+   - Do not change the content.
+
+4. **Update `.storybook/main.js` story glob**
+   - Old: `"../stories/bootstrap-test/bootstrap-reference/**/*.stories.@(js|jsx|mjs|ts|tsx)"`
+   - New: `"../stories/react-aria-bootstrap/**/*.stories.@(js|jsx|mjs|ts|tsx)"`
+   - This single glob covers all three story categories: `reference/`, `mirror/`, and root-level end-product stories.
+
+5. **Update `.storybook/preview.js`**
+   - Add import: `import { withBootstrap } from '../stories/react-aria-bootstrap/_decorators';`
+   - Add `decorators: [withBootstrap]` to the preview export object.
+
+**Notes:**
+- The original `stories/bootstrap-test/` directory is left intact. It will be removed when migration is complete (after Stage 5). Until then it is simply excluded from the story glob.
+- `presentation.scss` is NOT added as a global import in `preview.js`. Reference and mirror stories import it directly — end-product stories do not need it.
+- Story categories by subdirectory:
+  - `stories/react-aria-bootstrap/reference/` — Bootstrap reference stories (static HTML + Bootstrap classes)
+  - `stories/react-aria-bootstrap/mirror/` — mirror stories (React Aria + Bootstrap styling; pixel-diff targets)
+  - `stories/react-aria-bootstrap/*.stories.tsx` — end-product stories (shipped Storybook stories with controls and docs)
+
+---
+
 ### Stage 3: Component Batch
 ### Stage 4: Taxonomy + Reference Stories
 ### Stage 5: Styled Components

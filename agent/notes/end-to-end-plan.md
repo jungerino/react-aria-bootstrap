@@ -370,6 +370,59 @@ grep "bootstrap-kb-skill" CLAUDE.md               # TOC entry present
 ---
 
 ### Stage 3: Component Batch
+
+**Purpose:** Human-driven step. The user defines the set of components to work on before the agent workflow begins. No agent skill — the spec below is guidance for the user.
+
+**Skill file:** None. A future skill could help a novice user select sensible batches, but the project doesn't yet have enough empirical data to encode principles for this.
+
+**Inputs:** None from prior stages.
+
+**Output:** `agent/batch.md` — a simple file listing the component names to be processed in this run. The component agent reads this at Stage 5 startup. Format:
+
+```markdown
+# Component Batch
+
+- Button
+- Tabs
+- ListBox
+```
+
+**Human review:** n/a — this stage IS the human step.
+
+---
+
+**Batch sizing:**
+- Aim for ~5 components per batch. Larger batches overload the component agent's context window and slow iterative learning.
+
+**Selecting for diversity:**
+- Choose components that span a range of styling challenge types. A representative first batch might include one component from each of:
+
+  | Challenge type | Examples |
+  |---------------|---------|
+  | Simple single-element | Button, Link, Badge |
+  | Form input (label/input/validation triad) | TextField, NumberField, SearchField |
+  | List/collection with selection states | ListBox, Menu, TagGroup |
+  | Tab or disclosure (show/hide, active state) | Tabs, Disclosure |
+  | No Bootstrap counterpart (custom token CSS) | Calendar, Slider, ColorSwatch |
+  | Compound / portal-rendered | Select, ComboBox, Popover |
+
+- Spreading challenge types across a batch surfaces the full range of bridge patterns early and builds reusable knowledge for subsequent batches.
+
+**Sequencing within a batch:**
+- Order components simple → complex within the batch. The component agent works serially; discoveries from earlier components (bridge patterns, KB gaps) are available in context when tackling harder ones.
+
+**Cross-batch accumulation:**
+- The Bootstrap KB is static — generated once in Stage 1 and not updated during component work unless a gap or error is discovered. When a component agent finds the KB incomplete or incorrect, it flags the gap in its findings doc; those flags are reviewed before the next batch and trigger a targeted KB update if warranted.
+- Findings docs (`agent/review/{component}-findings.md`) do accumulate across batches and are the primary vehicle for cross-batch learning. The mechanism for surfacing this knowledge to subsequent agents is specified in Stages 4 and 5:
+  - Each findings doc includes a structured "Transferable Knowledge" section (reusable bridge patterns established, anti-patterns to avoid, user decisions that set precedent) — see Stage 5.
+  - The taxonomy agent reads findings docs for structurally similar prior components before drafting the taxonomy for a new component — see Stage 4.
+  - The intent is that cross-batch knowledge flows through the taxonomy doc, not by having every Tier 1 agent trawl findings docs directly.
+
+**Note on components worked in prior experiments:**
+- Components produced in prior experimental branches (Button, Tabs, ListBox, Calendar, TextField, Select) are throwaway — they will be created anew by this workflow.
+
+---
+
 ### Stage 4: Taxonomy + Reference Stories
 ### Stage 5: Styled Components
 

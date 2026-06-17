@@ -571,6 +571,490 @@ Cross-batch learnings from prior components: agent/review/transferable-knowledge
 
 ### Stage 5: Styled Components
 
+**Purpose:** Per-component stage run once per batch. For each component, produces the styled React Aria component implementation, mirror stories for pixel-diff comparison against the Stage 4 reference stories, and final/standard Storybook stories. This is the core engineering work of the workflow: TSX → bridge CSS → mirror stories → self-correcting pixel-diff loop → final verification sweep → standard stories.
+
+**Skill files:** `agent/react-aria-skill/` directory (existing; refactored in Phase 3 — see skill file changes below). Loading is selective by tier:
+- **Tier 0** loads: `SKILL.md`, `orchestrator.md`
+- **Tier 1** loads: `SKILL.md`, `component-agent.md`, `principles.md`, taxonomy, KB README
+- **Tier 1a** loads: `SKILL.md`, `final-stories-agent.md`, taxonomy
+
+**Architecture:** Two-tier serial (same pattern as Stage 4).
+
+- **Tier 0 (Orchestrator):** Manages batch sequencing; dispatches one Tier 1 component agent at a time; handles terminal phrase routing (surfaces exceptions to user, resumes agents via `SendMessage`); appends Transferable Knowledge to the shared knowledge file after each component completes; dispatches Tier 1a after `verification-sweep-passed`; compiles and delivers the batch report. The sole point of user contact.
+- **Tier 1 (Component Agent):** One per component. Owns the full per-component lifecycle: Preparation Phase → Phase A (scaffold + TSX + bridge CSS) → Phase B (mirror stories) → Phase C (comparison loop, self-correction) → Final Verification Sweep → Transferable Knowledge section. Runs `compare-stories.mjs` directly — no Tier 2.
+- **Tier 1a (Final Stories Agent):** Dispatched by the orchestrator after `verification-sweep-passed`. Writes the final/standard Storybook stories. No implementation context needed — receives only taxonomy and story conventions.
+- **Serial dispatch:** One Tier 1 agent at a time. Cross-component learning (Transferable Knowledge file) requires each component to complete before the next begins.
+- **`SendMessage` dependency:** `EXTRACTED-CSS-GAP` and `Stuck` handling require the orchestrator to resume a paused component agent with preserved context. Requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` (see Appendix A).
+
+**Inputs:**
+- `agent/batch.md` — component list for this run (from Stage 3)
+- `agent/taxonomies/{Component}-taxonomy.md` — per-component taxonomy and pre-resolved decisions (from Stage 4)
+- `stories/react-aria-bootstrap/reference/{Component}.reference.stories.tsx` — Bootstrap reference stories (from Stage 4)
+- `agent/review/reference-css/{Component}-{StoryName}.css` — pre-extracted Bootstrap CSS, one file per reference story (from Stage 4; component agent's primary CSS reference — `bootstrap.css` is structurally blocked per Appendix B Pattern 7)
+- `src/scss/_bootstrap-bridges.scss` — shared bridge CSS file; component agent appends new rules for this component
+- `stories/react-aria-bootstrap/presentation.scss` — faux-state and layout utilities; component agent extends as needed
+- `agent/bootstrap-kb/README.md` → relevant KB files loaded selectively per component
+- `agent/review/transferable-knowledge.md` — aggregated cross-batch knowledge from all prior completed components (includes Stage 4 taxonomy decisions and Stage 5 bridge patterns from prior batches)
+- React Aria MCP — `mcp__react-aria__get_react_aria_page` for component documentation
+
+**Outputs (per component):**
+
+| Artifact | Path |
+|----------|------|
+| Styled component | `src/react-aria-bootstrap/{ComponentName}.tsx` |
+| Mirror stories | `stories/react-aria-bootstrap/mirror/{ComponentName}.mirror.stories.tsx` |
+| Final/standard stories | `stories/react-aria-bootstrap/{ComponentName}.stories.tsx` |
+| Component findings doc | `agent/review/{component}-findings.md` |
+| Extracted mirror CSS | `agent/review/mirror-css/{component}-{StoryName}.css` (one per story) |
+| Bridge CSS (updated) | `src/scss/_bootstrap-bridges.scss` |
+
+**Orchestrator-maintained output (updated after each component):**
+- `agent/review/transferable-knowledge.md` — orchestrator appends the component's Transferable Knowledge section after `final-stories-done`
+
+**Story title conventions:**
+
+| Story type | Title | File |
+|-----------|-------|------|
+| Reference (from Stage 4) | `Bootstrap Reference/{ComponentName}` | `stories/react-aria-bootstrap/reference/{ComponentName}.reference.stories.tsx` |
+| Mirror | `Bootstrap Mirror/{ComponentName}` | `stories/react-aria-bootstrap/mirror/{ComponentName}.mirror.stories.tsx` |
+| Final/standard | `Bootstrap/{ComponentName}` | `stories/react-aria-bootstrap/{ComponentName}.stories.tsx` |
+
+**Human review:** Exception-based during implementation; routine at batch completion.
+
+| Trigger | When | User action |
+|---------|------|-------------|
+| `EXTRACTED-CSS-GAP: {description}` | Comparison loop needs `bootstrap.css` access | Decide whether to permit; orchestrator relays decision via `SendMessage` |
+| `Stuck: {story}` | Fix loop hit stuck threshold (default 3 consecutive non-improving passes) | Provide guidance; orchestrator relays via `SendMessage` |
+| `Script failed: {story}` | Comparison script produced no output images | Investigate script failure; restart Storybook if needed |
+| Post-batch debrief | After all components complete and batch report delivered | Review all components in Storybook; provide observations |
+
+**Completion condition:** All components have reported `final-stories-done`; orchestrator has compiled and delivered the batch report; post-batch debrief completed.
+
+---
+
+**Preparation Phase (Tier 1 Component Agent)**
+
+Before any implementation, the component agent:
+
+1. **Read transferable knowledge:** Read `agent/review/transferable-knowledge.md` in full — prior batch bridge patterns, anti-patterns, and user decisions. Do not re-derive anything already established here.
+2. **Internalize taxonomy:** Read `agent/taxonomies/{component}-taxonomy.md` in full, especially `## Decisions` — pre-resolved decisions; do not re-derive them.
+3. **Query React Aria docs:** Call `mcp__react-aria__get_react_aria_page` for the component. Cross-check: every `data-*` attribute in the docs must appear in the taxonomy's state mappings.
+4. **Load Bootstrap KB:** `README.md` → then the relevant component, states, and patterns sections for this component.
+5. **Read reference CSS:** Read all `agent/review/reference-css/{component}-{StoryName}.css` files. These contain only the Bootstrap rules that applied to the rendered reference story DOM — they are the primary CSS specification for what to replicate. Read them now, not during the comparison loop.
+6. **Review principles:** Read `principles.md` in full. Flag any with structural or sizing implications (P008, P010, P016, P040, P041, P042) — address during TSX/bridge implementation, not at diff time.
+
+---
+
+**Phase A: Scaffold, TSX, Bridge CSS (Tier 1 Component Agent)**
+
+**Scaffold stubs:**
+- Create `src/react-aria-bootstrap/{ComponentName}.tsx` — bare React Aria component, no Bootstrap classes yet
+- Create `stories/react-aria-bootstrap/mirror/{ComponentName}.mirror.stories.tsx` — empty mirror story stub
+
+  Mirror story stub:
+  ```tsx
+  import type { Meta, StoryObj } from '@storybook/react';
+  import { withBootstrap } from '../_decorators';
+  import '../presentation.scss';
+
+  const meta: Meta = {
+    title: 'Bootstrap Mirror/{ComponentName}',
+    decorators: [withBootstrap],
+    parameters: { layout: 'padded' },
+  };
+  export default meta;
+
+  type Story = StoryObj<typeof meta>;
+
+  // Placeholder — replaced in Phase B
+  export const Placeholder: Story = {};
+  ```
+
+  After creating stubs, restart Storybook (`lsof -ti tcp:6006 | xargs kill -9 && yarn storybook &`) and wait for both stub story IDs to register in `index.json` before proceeding. New story files under the existing glob may or may not trigger an HMR rebuild — a clean restart is always safe and avoids silent HMR failures.
+
+**Implement TSX:**
+- Apply `className` render-prop pattern (P002) for Bootstrap classes
+- Use `variantClassMap` for variant props (P007); read Bootstrap docs before finalizing variants
+- Honor all taxonomy `## Decisions` entries
+- Apply Bootstrap component classes (P013); reserve utilities for genuine one-off cases
+- Address all structural and sizing principles flagged in Preparation Phase
+
+**Write base bridge selectors:**
+- Write all bridge selectors in `src/scss/_bootstrap-bridges.scss` (P003)
+- Use SCSS mixins for `$enable-*`-gated properties (P015)
+- Cover all states in the taxonomy's state mappings; follow Data-* Bridge Rules in `principles.md`
+
+**Create component-wide findings doc:**
+
+Path: `agent/review/{component}-findings.md`
+
+Initialize with an empty Story Registry, Work Log header, and a Transferable Knowledge section placeholder:
+
+```markdown
+---
+component: {ComponentName}
+iteration: 1
+---
+
+## Story Registry
+
+| Story | Status | Iteration | Stuck | Diff% |
+|-------|--------|-----------|-------|-------|
+
+## Work Log
+
+## Transferable Knowledge
+
+### Bridge patterns established
+
+### Anti-patterns avoided
+
+### User decisions that set precedent
+```
+
+---
+
+**Phase B: Mirror Stories (Tier 1 Component Agent)**
+
+For each story in scope (derived from the taxonomy's "Reference story canvas" section):
+
+1. **Implement the mirror story** in `stories/react-aria-bootstrap/mirror/{ComponentName}.mirror.stories.tsx`:
+   - Story names must match reference story names exactly (required for pixel-diff ID matching)
+   - Replicate reference story layout: same wrapper classes, same `specimen()` helper pattern, same variant order
+   - Cover all visual states from the taxonomy; use faux-state classes from `presentation.scss` (P044)
+   - Import `../presentation.scss` directly (P047 equivalent — do not rely on shared bundle loading)
+
+2. **Extract mirror CSS:**
+   ```bash
+   node scripts/extract-story-css.mjs \
+     --story "Bootstrap Mirror/{ComponentName}/{StoryName}" \
+     --out   agent/review/mirror-css/{component}-{StoryName}.css
+   ```
+   Re-run on every implementation iteration — new selectors may be introduced.
+
+3. **Create story findings doc** at `agent/review/{component}-{story}-findings.md`:
+   - Front matter: `Status: In review`, `Iteration: 0`, `Stuck: 0`
+
+After all mirror stories are implemented, begin Phase C — Comparison Loop.
+
+---
+
+**Phase C: Comparison Loop (Tier 1 Component Agent)**
+
+**Inception:** Run `compare-stories.mjs` for every story in one pass before making any code changes:
+
+```bash
+node scripts/compare-stories.mjs \
+  --reference "bootstrap-reference-{component}--{story-name}" \
+  --impl      "bootstrap-mirror-{component}--{story-name}" \
+  --out       .story-diffs/{component}/{story} \
+  --threshold 0.003
+```
+
+After the first pass, read `.story-diffs/{component}/{story}/reference.png` for **every** story. Do this once — **never re-read `reference.png` again for the rest of the session.**
+
+Record exit code and diff% for each story. Stories with exit code 0 are immediately `Pass`. Stories with exit code 1 enter the fix loop.
+
+**Image read rules:**
+
+| Image | When to read |
+|-------|-------------|
+| `reference.png` | Once at Phase C inception. Never again. |
+| `diff.png` | On any failure. Re-read after each fix attempt. |
+| `implementation.png` | Only after a fix attempt produced no visible change in `diff.png` (tried and missed — need to see what's rendering). |
+
+**Fix loop** (per failing story, repeat until Pass or Stuck threshold):
+
+```
+read diff.png
+  → describe what is visible: which specimen, which anatomical region, visible red
+  → compare reference-css vs. mirror-css: rules in reference absent from mirror are candidates for missing bridge rules or missing className
+  → apply fix to bridge CSS and/or mirror TSX
+  → re-run extract-story-css.mjs for this story (keep mirror CSS current)
+  → re-run compare-stories.mjs for this story
+    → exit 0: mark Pass; update findings doc; done with this story
+    → exit 1 and diff.png changed: continue loop
+    → exit 1 and diff.png unchanged: read implementation.png; continue loop
+  → if fix cannot be identified:
+      → increment Stuck counter
+      → if Stuck >= threshold (default 3): output terminal phrase `Stuck: {story}`; stop
+  → write iteration block to findings doc after every pass (pass or fail)
+```
+
+**Reference CSS vs. mirror CSS gap analysis:** When a story fails and the diff alone doesn't pinpoint the cause, compare `agent/review/reference-css/{component}-{StoryName}.css` (target) against `agent/review/mirror-css/{component}-{StoryName}.css` (implementation). Rules present in the reference CSS but absent from the mirror CSS are likely missing bridge rules or className assignments.
+
+**Extracted CSS gap protocol (EXTRACTED-CSS-GAP):**
+
+When a property or selector cannot be found in the pre-extracted reference CSS and `bootstrap.css` access is needed to proceed:
+
+1. **Log immediately** — append an "Extracted CSS Gaps" entry to `agent/review/{component}-findings.md`: what selector/property was searched for, which extracted file was consulted, why it was insufficient.
+2. **Output terminal phrase:** `EXTRACTED-CSS-GAP: {one-line description of what's missing and why}` — stop.
+3. **Wait for permission** — orchestrator surfaces to user; user decides whether to allow access. Orchestrator resumes via `SendMessage` with the decision.
+
+See Appendix B Pattern 7 for the enforcement mechanism.
+
+**Shared selector changes:** If a fix modifies bridge selectors that could affect other stories, re-run `compare-stories.mjs` for those stories and update their findings docs.
+
+**Spatial diff reasoning, animation exception, prior iteration review:** Same rules as currently documented in `component-agent.md` (Spatial Diff Reasoning, Animation Exception, Prior Iteration Review sections). These carry forward unchanged to the refactored skill file.
+
+**Findings doc updates** (same structure as current `component-agent.md` — carries forward unchanged):
+- Append iteration block to `agent/review/{component}-{story}-findings.md` after each pass
+- Update Story Registry and Work Log in `agent/review/{component}-findings.md` after each pass
+
+---
+
+**Final Verification Sweep (Tier 1 Component Agent)**
+
+After all stories reach `Pass`:
+
+1. **Pre-completion CSS placement check:**
+   ```bash
+   git diff --name-only $(git merge-base HEAD main)..HEAD | grep 'stories/react-aria-bootstrap/.*\.scss'
+   ```
+   If any new SCSS files appear under `stories/`, move their bridge rules to `src/scss/_bootstrap-bridges.scss` and delete the story-scoped files.
+
+2. **Run final `compare-stories.mjs` sweep** across all stories with `--threshold 0.003`. This catches regressions from shared-selector changes. Do not re-read `reference.png` — it remains in context from Phase C inception.
+
+3. **Complete Transferable Knowledge section** in `agent/review/{component}-findings.md`:
+
+   ```markdown
+   ## Transferable Knowledge
+
+   ### Bridge patterns established
+   [Reusable patterns discovered during this component's implementation that generalize to other components.
+   Cite P-codes where an existing principle applies; describe the pattern fully where none exists.]
+
+   ### Anti-patterns avoided
+   [Approaches that seemed right but failed. Include: what was tried, why it failed, and what the correct
+   approach turned out to be. These are as valuable as successes.]
+
+   ### User decisions that set precedent
+   [Any decision made during EXTRACTED-CSS-GAP or Stuck interactions that defines precedent for other components.
+   Include: the question, the decision, and the rationale — not just the outcome.]
+   ```
+
+4. **Report `verification-sweep-passed` to the orchestrator.**
+
+---
+
+**Orchestrator Loop (Tier 0)**
+
+```
+emit delegation manifest (required before any dispatch)
+
+for each component in batch (serial):
+
+  dispatch Tier 1 component agent (foreground — wait for terminal phrase)
+
+  on terminal phrase:
+
+    verification-sweep-passed:
+      → read agent/review/{component}-findings.md ## Transferable Knowledge section
+      → append it to agent/review/transferable-knowledge.md with component + batch header
+      → dispatch Tier 1a Final Stories agent (foreground — wait for terminal phrase)
+
+        on final-stories-done:
+          → log completion; update delegation manifest; proceed to next component
+
+        on any other return:
+          → surface as Undefined return; stop
+
+    EXTRACTED-CSS-GAP: {description}:
+      → surface to user: "Component agent cannot proceed without bootstrap.css access.
+        Gap: {description}. Approve or deny?"
+      → receive user decision
+      → resume component agent via SendMessage with: "bootstrap.css access [approved/denied].
+        [If approved: you may now read node_modules/bootstrap/dist/css/bootstrap.css for this
+        specific gap only. Log the gap and continue. If denied: log the gap, note the limitation,
+        and continue with the information available.]"
+      → continue waiting for next terminal phrase
+
+    Stuck: {story}:
+      → surface to user: "{component}/{story} is stuck after {N} non-improving passes.
+        Current state: [include the FAIL/UNRESOLVED entries from the most recent iteration block].
+        Please provide guidance."
+      → receive user guidance
+      → resume component agent via SendMessage with the guidance
+      → continue waiting for next terminal phrase
+
+    Script failed: {story} / Context exhausted:
+      → surface to user immediately with component name and phrase; stop
+
+    Undefined return:
+      → surface to user immediately as Undefined return; stop
+
+when all components done:
+  compile batch report (delegation manifest + findings summary per component)
+  present to user
+  conduct post-batch debrief (see below)
+```
+
+---
+
+**Post-Batch Debrief**
+
+After the batch report is delivered, the user reviews all implemented components in Storybook and provides observations. The debrief covers both implementation quality and visual comparison methodology.
+
+- Write each observation to a new review file `agent/review/batch-{N}-debrief.md` immediately — before replying. Do not batch, do not defer. Multiple observations in one message → write all before replying.
+- Both "what to improve" and "what worked well" are in scope. Positive observations validate patterns in the Transferable Knowledge file.
+- After the debrief, follow `agent/iteration-protocol.md` for knowledge file updates, component work decision gate, and merge commands.
+
+---
+
+**Dispatch Prompt Template — Tier 1 Component Agent (orchestrator → component agent):**
+
+```
+You are a Tier 1 Component Sub-Agent for the React Aria + Bootstrap styled component workflow.
+
+Component: {ComponentName}
+Working directory: /Users/josh/Library/CloudStorage/Dropbox/Github/react-aria-bootstrap
+
+## Session-start files (read in this order)
+
+1. agent/react-aria-skill/SKILL.md
+2. agent/react-aria-skill/component-agent.md — your complete task definition; follow it exactly
+3. agent/react-aria-skill/principles.md
+4. agent/taxonomies/{component}-taxonomy.md
+5. agent/bootstrap-kb/README.md
+
+## Key paths
+
+| Artifact | Path |
+|----------|------|
+| Component impl | src/react-aria-bootstrap/{ComponentName}.tsx |
+| Mirror stories | stories/react-aria-bootstrap/mirror/{ComponentName}.mirror.stories.tsx |
+| Bridge CSS | src/scss/_bootstrap-bridges.scss |
+| Presentation CSS | stories/react-aria-bootstrap/presentation.scss |
+| Component findings | agent/review/{component}-findings.md |
+
+## Reference inputs (read during Preparation Phase)
+
+| Artifact | Path |
+|----------|------|
+| Reference stories | stories/react-aria-bootstrap/reference/{ComponentName}.reference.stories.tsx |
+| Reference CSS | agent/review/reference-css/{component}-{StoryName}.css (one per story) |
+| Transferable knowledge | agent/review/transferable-knowledge.md |
+
+## Terminal phrases
+
+Return exactly one of:
+- verification-sweep-passed
+- Stuck: {story}
+- Script failed: {story}
+- Context exhausted
+- EXTRACTED-CSS-GAP: {one-line description}
+
+component-agent.md is your task definition. Do not derive your steps from this prompt.
+```
+
+---
+
+**Dispatch Prompt Template — Tier 1a Final Stories Agent (orchestrator → final stories agent):**
+
+```
+You are a Tier 1a Final-Stories Sub-Agent.
+
+Component: {ComponentName}
+Working directory: /Users/josh/Library/CloudStorage/Dropbox/Github/react-aria-bootstrap
+
+## Session-start files (read in this order)
+
+1. agent/react-aria-skill/SKILL.md
+2. agent/react-aria-skill/final-stories-agent.md
+3. agent/taxonomies/{component}-taxonomy.md
+
+## Key paths
+
+| Artifact | Path |
+|----------|------|
+| Component impl | src/react-aria-bootstrap/{ComponentName}.tsx |
+| Final stories | stories/react-aria-bootstrap/{ComponentName}.stories.tsx |
+
+## Terminal phrases
+
+Return exactly one of:
+- final-stories-done
+```
+
+---
+
+**Terminal Phrase Protocol (Stage 5):**
+
+| Phrase | Source | Meaning |
+|--------|--------|---------|
+| `verification-sweep-passed` | Tier 1 component agent | All mirror stories passed final verification sweep |
+| `final-stories-done` | Tier 1a final stories agent | Standard stories written and committed |
+| `Stuck: {story}` | Tier 1 component agent | Fix loop hit stuck threshold; needs user guidance |
+| `Script failed: {story}` | Tier 1 component agent | Comparison script produced no output images |
+| `Context exhausted` | Any agent | Agent detected context compression; stopped |
+| `EXTRACTED-CSS-GAP: {description}` | Tier 1 component agent | Cannot proceed without `bootstrap.css` access for a specific gap |
+| `Undefined return: {…}` | Any tier | Return matched no valid phrase; content included for diagnosis |
+
+---
+
+**Skill File Changes Required for Phase 3** (`agent/react-aria-skill/`):
+
+**SKILL.md:**
+- Update tier map: reflect `EXTRACTED-CSS-GAP` as a valid terminal phrase
+- Update session-start loading paths: taxonomy → `agent/taxonomies/`, findings → `agent/review/`
+- Update terminal phrase table: add `EXTRACTED-CSS-GAP: {description}` and `final-stories-done`
+- Remove branch naming section (no longer relevant; branches are now managed at the workflow level)
+
+**orchestrator.md:**
+- Update dispatch prompt template: new paths for taxonomy, findings, bridge CSS, story locations, presentation.scss (per above dispatch prompt templates — replace verbatim)
+- Add `EXTRACTED-CSS-GAP` and `Stuck` handling to the orchestrator loop (per the loop above)
+- Add Transferable Knowledge append step after `verification-sweep-passed` (before dispatching Tier 1a)
+- Add Tier 1a dispatch prompt template (per above)
+- Rename `_bootstrap-overrides.scss` → `_bootstrap-bridges.scss` throughout
+
+**component-agent.md:**
+- Update all paths throughout:
+  - `src/bootstrap-test/{ComponentName}.tsx` → `src/react-aria-bootstrap/{ComponentName}.tsx`
+  - `stories/bootstrap-test/{ComponentName}/{ComponentName}.mirror.stories.tsx` → `stories/react-aria-bootstrap/mirror/{ComponentName}.mirror.stories.tsx`
+  - `stories/bootstrap-test/{ComponentName}/{ComponentName}.stories.tsx` → `stories/react-aria-bootstrap/{ComponentName}.stories.tsx`
+  - `src/scss/_bootstrap-overrides.scss` → `src/scss/_bootstrap-bridges.scss`
+  - `stories/bootstrap-test/bootstrap-reference/augments.scss` → `stories/react-aria-bootstrap/presentation.scss`
+  - `withBootstrapTest` → `withBootstrap`
+  - `agent/reference-stories/{component}-findings.md` → `agent/review/{component}-findings.md`
+  - `agent/reference-stories/{component}-{story}-findings.md` → `agent/review/{component}-{story}-findings.md`
+  - `agent/reference-stories/reference-css/` → `agent/review/reference-css/`
+  - `agent/reference-stories/mirror-css/` → `agent/review/mirror-css/`
+  - `agent/reference-stories/{component}-taxonomy.md` → `agent/taxonomies/{component}-taxonomy.md`
+- Add step to Preparation Phase: read `agent/review/transferable-knowledge.md` before starting
+- Add step to Preparation Phase: read all reference CSS files (`agent/review/reference-css/{component}-*.css`)
+- Add `EXTRACTED-CSS-GAP` protocol to Phase C (Comparison Loop)
+- Add mirror story stub template (including `presentation.scss` import, `withBootstrap` decorator, title `Bootstrap Mirror/{ComponentName}`)
+- Update Phase A findings doc creation: initialize with Transferable Knowledge section placeholder
+- Add Final Verification Sweep step: complete Transferable Knowledge section before reporting `verification-sweep-passed`
+- Update Pre-completion CSS placement check: path filter updated to `stories/react-aria-bootstrap/.*\.scss`
+- Add Phase B label and Phase C label (currently Phase A / Phase B in current file; renaming to A/B/C to align with spec's Preparation/Scaffold/Comparison structure)
+- Update hard constraint: bridge rules go in `src/scss/_bootstrap-bridges.scss`
+- Update task ID self-identification command path if needed
+- Remove `agent/review-iteration-N.md` references (replaced by `agent/review/batch-{N}-debrief.md`)
+
+**final-stories-agent.md:**
+- Update story path: `stories/bootstrap-test/{ComponentName}/{ComponentName}.stories.tsx` → `stories/react-aria-bootstrap/{ComponentName}.stories.tsx`
+- Update story title: `Bootstrap Test/{ComponentName}` → `Bootstrap/{ComponentName}`
+- Update taxonomy path: `agent/reference-stories/{component}-taxonomy.md` → `agent/taxonomies/{component}-taxonomy.md`
+- Update component impl reference: `src/bootstrap-test/{ComponentName}.tsx` → `src/react-aria-bootstrap/{ComponentName}.tsx`
+
+**workflow.md:**
+- Phase 1 (branch setup): Remove glob management steps — the glob is already set up by Stage 2. Simplify to: "Component agents create their own stub files at session start; Storybook restart is handled by the component agent." Keep Phase 3 (debrief) but update review file path to `agent/review/batch-{N}-debrief.md`.
+- Update all paths throughout (same rename list as component-agent.md above).
+- Remove references to `agent/review-iteration-N.md` and `agent/review-styling-iteration-N.md` — these are replaced by `agent/review/batch-{N}-debrief.md` (single file per batch, not per iteration).
+
+**principles.md:**
+- P047 (`augments-import`): rename `augments.scss` → `presentation.scss`; update import path to `../presentation.scss` (relative to mirror story in `stories/react-aria-bootstrap/mirror/`)
+- All `_bootstrap-overrides.scss` references → `_bootstrap-bridges.scss`
+- All `stories/bootstrap-test/` references → `stories/react-aria-bootstrap/mirror/`
+- `withBootstrapTest` → `withBootstrap`
+- `Bootstrap Test Mirror/{ComponentName}` → `Bootstrap Mirror/{ComponentName}` (story title)
+- `Bootstrap Test/{ComponentName}` → `Bootstrap/{ComponentName}` (story title)
+- `agent/reference-stories/` → `agent/review/` or `agent/taxonomies/` as appropriate
+
+**comparison-agent.md:**
+- Already retired. Delete the file in Phase 3 (it is currently preserved as historical reference; after Phase 3 the skill directory reflects only current workflow).
+
 ---
 
 ## Implementation Tasks

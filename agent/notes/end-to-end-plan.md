@@ -1044,9 +1044,8 @@ Return exactly one of:
 - Update component impl reference: `src/bootstrap-test/{ComponentName}.tsx` → `src/react-aria-bootstrap/{ComponentName}.tsx`
 
 **workflow.md:**
-- Phase 1 (branch setup): Simplify to branch-cut only — stub file creation and Storybook restart have moved to the orchestrator's pre-loop setup (Stage 5); glob setup moved to Stage 2. Keep Phase 3 (debrief) but update review file path to `agent/review/batch-{N}-debrief.md`.
-- Update all paths throughout (same rename list as component-agent.md above).
-- Remove references to `agent/review-iteration-N.md` and `agent/review-styling-iteration-N.md` — these are replaced by `agent/review/batch-{N}-debrief.md` (single file per batch, not per iteration).
+- Delete this file. The branch lifecycle it documented is now fully covered by `agent/iteration-protocol.md` (rewritten on branch `end-to-end-workflow`). The Visual Comparison Workflow and Self-Review Checklist sections move to `component-agent.md`.
+- Remove the `workflow.md` pointer from the bottom of `SKILL.md`.
 
 **principles.md:**
 - P047 (`augments-import`): rename `augments.scss` → `presentation.scss`; update import path to `../presentation.scss` (relative to mirror story in `stories/react-aria-bootstrap/mirror/`)
@@ -1058,7 +1057,7 @@ Return exactly one of:
 - `agent/reference-stories/` → `agent/review/` or `agent/taxonomies/` as appropriate
 
 **comparison-agent.md:**
-- Already retired. Delete the file in Phase 3 (it is currently preserved as historical reference; after Phase 3 the skill directory reflects only current workflow).
+- Deleted on branch `end-to-end-workflow`. No Phase 3 action needed.
 
 **scripts/reference-images.mjs (new script):**
 - New script. Accepts `--reference {story-id}` and `--out {path}`. Screenshots the named reference story and saves it to the given path. No implementation screenshot; no diff output. Run by the orchestrator during pre-loop setup, once per reference story per component.

@@ -748,9 +748,54 @@ See Appendix B Pattern 7 for the enforcement mechanism.
 
 **Spatial diff reasoning, animation exception, prior iteration review:** Same rules as currently documented in `component-agent.md` (Spatial Diff Reasoning, Animation Exception, Prior Iteration Review sections). These carry forward unchanged to the refactored skill file.
 
-**Findings doc updates** (same structure as current `component-agent.md` — carries forward unchanged):
-- Append iteration block to `agent/review/{component}-{story}-findings.md` after each pass
-- Update Story Registry and Work Log in `agent/review/{component}-findings.md` after each pass
+**Findings doc updates:**
+
+*Story findings doc* (`agent/review/{component}-{story}-findings.md`) — append an iteration block after every comparison pass:
+
+```markdown
+## Iteration {N}
+
+**Diff%:** {value} | **Status:** pass / fail | **Stuck:** {n}
+
+### Specimens
+
+PASS: [specimen labels]
+
+FAIL:
+- Specimen [label]: Red at [location]. Fix attempted: [description].
+
+UNRESOLVED:
+- Specimen [label]: [describe what is visible but unexplained]
+```
+
+Update front matter after each pass:
+
+| Outcome | Status | Iteration | Stuck |
+|---------|--------|-----------|-------|
+| Pass | `Pass` | N | `0` |
+| Fail, improved | `Fail` | N | `0` |
+| Fail, no improvement | `Fail` | N | `Stuck++` |
+| After a code fix, before re-run | `In review` | — | — |
+| Stuck counter reaches threshold | `Stuck` | N | threshold |
+| Context compression detected | `Context exhausted` | N | — |
+| Script produced no output images | `Script failed` | N | — |
+
+Valid status values: `In review` · `Pass` · `Fail` · `Stuck` · `Context exhausted` · `Script failed`
+
+*Component-wide findings doc* (`agent/review/{component}-findings.md`) — update the Story Registry table and append a Work Log entry after every comparison pass:
+
+```markdown
+### {story} — Iteration {N}
+
+**Observations:** (copied from story findings doc FAIL/UNRESOLVED entries)
+
+**Principles consulted:**
+- [Cite specific skill principles or component decisions that guided the fix]
+
+**Code changes made:** (or "None — [reason]" if no changes)
+- [file:line]: [description]
+- Shared selectors modified: [list] → affected stories re-run: [list]
+```
 
 ---
 
@@ -988,7 +1033,7 @@ Return exactly one of:
 - Update Pre-completion CSS placement check: path filter updated to `stories/react-aria-bootstrap/.*\.scss`
 - Restructure phases: Preparation Phase retains only step P1 (internalize inputs); P2 (implement TSX) and P3 (write bridge CSS) move into new Phase A; current Phase A (story implementation) becomes Phase B; current Phase B (comparison loop) becomes Phase C. The scaffold-stubs step is removed from component-agent.md entirely — it moves to the orchestrator pre-loop setup.
 - Update hard constraint: bridge rules go in `src/scss/_bootstrap-bridges.scss`
-- Update task ID self-identification command path if needed
+- Remove task ID self-identification command and `**Task ID:**` field from iteration blocks and Work Log entries — task tracking is now via `TaskCreate`/`TaskUpdate` (see Appendix B Pattern 5), not session-path introspection
 - Remove `agent/review-iteration-N.md` references (replaced by `agent/review/batch-{N}-debrief.md`)
 - Relax `implementation.png` read rule: remove the "only when `diff.png` unchanged" restriction; the agent may read `implementation.png` on any failure when it would be informative
 

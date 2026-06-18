@@ -624,34 +624,18 @@ Before any implementation, the component agent:
 4. **Read reference CSS:** Read all `agent/review/reference-css/{component}-{StoryName}.css` files. These contain only the Bootstrap rules that applied to the rendered reference story DOM — they are the primary CSS specification for what to replicate. Read them now, not during the comparison loop.
 5. **Review principles:** Read `principles.md` in full. Flag any with structural or sizing implications (P008, P010, P016, P040, P041, P042) — address during TSX/bridge implementation, not at diff time.
 
+6. **Capture reference images:** For each story in scope, run:
+   ```bash
+   node scripts/compare-stories.mjs \
+     --reference "bootstrap-reference-{component}--{story-name}" \
+     --out       .story-diffs/{component}/{story} \
+     --reference-only
+   ```
+   Then read all resulting `reference.png` files into context. This is the only time `reference.png` is read — do not re-read these images during Phase C or the Final Verification Sweep.
+
 ---
 
-**Phase A: Scaffold, TSX, Bridge CSS (Tier 1 Component Agent)**
-
-**Scaffold stubs:**
-- Create `src/react-aria-bootstrap/{ComponentName}.tsx` — bare React Aria component, no Bootstrap classes yet
-- Create `stories/react-aria-bootstrap/mirror/{ComponentName}.mirror.stories.tsx` — empty mirror story stub
-
-  Mirror story stub:
-  ```tsx
-  import type { Meta, StoryObj } from '@storybook/react';
-  import { withBootstrap } from '../_decorators';
-  import '../presentation.scss';
-
-  const meta: Meta = {
-    title: 'Bootstrap Mirror/{ComponentName}',
-    decorators: [withBootstrap],
-    parameters: { layout: 'padded' },
-  };
-  export default meta;
-
-  type Story = StoryObj<typeof meta>;
-
-  // Placeholder — replaced in Phase B
-  export const Placeholder: Story = {};
-  ```
-
-  After creating stubs, restart Storybook (`lsof -ti tcp:6006 | xargs kill -9 && yarn storybook &`) and wait for both stub story IDs to register in `index.json` before proceeding. New story files under the existing glob may or may not trigger an HMR rebuild — a clean restart is always safe and avoids silent HMR failures.
+**Phase A: TSX and Bridge CSS (Tier 1 Component Agent)**
 
 **Implement TSX:**
 - Apply `className` render-prop pattern (P002) for Bootstrap classes
@@ -724,15 +708,13 @@ node scripts/compare-stories.mjs \
   --threshold 0.003
 ```
 
-After the first pass, read `.story-diffs/{component}/{story}/reference.png` for **every** story. Do this once — **never re-read `reference.png` again for the rest of the session.**
-
 Record exit code and diff% for each story. Stories with exit code 0 are immediately `Pass`. Stories with exit code 1 enter the fix loop.
 
 **Image read rules:**
 
 | Image | When to read |
 |-------|-------------|
-| `reference.png` | Once at Phase C inception. Never again. |
+| `reference.png` | Once during Preparation Phase. Never again. |
 | `diff.png` | On any failure. Re-read after each fix attempt. |
 | `implementation.png` | Only after a fix attempt produced no visible change in `diff.png` (tried and missed — need to see what's rendering). |
 
@@ -786,7 +768,7 @@ After all stories reach `Pass`:
    ```
    If any new SCSS files appear under `stories/`, move their bridge rules to `src/scss/_bootstrap-bridges.scss` and delete the story-scoped files.
 
-2. **Run final `compare-stories.mjs` sweep** across all stories with `--threshold 0.003`. This catches regressions from shared-selector changes. Do not re-read `reference.png` — it remains in context from Phase C inception.
+2. **Run final `compare-stories.mjs` sweep** across all stories with `--threshold 0.003`. This catches regressions from shared-selector changes. Do not re-read `reference.png` — it remains in context from Preparation Phase.
 
 3. **Report `verification-sweep-passed` to the orchestrator.**
 
@@ -796,6 +778,30 @@ After all stories reach `Pass`:
 
 ```
 emit delegation manifest (required before any dispatch)
+
+[pre-loop setup]
+  for each component in batch.md:
+    create src/react-aria-bootstrap/{ComponentName}.tsx stub (bare React Aria component, no Bootstrap classes)
+    create stories/react-aria-bootstrap/mirror/{ComponentName}.mirror.stories.tsx stub:
+
+      import type { Meta, StoryObj } from '@storybook/react';
+      import { withBootstrap } from '../_decorators';
+      import '../presentation.scss';
+
+      const meta: Meta = {
+        title: 'Bootstrap Mirror/{ComponentName}',
+        decorators: [withBootstrap],
+        parameters: { layout: 'padded' },
+      };
+      export default meta;
+
+      type Story = StoryObj<typeof meta>;
+
+      // Placeholder — replaced in Phase B
+      export const Placeholder: Story = {};
+
+  restart Storybook (lsof -ti tcp:6006 | xargs kill -9 && yarn storybook &)
+  wait for all stub story IDs to appear in index.json before dispatching any component agent
 
 for each component in batch (serial):
 
@@ -954,9 +960,10 @@ Return exactly one of:
 
 **orchestrator.md:**
 - Update dispatch prompt template: new paths for taxonomy, findings, bridge CSS, story locations, presentation.scss (per above dispatch prompt templates — replace verbatim)
-- Add `EXTRACTED-CSS-GAP` and `Stuck` handling to the orchestrator loop (per the loop above)
+- Add `EXTRACTED-CSS-GAP` and `Stuck` handling to the orchestrator loop — this is a behavioral change, not just a template update: these two phrases now use `SendMessage` resumption rather than stopping (per the loop above)
 - Add Tier 1a dispatch prompt template (per above)
 - Rename `_bootstrap-overrides.scss` → `_bootstrap-bridges.scss` throughout
+- Add pre-loop setup section to the orchestrator loop: for each component in batch.md, create stub TSX file and stub mirror story file (using the mirror story stub template in the loop pseudocode above); then restart Storybook and wait for all stub story IDs in index.json before dispatching any component agent
 
 **component-agent.md:**
 - Update all paths throughout:
@@ -972,10 +979,13 @@ Return exactly one of:
   - `agent/reference-stories/mirror-css/` → `agent/review/mirror-css/`
   - `agent/reference-stories/{component}-taxonomy.md` → `agent/taxonomies/{component}-taxonomy.md`
 - Add step to Preparation Phase: read all reference CSS files (`agent/review/reference-css/{component}-*.css`)
+- Add final step to Preparation Phase: run `compare-stories.mjs --reference-only` for each story; read all resulting `reference.png` files into context; note these images must not be re-read during Phase C or Final Verification Sweep
+- Update Phase C image read rules table: `reference.png` row — "Once at Phase C inception. Never again." → "Once during Preparation Phase. Never again."
+- Remove from Phase C inception: the instruction to read `reference.png` after the first pass
+- Update Final Verification Sweep: "remains in context from Phase C inception" → "from Preparation Phase"
 - Add `EXTRACTED-CSS-GAP` protocol to Phase C (Comparison Loop)
-- Add mirror story stub template (including `presentation.scss` import, `withBootstrap` decorator, title `Bootstrap Mirror/{ComponentName}`)
 - Update Pre-completion CSS placement check: path filter updated to `stories/react-aria-bootstrap/.*\.scss`
-- Add Phase B label and Phase C label (currently Phase A / Phase B in current file; renaming to A/B/C to align with spec's Preparation/Scaffold/Comparison structure)
+- Restructure phases: Preparation Phase retains only step P1 (internalize inputs); P2 (implement TSX) and P3 (write bridge CSS) move into new Phase A; current Phase A (story implementation) becomes Phase B; current Phase B (comparison loop) becomes Phase C. The scaffold-stubs step is removed from component-agent.md entirely — it moves to the orchestrator pre-loop setup.
 - Update hard constraint: bridge rules go in `src/scss/_bootstrap-bridges.scss`
 - Update task ID self-identification command path if needed
 - Remove `agent/review-iteration-N.md` references (replaced by `agent/review/batch-{N}-debrief.md`)
@@ -987,7 +997,7 @@ Return exactly one of:
 - Update component impl reference: `src/bootstrap-test/{ComponentName}.tsx` → `src/react-aria-bootstrap/{ComponentName}.tsx`
 
 **workflow.md:**
-- Phase 1 (branch setup): Remove glob management steps — the glob is already set up by Stage 2. Simplify to: "Component agents create their own stub files at session start; Storybook restart is handled by the component agent." Keep Phase 3 (debrief) but update review file path to `agent/review/batch-{N}-debrief.md`.
+- Phase 1 (branch setup): Simplify to branch-cut only — stub file creation and Storybook restart have moved to the orchestrator's pre-loop setup (Stage 5); glob setup moved to Stage 2. Keep Phase 3 (debrief) but update review file path to `agent/review/batch-{N}-debrief.md`.
 - Update all paths throughout (same rename list as component-agent.md above).
 - Remove references to `agent/review-iteration-N.md` and `agent/review-styling-iteration-N.md` — these are replaced by `agent/review/batch-{N}-debrief.md` (single file per batch, not per iteration).
 
@@ -1002,6 +1012,9 @@ Return exactly one of:
 
 **comparison-agent.md:**
 - Already retired. Delete the file in Phase 3 (it is currently preserved as historical reference; after Phase 3 the skill directory reflects only current workflow).
+
+**scripts/compare-stories.mjs:**
+- Add `--reference-only` flag: when passed, screenshot the reference story and save `reference.png` only; skip implementation screenshot and diff generation. Used by the component agent in Preparation Phase to capture reference images before any implementation work begins.
 
 ---
 

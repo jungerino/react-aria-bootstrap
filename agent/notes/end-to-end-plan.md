@@ -567,7 +567,7 @@ Load and follow agent/mapping-and-references-skill.md.
 **Architecture:** Two-tier serial (same pattern as Stage 4).
 
 - **Tier 0 (Orchestrator):** Manages batch sequencing; dispatches one Tier 1 component agent at a time; handles terminal phrase routing (surfaces exceptions to user, resumes agents via `SendMessage`); dispatches Tier 1a after `verification-sweep-passed`; compiles and delivers the batch report. The sole point of user contact.
-- **Tier 1 (Component Agent):** One per component. Owns the full per-component lifecycle: Preparation Phase → Phase A (scaffold + TSX + bridge CSS) → Phase B (mirror stories) → Phase C (comparison loop, self-correction) → Final Verification Sweep. Runs `compare-stories.mjs` directly — no Tier 2.
+- **Tier 1 (Component Agent):** One per component. Owns the full per-component lifecycle: Preparation Phase (read inputs + pre-captured reference images) → Phase A (TSX + bridge CSS) → Phase B (mirror stories) → Phase C (comparison loop, self-correction) → Final Verification Sweep.
 - **Tier 1a (Final Stories Agent):** Dispatched by the orchestrator after `verification-sweep-passed`. Writes the final/standard Storybook stories. No implementation context needed — receives only taxonomy and story conventions.
 - **Serial dispatch:** One Tier 1 agent at a time.
 - **`SendMessage` dependency:** `EXTRACTED-CSS-GAP` and `Stuck` handling require the orchestrator to resume a paused component agent with preserved context. Requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` (see Appendix A).
@@ -577,6 +577,7 @@ Load and follow agent/mapping-and-references-skill.md.
 - `agent/taxonomies/{Component}-taxonomy.md` — per-component taxonomy and pre-resolved decisions (from Stage 4)
 - `stories/react-aria-bootstrap/reference/{Component}.reference.stories.tsx` — Bootstrap reference stories (from Stage 4)
 - `agent/review/reference-css/{Component}-{StoryName}.css` — pre-extracted Bootstrap CSS, one file per reference story (from Stage 4; component agent's primary CSS reference — `bootstrap.css` is structurally blocked per Appendix B Pattern 7)
+- `.reference-images/{component}/{story}.png` — reference story screenshots, one per story; captured by the orchestrator during pre-loop setup using `scripts/reference-images.mjs`; read into context by component agent during Preparation Phase
 - `src/scss/_bootstrap-bridges.scss` — shared bridge CSS file; component agent appends new rules for this component
 - `stories/react-aria-bootstrap/presentation.scss` — faux-state and layout utilities; component agent extends as needed
 - `agent/bootstrap-kb/README.md` → relevant KB files loaded selectively per component
@@ -590,7 +591,9 @@ Load and follow agent/mapping-and-references-skill.md.
 | Mirror stories | `stories/react-aria-bootstrap/mirror/{ComponentName}.mirror.stories.tsx` |
 | Final/standard stories | `stories/react-aria-bootstrap/{ComponentName}.stories.tsx` |
 | Component findings doc | `agent/review/{component}-findings.md` |
+| Story findings docs | `agent/review/{component}-{story}-findings.md` (one per story) |
 | Extracted mirror CSS | `agent/review/mirror-css/{component}-{StoryName}.css` (one per story) |
+| Diff images (per pass) | `agent/review/diffs/{component}/{story}/iteration-{N}/` (`diff.png`, `implementation.png`) |
 | Bridge CSS (updated) | `src/scss/_bootstrap-bridges.scss` |
 
 **Story title conventions:**
@@ -624,14 +627,7 @@ Before any implementation, the component agent:
 4. **Read reference CSS:** Read all `agent/review/reference-css/{component}-{StoryName}.css` files. These contain only the Bootstrap rules that applied to the rendered reference story DOM — they are the primary CSS specification for what to replicate. Read them now, not during the comparison loop.
 5. **Review principles:** Read `principles.md` in full. Flag any with structural or sizing implications (P008, P010, P016, P040, P041, P042) — address during TSX/bridge implementation, not at diff time.
 
-6. **Capture reference images:** For each story in scope, run:
-   ```bash
-   node scripts/compare-stories.mjs \
-     --reference "bootstrap-reference-{component}--{story-name}" \
-     --out       .story-diffs/{component}/{story} \
-     --reference-only
-   ```
-   Then read all resulting `reference.png` files into context. This is the only time `reference.png` is read — do not re-read these images during Phase C or the Final Verification Sweep.
+6. **Load reference images:** Read all `.reference-images/{component}/{story}.png` files into context — one per story in scope. These were captured by the orchestrator during pre-loop setup using `scripts/reference-images.mjs`. This is the only time reference images are read — do not re-read them during Phase C or the Final Verification Sweep. `scripts/reference-images.mjs` is not available to the component agent (see `disallowedTools` in Appendix B Pattern 2).
 
 ---
 
@@ -691,6 +687,7 @@ For each story in scope (derived from the taxonomy's "Reference story canvas" se
 
 3. **Create story findings doc** at `agent/review/{component}-{story}-findings.md`:
    - Front matter: `Status: In review`, `Iteration: 0`, `Stuck: 0`
+   - Initialize a session-scoped iteration counter **N = 0** for this story. N determines the `--out` directory for each `compare-stories.mjs` run (`iteration-{N}`). Increment N at the end of every comparison pass, before writing findings. N is durable: if context is compressed, recover the current value from the findings doc front matter (`Iteration:` field).
 
 After all mirror stories are implemented, begin Phase C — Comparison Loop.
 
@@ -704,19 +701,19 @@ After all mirror stories are implemented, begin Phase C — Comparison Loop.
 node scripts/compare-stories.mjs \
   --reference "bootstrap-reference-{component}--{story-name}" \
   --impl      "bootstrap-mirror-{component}--{story-name}" \
-  --out       .story-diffs/{component}/{story} \
+  --out       agent/review/diffs/{component}/{story}/iteration-{N} \
   --threshold 0.003
 ```
 
-Record exit code and diff% for each story. Stories with exit code 0 are immediately `Pass`. Stories with exit code 1 enter the fix loop.
+Use the current N for each story (initialized to 0 in Phase B). Record exit code and diff% for each story. Stories with exit code 0 are immediately `Pass`. Stories with exit code 1 enter the fix loop.
 
 **Image read rules:**
 
-| Image | When to read |
-|-------|-------------|
-| `reference.png` | Once during Preparation Phase. Never again. |
-| `diff.png` | On any failure. Re-read after each fix attempt. |
-| `implementation.png` | Only after a fix attempt produced no visible change in `diff.png` (tried and missed — need to see what's rendering). |
+| Image | Path | When to read |
+|-------|------|-------------|
+| `reference.png` | `.reference-images/{component}/{story}.png` | Once during Preparation Phase. Never again. |
+| `diff.png` | `agent/review/diffs/{component}/{story}/iteration-{N}/diff.png` | On any failure. Re-read after each fix attempt. |
+| `implementation.png` | `agent/review/diffs/{component}/{story}/iteration-{N}/implementation.png` | On any failure, when `diff.png` alone doesn't show what's rendering. |
 
 **Fix loop** (per failing story, repeat until Pass or Stuck threshold):
 
@@ -726,14 +723,13 @@ read diff.png
   → compare reference-css vs. mirror-css: rules in reference absent from mirror are candidates for missing bridge rules or missing className
   → apply fix to bridge CSS and/or mirror TSX
   → re-run extract-story-css.mjs for this story (keep mirror CSS current)
-  → re-run compare-stories.mjs for this story
-    → exit 0: mark Pass; update findings doc; done with this story
-    → exit 1 and diff.png changed: continue loop
-    → exit 1 and diff.png unchanged: read implementation.png; continue loop
+  → increment N; re-run compare-stories.mjs with --out agent/review/diffs/{component}/{story}/iteration-{N}
+    → exit 0: mark Pass; update findings doc (record N); done with this story
+    → exit 1: read diff.png; read implementation.png if diff.png alone doesn't show what's rendering; continue loop
   → if fix cannot be identified:
       → increment Stuck counter
       → if Stuck >= threshold (default 3): output terminal phrase `Stuck: {story}`; stop
-  → write iteration block to findings doc after every pass (pass or fail)
+  → write iteration block to findings doc after every pass (pass or fail); record N in iteration header
 ```
 
 **Reference CSS vs. mirror CSS gap analysis:** When a story fails and the diff alone doesn't pinpoint the cause, compare `agent/review/reference-css/{component}-{StoryName}.css` (target) against `agent/review/mirror-css/{component}-{StoryName}.css` (implementation). Rules present in the reference CSS but absent from the mirror CSS are likely missing bridge rules or className assignments.
@@ -801,7 +797,12 @@ emit delegation manifest (required before any dispatch)
       export const Placeholder: Story = {};
 
   restart Storybook (lsof -ti tcp:6006 | xargs kill -9 && yarn storybook &)
-  wait for all stub story IDs to appear in index.json before dispatching any component agent
+  wait for all stub story IDs to appear in index.json
+
+  for each component in batch.md, for each story in component's taxonomy:
+    node scripts/reference-images.mjs \
+      --reference "bootstrap-reference-{component}--{story-name}" \
+      --out       .reference-images/{component}/{story}.png
 
 for each component in batch (serial):
 
@@ -989,6 +990,7 @@ Return exactly one of:
 - Update hard constraint: bridge rules go in `src/scss/_bootstrap-bridges.scss`
 - Update task ID self-identification command path if needed
 - Remove `agent/review-iteration-N.md` references (replaced by `agent/review/batch-{N}-debrief.md`)
+- Relax `implementation.png` read rule: remove the "only when `diff.png` unchanged" restriction; the agent may read `implementation.png` on any failure when it would be informative
 
 **final-stories-agent.md:**
 - Update story path: `stories/bootstrap-test/{ComponentName}/{ComponentName}.stories.tsx` → `stories/react-aria-bootstrap/{ComponentName}.stories.tsx`
@@ -1013,8 +1015,12 @@ Return exactly one of:
 **comparison-agent.md:**
 - Already retired. Delete the file in Phase 3 (it is currently preserved as historical reference; after Phase 3 the skill directory reflects only current workflow).
 
+**scripts/reference-images.mjs (new script):**
+- New script. Accepts `--reference {story-id}` and `--out {path}`. Screenshots the named reference story and saves it to the given path. No implementation screenshot; no diff output. Run by the orchestrator during pre-loop setup, once per reference story per component.
+
 **scripts/compare-stories.mjs:**
-- Add `--reference-only` flag: when passed, screenshot the reference story and save `reference.png` only; skip implementation screenshot and diff generation. Used by the component agent in Preparation Phase to capture reference images before any implementation work begins.
+- Does not write `reference.png`. Writes only `implementation.png` and `diff.png` to the `--out` directory.
+- Output directory convention: `agent/review/diffs/{component}/{story}/iteration-{N}/`. The caller passes an iteration-specific `--out` path on each invocation; the script creates the directory if it does not exist.
 
 ---
 

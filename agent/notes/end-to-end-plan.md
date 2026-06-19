@@ -1197,5 +1197,3 @@ The component agent's primary Bootstrap CSS reference is the pre-extracted file 
 1. **Log immediately** — append a "Extracted CSS Gaps" entry to `agent/review/{component}-findings.md` recording: the specific selector or property searched for, which extracted file was consulted, and why it was insufficient.
 2. **Signal the orchestrator** — output the terminal phrase `EXTRACTED-CSS-GAP: {description of what's missing}` so the orchestrator can surface it to the user rather than the agent silently proceeding.
 3. **Wait for permission** — the deny rule enforces the pause; the user sees the permission prompt and decides whether to allow the `bootstrap.css` read for this specific gap.
-
-**Known limitation — `@media` wrapper loss:** Extracted CSS includes rules that live inside `@media` blocks but strips the `@media (...)` wrapper. An agent may find a rule in the extracted file without realising it only applies at a specific breakpoint. The gap protocol does not help here — the agent won't know what it doesn't know. Skill files should note this and instruct agents to treat extracted responsive-utility rules with caution.

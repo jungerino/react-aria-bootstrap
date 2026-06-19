@@ -598,12 +598,13 @@ mapping-and-references-skill.md is your task definition. Do not derive your step
 
 **Skill file changes required for Phase 3** (`agent/mapping-and-references-skill.md`):
 - Update all paths per Q6 (reference stories → `stories/react-aria-bootstrap/reference/`, taxonomy docs → `agent/taxonomies/`, extracted CSS → `agent/review/reference-css/`, `presentation.scss` replaces `augments.scss`, `withBootstrap` replaces `withBootstrapTest`)
-- Remove KB retrieval section (Part 5 of current file) — that content moves to `bootstrap-kb-skill.md`
+- Remove KB *generation* content from Part 5 (when to rebuild the KB, which Bootstrap source files to parse) — that content moves to `bootstrap-kb-skill.md`. Retain M003 load sequence and query table in `mapping-and-references-skill.md`.
 - Add: explicit instruction to fetch Bootstrap documentation pages via WebFetch for reference story HTML
 - Add: Decisions and Rationale section to taxonomy doc template
 - Add: terminal phrase protocol (`TAXONOMY-DECISIONS-NEEDED`, `TAXONOMY-COMPLETE`, `REFERENCE-STORY-READY-FOR-REVIEW`, `COMPONENT-STAGE-4-COMPLETE`)
 - Add: `presentation.scss` import and `withBootstrap` decorator usage in reference story template
 - Retain: M007's `bootstrap.css` grep instruction for selector verification; P-S002's specimen HTML context requirement
+- Update M016: replace `agent/review-iteration-N.md` with `agent/logs/batch-{N}.md`.
 
 ---
 
@@ -1101,6 +1102,7 @@ Return exactly one of:
 - Remove from Phase C inception: the instruction to read `reference.png` after the first pass
 - Update Final Verification Sweep: "remains in context from Phase C inception" → "from Preparation Phase"
 - Add `EXTRACTED-CSS-GAP` protocol to Phase C (Comparison Loop)
+- Update fix loop: replace the existing 'report `Stuck: {story}` to primary agent and stop' behavior with: mark the story `Stuck` in the Story Registry and findings doc front matter, continue to remaining stories, then emit `Stuck: {story1}, {story2}` (all stuck stories listed together) only after all stories have been attempted.
 - Make CSS comparison mandatory in the Phase C fix loop: integrate `compare reference-css vs. mirror-css` as a required step between "describe what is visible" and "apply fix" in the fix loop pseudocode; revise the standalone "Reference CSS vs. mirror CSS gap analysis" paragraph to remove its conditional framing ("when the diff alone doesn't pinpoint the cause") — comparison runs on every iteration, not as a fallback
 - Update Pre-completion CSS placement check: path filter updated to `stories/react-aria-bootstrap/.*\.scss`
 - Update Final Verification Sweep: add regression handling — if any story fails the sweep, re-enter the fix loop for those stories only, then re-run the full sweep; repeat until all pass
@@ -1110,6 +1112,7 @@ Return exactly one of:
 - Remove task ID self-identification command and `**Task ID:**` field from iteration blocks and Work Log entries — task tracking is now via `TaskCreate`/`TaskUpdate` (see Appendix B Pattern 5), not session-path introspection
 - Remove `agent/review-iteration-N.md` references (replaced by `agent/logs/batch-{N}.md`)
 - Relax `implementation.png` read rule: remove the "only when `diff.png` unchanged" restriction; the agent may read `implementation.png` on any failure when it would be informative
+- Update Script failure protocol: remove `reference.png` from the failure condition. Under the new model `compare-stories.mjs` never writes `reference.png`, so its absence is not a script failure. The failure condition should check only for missing `implementation.png` or `diff.png`.
 
 **final-stories-agent.md:**
 - Update story path: `stories/bootstrap-test/{ComponentName}/{ComponentName}.stories.tsx` → `stories/react-aria-bootstrap/{ComponentName}.stories.tsx`

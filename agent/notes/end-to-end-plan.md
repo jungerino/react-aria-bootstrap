@@ -509,6 +509,8 @@ Sub-agent:
 
 Orchestrator prompts user to open Storybook and review. User responds with feedback or approval. Orchestrator resumes sub-agent via `SendMessage`. Multiple review cycles are supported.
 
+*(Same agent session resumed via `SendMessage` after orchestrator Q&A relay — not a new agent dispatch.)*
+
 Sub-agent (continued):
 4. Apply feedback; loop back to `REFERENCE-STORY-READY-FOR-REVIEW` until approved
 5. For each approved story: run `node scripts/extract-story-css.mjs "Bootstrap Reference/{Component}/{StoryName}"` and save output to `agent/review/reference-css/{Component}-{StoryName}.css`
@@ -600,7 +602,7 @@ mapping-and-references-skill.md is your task definition. Do not derive your step
 - Update all paths per Q6 (reference stories → `stories/react-aria-bootstrap/reference/`, taxonomy docs → `agent/taxonomies/`, extracted CSS → `agent/review/reference-css/`, `presentation.scss` replaces `augments.scss`, `withBootstrap` replaces `withBootstrapTest`)
 - Remove KB *generation* content from Part 5 (when to rebuild the KB, which Bootstrap source files to parse) — that content moves to `bootstrap-kb-skill.md`. Retain M003 load sequence and query table in `mapping-and-references-skill.md`.
 - Add: explicit instruction to fetch Bootstrap documentation pages via WebFetch for reference story HTML
-- Add: Decisions and Rationale section to taxonomy doc template
+- Add: `## Decisions` section to taxonomy doc template
 - Add: terminal phrase protocol (`TAXONOMY-DECISIONS-NEEDED`, `TAXONOMY-COMPLETE`, `REFERENCE-STORY-READY-FOR-REVIEW`, `COMPONENT-STAGE-4-COMPLETE`)
 - Add: `presentation.scss` import and `withBootstrap` decorator usage in reference story template
 - Retain: M007's `bootstrap.css` grep instruction for selector verification; P-S002's specimen HTML context requirement

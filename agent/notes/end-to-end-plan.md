@@ -619,6 +619,8 @@ mapping-and-references-skill.md is your task definition. Do not derive your step
 
 **Architecture:** Two-tier serial (same pattern as Stage 4).
 
+Stage 4 and Stage 5 each run in a separate orchestrator session. The batch log (`agent/logs/batch-{N}.md`) is the handoff artifact — the Stage 4 orchestrator populates it; the Stage 5 orchestrator reads it as its primary input.
+
 - **Tier 0 (Orchestrator):** Manages batch sequencing; dispatches one Tier 1 component agent at a time; handles terminal phrase routing (surfaces exceptions to user, resumes agents via `SendMessage`); dispatches Tier 1a after `verification-sweep-passed`; compiles and delivers the batch report. The sole point of user contact.
 - **Tier 1 (Component Agent):** One per component. Owns the full per-component lifecycle: Preparation Phase (read inputs + pre-captured reference images) → Phase A (TSX + bridge CSS) → Phase B (mirror stories) → Phase C (comparison loop, self-correction) → Final Verification Sweep.
 - **Tier 1a (Final Stories Agent):** Dispatched by the orchestrator after `verification-sweep-passed`. Writes the final/standard Storybook stories. No implementation context needed — receives only taxonomy and story conventions.
@@ -973,7 +975,7 @@ After the batch report is delivered, the user reviews all implemented components
 
 - The orchestrator conducts the debrief. If context headroom is insufficient at this point, hand off to a fresh agent manually — formalize a handoff protocol only if this becomes a recurring pattern.
 - Write each observation to `agent/logs/batch-{N}.md` immediately — before replying. Do not batch, do not defer. Multiple observations in one message → write all before replying. Append under the current stage/iteration heading (format: `## Stage {M} / Iteration {P} — {YYYY-MM-DD}`).
-- Both "what to improve" and "what worked well" are in scope. Patterns worth keeping become P-codes in `principles.md` at this step.
+- Both "what to improve" and "what worked well" are in scope. Patterns worth keeping become P-codes in `principles.md` at this step. The user decides which patterns to promote during the debrief. The orchestrator drafts a proposed P-code entry (following the existing numbered format and updating the table of contents in `principles.md`) for user approval. The next available P-code number is determined by reading the table of contents in `principles.md`.
 - After the debrief, follow `agent/iteration-protocol.md` for knowledge file updates, component work decision gate, and merge commands.
 
 ---

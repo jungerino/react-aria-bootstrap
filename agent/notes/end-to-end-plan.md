@@ -391,6 +391,14 @@ grep "bootstrap-kb-skill" CLAUDE.md               # TOC entry present
 - Tabs
 - ListBox
 
+## Stories
+
+*Populated by Stage 4 orchestrator after each component's reference stories are approved.*
+
+- Button: Default, Disabled, Size Variants
+- Tabs: Horizontal, Vertical, Disabled Tab
+- ListBox: Single Selection, Multi Selection
+
 ## Stage 4
 
 ### Iteration 1 — {YYYY-MM-DD}
@@ -900,7 +908,7 @@ emit delegation manifest (required before any dispatch)
   restart Storybook (lsof -ti tcp:6006 | xargs kill -9 && yarn storybook &)
   wait for all stub story IDs to appear in index.json
 
-  for each component in batch.md, for each story in component's taxonomy:
+  for each component in batch.md, for each story in the component's `stories:` list in `batch-{N}.md`:
     node scripts/reference-images.mjs \
       --reference "bootstrap-reference-{component}--{story-name}" \
       --out       .reference-images/{component}/{story}.png

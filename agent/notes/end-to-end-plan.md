@@ -1033,6 +1033,7 @@ Return exactly one of:
 - Make CSS comparison mandatory in the Phase C fix loop: integrate `compare reference-css vs. mirror-css` as a required step between "describe what is visible" and "apply fix" in the fix loop pseudocode; revise the standalone "Reference CSS vs. mirror CSS gap analysis" paragraph to remove its conditional framing ("when the diff alone doesn't pinpoint the cause") — comparison runs on every iteration, not as a fallback
 - Update Pre-completion CSS placement check: path filter updated to `stories/react-aria-bootstrap/.*\.scss`
 - Restructure phases: Preparation Phase retains only step P1 (internalize inputs); P2 (implement TSX) and P3 (write bridge CSS) move into new Phase A; current Phase A (story implementation) becomes Phase B; current Phase B (comparison loop) becomes Phase C. The scaffold-stubs step is removed from component-agent.md entirely — it moves to the orchestrator pre-loop setup.
+- Add YAML front matter to the component-wide findings doc initialization template in Phase A: `component: {ComponentName}` and `iteration: 1`; also add a `## Story Registry` heading above the table
 - Update hard constraint: bridge rules go in `src/scss/_bootstrap-bridges.scss`
 - Remove task ID self-identification command and `**Task ID:**` field from iteration blocks and Work Log entries — task tracking is now via `TaskCreate`/`TaskUpdate` (see Appendix B Pattern 5), not session-path introspection
 - Remove `agent/review-iteration-N.md` references (replaced by `agent/review/batch-{N}-debrief.md`)

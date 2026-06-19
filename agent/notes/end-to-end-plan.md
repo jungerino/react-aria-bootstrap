@@ -732,7 +732,7 @@ read diff.png
   → write iteration block to findings doc after every pass (pass or fail); record N in iteration header
 ```
 
-**Reference CSS vs. mirror CSS gap analysis:** When a story fails and the diff alone doesn't pinpoint the cause, compare `agent/review/reference-css/{component}-{StoryName}.css` (target) against `agent/review/mirror-css/{component}-{StoryName}.css` (implementation). Rules present in the reference CSS but absent from the mirror CSS are likely missing bridge rules or className assignments.
+**Reference CSS vs. mirror CSS comparison (mandatory):** On every iteration, compare `agent/review/reference-css/{component}-{StoryName}.css` (target) against `agent/review/mirror-css/{component}-{StoryName}.css` (current implementation). Rules present in the reference CSS but absent from the mirror CSS are candidates for missing bridge rules or missing className assignments.
 
 **Extracted CSS gap protocol (EXTRACTED-CSS-GAP):**
 
@@ -1030,6 +1030,7 @@ Return exactly one of:
 - Remove from Phase C inception: the instruction to read `reference.png` after the first pass
 - Update Final Verification Sweep: "remains in context from Phase C inception" → "from Preparation Phase"
 - Add `EXTRACTED-CSS-GAP` protocol to Phase C (Comparison Loop)
+- Make CSS comparison mandatory in the Phase C fix loop: integrate `compare reference-css vs. mirror-css` as a required step between "describe what is visible" and "apply fix" in the fix loop pseudocode; revise the standalone "Reference CSS vs. mirror CSS gap analysis" paragraph to remove its conditional framing ("when the diff alone doesn't pinpoint the cause") — comparison runs on every iteration, not as a fallback
 - Update Pre-completion CSS placement check: path filter updated to `stories/react-aria-bootstrap/.*\.scss`
 - Restructure phases: Preparation Phase retains only step P1 (internalize inputs); P2 (implement TSX) and P3 (write bridge CSS) move into new Phase A; current Phase A (story implementation) becomes Phase B; current Phase B (comparison loop) becomes Phase C. The scaffold-stubs step is removed from component-agent.md entirely — it moves to the orchestrator pre-loop setup.
 - Update hard constraint: bridge rules go in `src/scss/_bootstrap-bridges.scss`

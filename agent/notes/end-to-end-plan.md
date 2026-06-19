@@ -919,6 +919,7 @@ for each component in batch (serial):
 
         on any other return:
           → surface as Undefined return; stop
+          If the failure is recoverable (context exhausted, story format error): user may re-dispatch Tier 1a. The orchestrator resumes from after `verification-sweep-passed` without re-running the component agent.
 
     EXTRACTED-CSS-GAP: {description}:
       → surface to user: "Component agent cannot proceed without bootstrap.css access.
@@ -939,8 +940,12 @@ for each component in batch (serial):
       → resume component agent via SendMessage with guidance for all stuck stories
       → continue waiting for next terminal phrase
 
-    Script failed: {story} / Context exhausted:
-      → surface to user immediately with component name and phrase; stop
+    Script failed: {story}:
+      → surface to user; user restarts Storybook and resolves script issue
+      → re-dispatch the same component agent; it recovers current state from the findings doc front matter and Story Registry
+
+    Context exhausted:
+      → surface to user; orchestrator re-dispatches the component agent with a checkpoint prompt including the component name, findings doc path, and current story-by-story status from the Story Registry
 
     Undefined return:
       → surface to user immediately as Undefined return; stop

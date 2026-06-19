@@ -377,14 +377,26 @@ grep "bootstrap-kb-skill" CLAUDE.md               # TOC entry present
 
 **Inputs:** None from prior stages.
 
-**Output:** `agent/batch.md` — a simple file listing the component names to be processed in this run. The component agent reads this at Stage 5 startup. Format:
+**Output:** `agent/logs/batch-{N}.md` — the batch log for this run. Created by the primary agent/orchestrator at the start of Stage 3. Serves as both the component list consumed by Stages 4 and 5 and the running log of debrief notes across all iterations. Format:
 
 ```markdown
-# Component Batch
+# Batch {N}
+
+## Components
 
 - Button
 - Tabs
 - ListBox
+
+## Stage 4
+
+### Iteration 1 — {YYYY-MM-DD}
+{outcome and debrief notes}
+
+## Stage 5
+
+### Iteration 1 — {YYYY-MM-DD}
+{outcome and debrief notes}
 ```
 
 **Human review:** n/a — this stage IS the human step.
@@ -434,7 +446,7 @@ grep "bootstrap-kb-skill" CLAUDE.md               # TOC entry present
 - **`SendMessage` dependency:** resumption with preserved context requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` — already set for this purpose (see Appendix A).
 
 **Inputs:**
-- `agent/batch.md` — component list for this run
+- `agent/logs/batch-{N}.md` — component list and batch log for this run
 - `agent/mapping-and-references-skill.md` — primary instruction set for taxonomy and reference story work
 - `agent/bootstrap-kb/` — loaded selectively (README first, then relevant component/state/pattern sections)
 - `node_modules/bootstrap/dist/css/bootstrap.css` — compiled CSS; required for selector verification (M007) and reproducing specimen HTML context (P-S002). The KB covers structure and class names but not the mixin-generated selector surface.
@@ -573,7 +585,7 @@ Load and follow agent/mapping-and-references-skill.md.
 - **`SendMessage` dependency:** `EXTRACTED-CSS-GAP` and `Stuck` handling require the orchestrator to resume a paused component agent with preserved context. Requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` (see Appendix A).
 
 **Inputs:**
-- `agent/batch.md` — component list for this run (from Stage 3)
+- `agent/logs/batch-{N}.md` — component list and batch log for this run (from Stage 3)
 - `agent/taxonomies/{Component}-taxonomy.md` — per-component taxonomy and pre-resolved decisions (from Stage 4)
 - `stories/react-aria-bootstrap/reference/{Component}.reference.stories.tsx` — Bootstrap reference stories (from Stage 4)
 - `agent/review/reference-css/{Component}-{StoryName}.css` — pre-extracted Bootstrap CSS, one file per reference story (from Stage 4; component agent's primary CSS reference — `bootstrap.css` is structurally blocked per Appendix B Pattern 7)
@@ -902,7 +914,8 @@ when all components done:
 
 After the batch report is delivered, the user reviews all implemented components in Storybook and provides observations. The debrief covers both implementation quality and visual comparison methodology.
 
-- Write each observation to a new review file `agent/review/batch-{N}-debrief.md` immediately — before replying. Do not batch, do not defer. Multiple observations in one message → write all before replying.
+- The orchestrator conducts the debrief. If context headroom is insufficient at this point, hand off to a fresh agent manually — formalize a handoff protocol only if this becomes a recurring pattern.
+- Write each observation to `agent/logs/batch-{N}.md` immediately — before replying. Do not batch, do not defer. Multiple observations in one message → write all before replying. Append under the current stage/iteration heading (format: `## Stage {M} / Iteration {P} — {YYYY-MM-DD}`).
 - Both "what to improve" and "what worked well" are in scope. Patterns worth keeping become P-codes in `principles.md` at this step.
 - After the debrief, follow `agent/iteration-protocol.md` for knowledge file updates, component work decision gate, and merge commands.
 
@@ -1038,7 +1051,7 @@ Return exactly one of:
 - Add YAML front matter to the component-wide findings doc initialization template in Phase A: `component: {ComponentName}` and `iteration: 1`; also add a `## Story Registry` heading above the table
 - Update hard constraint: bridge rules go in `src/scss/_bootstrap-bridges.scss`
 - Remove task ID self-identification command and `**Task ID:**` field from iteration blocks and Work Log entries — task tracking is now via `TaskCreate`/`TaskUpdate` (see Appendix B Pattern 5), not session-path introspection
-- Remove `agent/review-iteration-N.md` references (replaced by `agent/review/batch-{N}-debrief.md`)
+- Remove `agent/review-iteration-N.md` references (replaced by `agent/logs/batch-{N}.md`)
 - Relax `implementation.png` read rule: remove the "only when `diff.png` unchanged" restriction; the agent may read `implementation.png` on any failure when it would be informative
 
 **final-stories-agent.md:**

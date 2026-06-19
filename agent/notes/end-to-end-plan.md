@@ -639,7 +639,7 @@ Before any implementation, the component agent:
 4. **Read reference CSS:** Read all `agent/review/reference-css/{component}-{StoryName}.css` files. These contain only the Bootstrap rules that applied to the rendered reference story DOM — they are the primary CSS specification for what to replicate. Read them now, not during the comparison loop.
 5. **Review principles:** Read `principles.md` in full. Flag any with structural or sizing implications (P008, P010, P016, P040, P041, P042) — address during TSX/bridge implementation, not at diff time.
 
-6. **Load reference images:** Read all `.reference-images/{component}/{story}.png` files into context — one per story in scope. These were captured by the orchestrator during pre-loop setup using `scripts/reference-images.mjs`. This is the only time reference images are read — do not re-read them during Phase C or the Final Verification Sweep. `scripts/reference-images.mjs` is not available to the component agent (see `disallowedTools` in Appendix B Pattern 2).
+6. **Load reference images:** Read all `.reference-images/{component}/{story}.png` files into context — one per story in scope. These were captured by the orchestrator during pre-loop setup using `scripts/reference-images.mjs`. Reference images are static — they don't change during implementation. Read them once here; do not re-read them during Phase C or the Final Verification Sweep.
 
 ---
 
@@ -760,7 +760,7 @@ See Appendix B Pattern 7 for the enforcement mechanism.
 
 **Shared selector changes:** If a fix modifies bridge selectors that could affect other stories, re-run `compare-stories.mjs` for those stories and update their findings docs.
 
-**Spatial diff reasoning, animation exception, prior iteration review:** Same rules as currently documented in `component-agent.md` (Spatial Diff Reasoning, Animation Exception, Prior Iteration Review sections). These carry forward unchanged to the refactored skill file.
+**Spatial diff reasoning, animation exception, prior iteration review, script failure protocol:** Same rules as currently documented in `component-agent.md` (Spatial Diff Reasoning, Animation Exception, Prior Iteration Review, Script failure sections). These carry forward unchanged to the refactored skill file.
 
 **Findings doc updates:**
 
@@ -824,12 +824,22 @@ After all stories reach `Pass`:
    If any new SCSS files appear under `stories/`, move their bridge rules to `src/scss/_bootstrap-bridges.scss` and delete the story-scoped files.
 
 2. **Run final `compare-stories.mjs` sweep** across all stories with `--threshold 0.003`. This catches regressions from shared-selector changes. Do not re-read `reference.png` — it remains in context from Preparation Phase.
+   - If any story fails: re-enter the fix loop (Phase C mechanics) for those stories only, then re-run the full sweep. Repeat until all stories pass.
 
 3. **Report `verification-sweep-passed` to the orchestrator.**
 
 ---
 
 **Orchestrator Loop (Tier 0)**
+
+**Delegation manifest:** A markdown table emitted before any dispatch, listing every component in the batch with its initial status. Updated as each component completes. Included in the final batch report. Format:
+
+```
+| Component | Status  |
+|-----------|---------|
+| Button    | pending |
+| Select    | pending |
+```
 
 ```
 emit delegation manifest (required before any dispatch)
@@ -889,6 +899,7 @@ for each component in batch (serial):
       → continue waiting for next terminal phrase
 
     Stuck: {story1}, {story2}:
+      → for each stuck story: read agent/review/{component}-{story}-findings.md; extract FAIL/UNRESOLVED entries from the most recent iteration block
       → surface to user: "{component} completed with stuck stories: {list}.
         For each stuck story, include FAIL/UNRESOLVED entries from its most recent iteration block.
         Please provide guidance for each."
@@ -1040,13 +1051,14 @@ Return exactly one of:
   - `agent/reference-stories/mirror-css/` → `agent/review/mirror-css/`
   - `agent/reference-stories/{component}-taxonomy.md` → `agent/taxonomies/{component}-taxonomy.md`
 - Add step to Preparation Phase: read all reference CSS files (`agent/review/reference-css/{component}-*.css`)
-- Add final step to Preparation Phase: run `compare-stories.mjs --reference-only` for each story; read all resulting `reference.png` files into context; note these images must not be re-read during Phase C or Final Verification Sweep
+- Add final step to Preparation Phase: read all pre-captured `.reference-images/{component}/{story}.png` files into context (images were captured by the orchestrator during pre-loop setup using `reference-images.mjs`; do not run any script to generate them); note these images must not be re-read during Phase C or the Final Verification Sweep — reference images are static and don't change during implementation, so re-reading wastes context without benefit
 - Update Phase C image read rules table: `reference.png` row — "Once at Phase C inception. Never again." → "Once during Preparation Phase. Never again."
 - Remove from Phase C inception: the instruction to read `reference.png` after the first pass
 - Update Final Verification Sweep: "remains in context from Phase C inception" → "from Preparation Phase"
 - Add `EXTRACTED-CSS-GAP` protocol to Phase C (Comparison Loop)
 - Make CSS comparison mandatory in the Phase C fix loop: integrate `compare reference-css vs. mirror-css` as a required step between "describe what is visible" and "apply fix" in the fix loop pseudocode; revise the standalone "Reference CSS vs. mirror CSS gap analysis" paragraph to remove its conditional framing ("when the diff alone doesn't pinpoint the cause") — comparison runs on every iteration, not as a fallback
 - Update Pre-completion CSS placement check: path filter updated to `stories/react-aria-bootstrap/.*\.scss`
+- Update Final Verification Sweep: add regression handling — if any story fails the sweep, re-enter the fix loop for those stories only, then re-run the full sweep; repeat until all pass
 - Restructure phases: Preparation Phase retains only step P1 (internalize inputs); P2 (implement TSX) and P3 (write bridge CSS) move into new Phase A; current Phase A (story implementation) becomes Phase B; current Phase B (comparison loop) becomes Phase C. The scaffold-stubs step is removed from component-agent.md entirely — it moves to the orchestrator pre-loop setup.
 - Add YAML front matter to the component-wide findings doc initialization template in Phase A: `component: {ComponentName}` and `iteration: 1`; also add a `## Story Registry` heading above the table
 - Update hard constraint: bridge rules go in `src/scss/_bootstrap-bridges.scss`

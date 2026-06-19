@@ -99,7 +99,7 @@ After all component agents complete, a reporting agent could aggregate per-compo
 > - **Mirror stories** (`{ComponentName}.mirror.stories.tsx`, title `Bootstrap Test Mirror/{ComponentName}`): layout-matched pixel-diff targets, not shipped
 > - **Final/standard stories** (`{ComponentName}.stories.tsx`, title `Bootstrap Test/{ComponentName}`): the actual shipped Storybook stories with arg tables, controls, and documentation
 >
-> **Tier 1a (Final-Stories Agent) is retained.** Final story writing is mechanical enough to delegate and the component agent's context is likely heavy by the end of the fix loop. Component agent exits at `verification-sweep-passed`; orchestrator dispatches a fresh Tier 1a agent with taxonomy, implemented component, and story conventions — no diff images or fix-loop history in context.
+> **Tier 1a (Final-Stories Agent) is retained.** Final story writing is mechanical enough to delegate and the component agent's context is likely heavy by the end of the fix loop. Component agent exits at `verification-sweep-passed`; orchestrator dispatches a fresh Tier 1a agent with `agent/taxonomies/{component}-taxonomy.md`, the implemented component, and story conventions — no diff images or fix-loop history in context.
 
 ---
 
@@ -573,8 +573,8 @@ Load and follow agent/mapping-and-references-skill.md.
 
 **Skill files:** `agent/react-aria-skill/` directory (existing; refactored in Phase 3 — see skill file changes below). Loading is selective by tier:
 - **Tier 0** loads: `SKILL.md`, `orchestrator.md`
-- **Tier 1** loads: `SKILL.md`, `component-agent.md`, `principles.md`, taxonomy, KB README
-- **Tier 1a** loads: `SKILL.md`, `final-stories-agent.md`, taxonomy
+- **Tier 1** loads: `SKILL.md`, `component-agent.md`, `principles.md`, `agent/taxonomies/{component}-taxonomy.md`, `agent/bootstrap-kb/README.md`
+- **Tier 1a** loads: `SKILL.md`, `final-stories-agent.md`, `agent/taxonomies/{component}-taxonomy.md`
 
 **Architecture:** Two-tier serial (same pattern as Stage 4).
 

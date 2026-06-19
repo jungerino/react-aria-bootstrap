@@ -359,6 +359,9 @@ grep "bootstrap-kb-skill" CLAUDE.md               # TOC entry present
    - Add import: `import { withBootstrap } from '../stories/react-aria-bootstrap/_decorators';`
    - Add `decorators: [withBootstrap]` to the preview export object.
 
+6. **Create `agent/taxonomies/` directory**
+   - Create `agent/taxonomies/` if it does not exist.
+
 **Notes:**
 - The original `stories/bootstrap-test/` directory is left intact. It will be removed when migration is complete (after Stage 5). Until then it is simply excluded from the story glob.
 - `presentation.scss` is NOT added as a global import in `preview.js`. Reference and mirror stories import it directly — end-product stories do not need it.
@@ -478,9 +481,9 @@ Sub-agent:
 Orchestrator surfaces decisions to user. User answers. Orchestrator resumes sub-agent via `SendMessage` with answers. Multiple Q&A cycles are supported.
 
 Sub-agent (continued):
-6. Incorporate answers; finalize taxonomy doc including a "Decisions and Rationale" section
-7. Write `agent/taxonomies/{Component}-taxonomy.md`
-8. Output terminal phrase `TAXONOMY-COMPLETE`
+5. Incorporate answers; finalize taxonomy doc including a "Decisions and Rationale" section
+6. Write `agent/taxonomies/{Component}-taxonomy.md`
+7. Output terminal phrase `TAXONOMY-COMPLETE`
 
 ---
 
@@ -549,9 +552,38 @@ iteration: {N}
 **Spawn prompt template (orchestrator → component sub-agent):**
 
 ```
-Component: {ComponentName}
+You are a Tier 1 Component Sub-Agent for the React Aria + Bootstrap taxonomy and reference stories workflow.
 
-Load and follow agent/mapping-and-references-skill.md.
+Component: {ComponentName}
+Working directory: /Users/josh/Library/CloudStorage/Dropbox/Github/react-aria-bootstrap
+
+## Session-start files (read in this order)
+
+1. agent/mapping-and-references-skill.md
+
+## Key paths
+
+| Artifact | Path |
+|----------|------|
+| Batch log | agent/logs/batch-{N}.md |
+| Taxonomy output | agent/taxonomies/{component}-taxonomy.md |
+| Reference stories | stories/react-aria-bootstrap/reference/{ComponentName}.reference.stories.tsx |
+| Reference CSS | agent/review/reference-css/{component}-{StoryName}.css (one per story) |
+| Bootstrap KB | agent/bootstrap-kb/README.md |
+
+## SendMessage resumption
+
+This agent may be paused mid-session for user Q&A. When the orchestrator resumes you via SendMessage, continue from where you stopped — do not re-read session-start files.
+
+## Terminal phrases
+
+Return exactly one of:
+- TAXONOMY-DECISIONS-NEEDED: {list of decisions}
+- TAXONOMY-COMPLETE
+- REFERENCE-STORY-READY-FOR-REVIEW
+- COMPONENT-STAGE-4-COMPLETE
+
+mapping-and-references-skill.md is your task definition. Do not derive your steps from this prompt.
 ```
 
 ---
@@ -1089,7 +1121,7 @@ Return exactly one of:
 - Deleted on branch `end-to-end-workflow`. No Phase 3 action needed.
 
 **scripts/reference-images.mjs (new script):**
-- New script. Accepts `--reference {story-id}` and `--out {path}`. Screenshots the named reference story and saves it to the given path. No implementation screenshot; no diff output. Run by the orchestrator during pre-loop setup, once per reference story per component.
+- New script. Accepts `--reference {story-id}` and `--out {path}`. Uses Playwright to screenshot the named reference story rendered in Storybook, reusing the same browser/Storybook connection setup as `compare-stories.mjs`. Before capturing, polls `http://localhost:6006/index.json` until the target story ID appears. Saves a PNG screenshot of the rendered story to the path given by `--out`. No implementation screenshot; no diff output. Run by the orchestrator during pre-loop setup, once per reference story per component.
 
 **scripts/compare-stories.mjs:**
 - Does not write `reference.png`. Writes only `implementation.png` and `diff.png` to the `--out` directory.

@@ -41,9 +41,10 @@ The user reviews output and provides observations. Record each observation immed
 
 1. Record the outcome in the batch log (see below).
 2. Update skill docs and knowledge files if the process changed.
-3. Ask the user: **"Which files from this iteration should be merged to `integration-batch-{N}`?"**
-4. Merge confirmed files via file-by-file checkout, then commit.
-5. Add a success entry to the batch log.
+3. **Component work gate:** Ask the user: **"Is this component's implementation ready to move on, or should we do another iteration?"** If another iteration is requested, cut a new iteration branch (back to "Cutting an iteration branch" above).
+4. Ask the user: **"Which files from this iteration should be merged to `integration-batch-{N}`?"**
+5. Merge confirmed files via file-by-file checkout, then commit.
+6. Add a success entry to the batch log.
 
 ### Failed iteration
 

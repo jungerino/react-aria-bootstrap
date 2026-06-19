@@ -609,7 +609,7 @@ Load and follow agent/mapping-and-references-skill.md.
 | Trigger | When | User action |
 |---------|------|-------------|
 | `EXTRACTED-CSS-GAP: {description}` | Comparison loop needs `bootstrap.css` access | Decide whether to permit; orchestrator relays decision via `SendMessage` |
-| `Stuck: {story}` | Fix loop hit stuck threshold (default 3 consecutive non-improving passes) | Provide guidance; orchestrator relays via `SendMessage` |
+| `Stuck: {story1}, {story2}` | All stories attempted; one or more hit stuck threshold | Provide guidance for each stuck story; orchestrator relays all at once via `SendMessage` |
 | `Script failed: {story}` | Comparison script produced no output images | Investigate script failure; restart Storybook if needed |
 | Post-batch debrief | After all components complete and batch report delivered | Review all components in Storybook; provide observations |
 
@@ -728,9 +728,11 @@ read diff.png
     → exit 1: read diff.png; read implementation.png if diff.png alone doesn't show what's rendering; continue loop
   → if fix cannot be identified:
       → increment Stuck counter
-      → if Stuck >= threshold (default 3): output terminal phrase `Stuck: {story}`; stop
+      → if Stuck >= threshold (default 3): mark story `Stuck` in Story Registry and findings doc front matter; move to next story
   → write iteration block to findings doc after every pass (pass or fail); record N in iteration header
 ```
+
+**After all stories processed:** If any stories are marked `Stuck`, output terminal phrase `Stuck: {story1}, {story2}` (comma-separated list of stuck story names) and stop. The orchestrator surfaces all stuck stories to the user at once, collects guidance, then resumes this agent via `SendMessage` with guidance for all of them. The agent then retries the stuck stories. Once no stories remain `Stuck`, proceed to the Final Verification Sweep.
 
 **Reference CSS vs. mirror CSS comparison (mandatory):** On every iteration, compare `agent/review/reference-css/{component}-{StoryName}.css` (target) against `agent/review/mirror-css/{component}-{StoryName}.css` (current implementation). Rules present in the reference CSS but absent from the mirror CSS are candidates for missing bridge rules or missing className assignments.
 
@@ -874,12 +876,12 @@ for each component in batch (serial):
         and continue with the information available.]"
       → continue waiting for next terminal phrase
 
-    Stuck: {story}:
-      → surface to user: "{component}/{story} is stuck after {N} non-improving passes.
-        Current state: [include the FAIL/UNRESOLVED entries from the most recent iteration block].
-        Please provide guidance."
+    Stuck: {story1}, {story2}:
+      → surface to user: "{component} completed with stuck stories: {list}.
+        For each stuck story, include FAIL/UNRESOLVED entries from its most recent iteration block.
+        Please provide guidance for each."
       → receive user guidance
-      → resume component agent via SendMessage with the guidance
+      → resume component agent via SendMessage with guidance for all stuck stories
       → continue waiting for next terminal phrase
 
     Script failed: {story} / Context exhausted:
@@ -943,7 +945,7 @@ Working directory: /Users/josh/Library/CloudStorage/Dropbox/Github/react-aria-bo
 
 Return exactly one of:
 - verification-sweep-passed
-- Stuck: {story}
+- Stuck: {story1}, {story2}  (emitted after all stories attempted; lists all that hit stuck threshold)
 - Script failed: {story}
 - Context exhausted
 - EXTRACTED-CSS-GAP: {one-line description}
@@ -988,7 +990,7 @@ Return exactly one of:
 |--------|--------|---------|
 | `verification-sweep-passed` | Tier 1 component agent | All mirror stories passed final verification sweep |
 | `final-stories-done` | Tier 1a final stories agent | Standard stories written and committed |
-| `Stuck: {story}` | Tier 1 component agent | Fix loop hit stuck threshold; needs user guidance |
+| `Stuck: {story1}, {story2}` | Tier 1 component agent | All stories attempted; listed stories hit stuck threshold; needs user guidance for all at once |
 | `Script failed: {story}` | Tier 1 component agent | Comparison script produced no output images |
 | `Context exhausted` | Any agent | Agent detected context compression; stopped |
 | `EXTRACTED-CSS-GAP: {description}` | Tier 1 component agent | Cannot proceed without `bootstrap.css` access for a specific gap |
@@ -1006,7 +1008,7 @@ Return exactly one of:
 
 **orchestrator.md:**
 - Update dispatch prompt template: new paths for taxonomy, findings, bridge CSS, story locations, presentation.scss (per above dispatch prompt templates — replace verbatim)
-- Add `EXTRACTED-CSS-GAP` and `Stuck` handling to the orchestrator loop — this is a behavioral change, not just a template update: these two phrases now use `SendMessage` resumption rather than stopping (per the loop above)
+- Add `EXTRACTED-CSS-GAP` and `Stuck` handling to the orchestrator loop — this is a behavioral change, not just a template update: both phrases use `SendMessage` resumption rather than stopping. `EXTRACTED-CSS-GAP` is a mid-run per-request interrupt; `Stuck: {stories}` is an end-of-component report emitted after all stories are attempted, with all stuck stories listed together so the user can provide guidance for all at once
 - Add Tier 1a dispatch prompt template (per above)
 - Rename `_bootstrap-overrides.scss` → `_bootstrap-bridges.scss` throughout
 - Add pre-loop setup section to the orchestrator loop: for each component in batch.md, create stub TSX file and stub mirror story file (using the mirror story stub template in the loop pseudocode above); then restart Storybook and wait for all stub story IDs in index.json before dispatching any component agent

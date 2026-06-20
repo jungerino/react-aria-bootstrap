@@ -72,7 +72,7 @@ For each React Aria `data-*` attribute, choose one of three strategies:
 
 1. **CSS pseudo-class overlap** — React Aria's `[data-focused]` is redundant with `:focus-visible`; Bootstrap's `:hover` maps to `[data-hovered]`. Record as "no bridge needed — CSS pseudo-class overlap."
 2. **Compound selector** — React Aria never adds `.active`/`.show`, so reproduce Bootstrap's state styling via `[data-selected]` in a compound selector (e.g. `.react-aria-ListBoxItem[data-selected]` → `.list-group-item.active` visual).
-3. **`_bootstrap-overrides.scss`** — Global bridge layer; use for rules shared across multiple components.
+3. **`_bootstrap-bridges.scss`** — Global bridge layer at `src/scss/_bootstrap-bridges.scss`; use for rules shared across multiple components.
 
 ### M007: scss-verify and pseudo-class selector audit
 
@@ -129,9 +129,46 @@ When a React Aria structural variant has no Bootstrap modifier class equivalent,
 
 ### M016: decisions-needed — Surface genuine forks as explicit questions; do not resolve unilaterally
 
-When the mapping encounters a genuine fork — multiple legitimate Bootstrap variants for the same semantic role, or a React Aria feature with multiple viable Bootstrap implementation paths — do not resolve it unilaterally. Record each open question in the **`## Phase 1 — Taxonomy decisions`** section of the current `agent/review-iteration-N.md`, at the top of the component's subsection, under a **Decisions needed** heading. Stop short of recommending an answer. Do not put a Decisions needed section in the taxonomy file itself.
+When the mapping encounters a genuine fork — multiple legitimate Bootstrap variants for the same semantic role, or a React Aria feature with multiple viable Bootstrap implementation paths — do not resolve it unilaterally. Record each open question in the **`## Stage 4`** section of the current `agent/logs/batch-{N}.md`, under a **Decisions needed** heading. Stop short of recommending an answer.
 
-Once the user resolves a decision, record the answer in the `## Decisions` section of the component's taxonomy doc (`agent/reference-stories/{component}-taxonomy.md`). The review doc retains the original questions as a historical record.
+Once the user resolves a decision, record the answer in the `## Decisions` section of the component's taxonomy doc (`agent/taxonomies/{component}-taxonomy.md`). The batch log retains the original questions as a historical record.
+
+**Taxonomy doc template** (write to `agent/taxonomies/{Component}-taxonomy.md`):
+
+```markdown
+---
+title: {Component} Taxonomy
+component: {Component}
+iteration: {N}
+---
+
+## {Component}
+
+**React Aria root class:** `.react-aria-{Component}`
+**Mapping type:** [1:1 | Composite — sub-part → counterpart, ...]
+
+### Sub-parts
+[Table: Sub-part | React Aria selector | Bootstrap counterpart | Primary Bootstrap classes]
+
+### Variants
+[Table: Dimension | React Aria | Bootstrap | Authority | Notes]
+
+### State mappings
+[Per sub-part: table of data-* attribute | sub-part | Bootstrap equivalent | bridge strategy]
+[Pseudo-class audit per sub-part: ACTIVE/INERT classification for each pseudo-class]
+
+### DOM conflicts
+[Table: Sub-part | Conflict type (CRITICAL/MAJOR/MINOR) | Bootstrap expects | React Aria renders | Resolution]
+
+### Reference story canvas
+[List of stories to write; grid columns; width constraints; layout and rendering notes]
+
+### Confidence
+[High/Medium/Low with rationale]
+
+## Decisions
+[Resolved user decisions from Q&A — the authoritative record for Stage 5 to consume]
+```
 
 **Four trigger patterns** must elevate items to Decisions needed:
 
@@ -162,11 +199,51 @@ For each component: (1) load `README.md` to identify which component entry and c
 
 ## Part 6 — Reference Story Construction
 
+### Reference story template
+
+Every reference story file follows this structure:
+
+```tsx
+import type { Meta, StoryObj } from '@storybook/react';
+import { withBootstrap } from '../_decorators';
+import '../presentation.scss';
+
+const meta: Meta = {
+  title: 'Bootstrap Reference/{ComponentName}',
+  decorators: [withBootstrap],
+  parameters: { layout: 'padded' },
+};
+export default meta;
+
+type Story = StoryObj<typeof meta>;
+
+/**
+ * Source: https://getbootstrap.com/docs/5.3/components/{component-page}/
+ */
+export const {StoryName}: Story = {
+  render: () => (
+    // Bootstrap HTML from docs — with faux-state classes for interactive states
+  ),
+};
+```
+
+Import `presentation.scss` directly from the reference story (not via the global bundle). Use the `withBootstrap` decorator from `../_decorators` — this is applied via the meta decorator array, not imported separately.
+
+### WebFetch: Fetch Bootstrap docs for reference story HTML
+
+Before writing each story variant, fetch the relevant Bootstrap documentation page via WebFetch to obtain example HTML. Do not rely on recall for HTML structure — the docs are authoritative.
+
+Primary docs URL pattern: `https://getbootstrap.com/docs/5.3/components/{component-name}/`
+
+For form components: `https://getbootstrap.com/docs/5.3/forms/{form-component}/`
+
+Annotate each story with its Bootstrap docs source URL in a JSDoc comment above the export.
+
 ### P-S001: Faux state classes for pseudo-class specimens
 
 Reference stories must statically render all interactive states to support screenshot-based visual comparison. Never instruct the reviewer to interact with the browser to see a state.
 
-For any pseudo-class state that produces visually distinct Bootstrap output, define a `.faux-{state}` utility class in `stories/bootstrap-test/bootstrap-reference/augments.scss` that applies the same CSS values as a static class rule. Create as many `.faux-*` classes as needed — if Bootstrap styles a state distinctly, there should be a faux class for it.
+For any pseudo-class state that produces visually distinct Bootstrap output, define a `.faux-{state}` utility class in `stories/react-aria-bootstrap/presentation.scss` that applies the same CSS values as a static class rule. Create as many `.faux-*` classes as needed — if Bootstrap styles a state distinctly, there should be a faux class for it.
 
 For Bootstrap components that drive pseudo-class styles via CSS custom properties (most of them — `.btn`, `.list-group-item-action`, `.dropdown-item`, etc.), scope the faux class to the component class to match Bootstrap's specificity:
 
@@ -199,6 +276,8 @@ For Bootstrap components that drive pseudo-class styles via CSS custom propertie
 
 Apply the same pattern for each component using its own CSS variable namespace (e.g., `--bs-list-group-action-hover-*`, `--bs-dropdown-link-hover-*`). States representable via static HTML attributes or Bootstrap classes (e.g., `disabled`, `.active`, `.is-invalid`) do not need faux classes.
 
+If `presentation.scss` does not yet have faux-state classes for the component being worked on, add them now.
+
 ### P-S002: Reproduce the Bootstrap selector context for each specimen
 
 For each sub-part specimen, search the compiled Bootstrap CSS (`node_modules/bootstrap/dist/css/bootstrap.css`) for all selectors containing the sub-part's class. The specimen must reproduce whatever ancestor and sibling context those selectors require.
@@ -209,9 +288,9 @@ For each sub-part specimen, search the compiled Bootstrap CSS (`node_modules/boo
 
 ### P-S003: Use CSS classes, not inline styles
 
-Reference story render functions should not use inline `style` props for visual styling. All visual CSS — including faux state values, layout, sizing, and spacing — belongs in `augments.scss` as named classes. The story file applies class names only.
+Reference story render functions should not use inline `style` props for visual styling. All visual CSS — including faux state values, layout, sizing, and spacing — belongs in `presentation.scss` as named classes. The story file applies class names only.
 
-**Why:** `augments.scss` is the single searchable source of truth for how Bootstrap appearances are represented statically. Inline styles scatter visual definitions across story files, cannot be grepped alongside related rules, and are harder to audit during review. A class name is also more self-documenting than a bag of property values.
+**Why:** `presentation.scss` is the single searchable source of truth for how Bootstrap appearances are represented statically. Inline styles scatter visual definitions across story files, cannot be grepped alongside related rules, and are harder to audit during review. A class name is also more self-documenting than a bag of property values.
 
 The only case where an inline style would be justified is one that cannot be expressed as a reusable class — for example, a per-specimen value that is genuinely unique and data-driven. No such case has arisen in practice.
 
@@ -233,7 +312,7 @@ Reference stories depict what a correctly styled component should look like — 
 
 ### P-S006: Extract reference CSS after each story is written
 
-After writing each story file and confirming Storybook renders it, run `scripts/extract-story-css.mjs` for that story and save the output to `agent/reference-stories/reference-css/{component}-{story}.css` (kebab-case, matching the story's title path). Storybook must be running on port 6006.
+After writing each story file and confirming Storybook renders it, run `scripts/extract-story-css.mjs` for that story and save the output to `agent/review/reference-css/{component}-{StoryName}.css` (kebab-case, matching the story's title path). Storybook must be running on port 6006.
 
 ```bash
 node scripts/extract-story-css.mjs "Bootstrap Reference/{Component}/{StoryName}"
@@ -241,7 +320,24 @@ node scripts/extract-story-css.mjs "Bootstrap Reference/{Component}/{StoryName}"
 
 This extracted file is the authoritative CSS target for the styling phase — the implementation agent loads it instead of grepping `bootstrap.css`.
 
-*Note: this is a procedural step, not a quality principle. It belongs here temporarily; if this skill gains workflow scaffolding, it moves to the workflow doc.*
+---
+
+## Part 7 — Terminal Phrase Protocol
+
+All terminal phrases must be the final line of the agent's response. Return exactly one per turn.
+
+| Phrase | When to emit |
+|--------|-------------|
+| `TAXONOMY-DECISIONS-NEEDED: {list}` | Taxonomy has open forks that require user input. List the specific decisions needed. |
+| `TAXONOMY-COMPLETE` | Taxonomy doc has been written to `agent/taxonomies/{Component}-taxonomy.md`; no open decisions remain. |
+| `REFERENCE-STORY-READY-FOR-REVIEW` | Reference story has been written; CSS has been extracted for all stories; ready for user visual review in Storybook. |
+| `COMPONENT-STAGE-4-COMPLETE` | All stories approved; CSS extracted for all stories; all committed. |
+
+**Flow:**
+1. Phase A: emit `TAXONOMY-DECISIONS-NEEDED` if any decisions remain; otherwise emit `TAXONOMY-COMPLETE`.
+2. After orchestrator relays user answers (via `SendMessage`), continue from where you stopped — do not re-read session-start files.
+3. Phase B: emit `REFERENCE-STORY-READY-FOR-REVIEW` when the reference story is ready. Apply user feedback; loop back to `REFERENCE-STORY-READY-FOR-REVIEW` as needed.
+4. After approval: extract CSS for all stories; emit `COMPONENT-STAGE-4-COMPLETE`.
 
 ---
 

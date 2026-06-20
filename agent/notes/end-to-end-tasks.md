@@ -23,7 +23,7 @@
 ### Task 2 — Create workflow directory structure
 
 **Files:** `stories/react-aria-bootstrap/`, `stories/react-aria-bootstrap/reference/`, `stories/react-aria-bootstrap/mirror/`, `agent/taxonomies/`, `agent/logs/`, `agent/review/`, `agent/review/reference-css/`, `agent/review/mirror-css/`, `agent/review/diffs/`, `.reference-images/`
-**Spec section:** Stage 2: Storybook Setup — Implementation checklist (Steps 1 and 6); Stage 4 Outputs; Stage 5 Outputs
+**Spec section:** Stage 2: Storybook Setup — Implementation checklist (Steps 1 and 6); Stage 3: Output; Stage 4 Outputs; Stage 5 Outputs
 **What to do:** Create all directories required by the workflow. Skip any that already exist. Add a `.gitkeep` placeholder to each empty directory so git tracks it.
 **Done when:** All ten directories exist and are tracked by git (`git status` shows new `.gitkeep` files).
 **Commit:** `feat: create workflow directory structure`
@@ -74,7 +74,7 @@
 
 **Files:** `agent/bootstrap-kb-skill.md` (new)
 **Spec section:** Stage 1: Bootstrap Knowledge Base — Skill file internal structure; Stage 1: Verification
-**What to do:** Create the Bootstrap KB generation skill. The primary source is `bootstrap-mapping:agent/bootstrap-mapping-plan.md` Tasks 1–6 (on the `bootstrap-mapping` branch — read with `git show bootstrap-mapping:agent/bootstrap-mapping-plan.md`); convert its checkbox steps to principles and templates, update all paths per Q6 (taxonomy → `agent/taxonomies/`, findings → `agent/review/`). The file must include all six sections listed in Stage 1's "Skill file internal structure" block: When to use, Generation Principles, one section per output file (tokens → README), and Self-Review Checklist. Also add an entry for `agent/bootstrap-kb-skill.md` under the "Knowledge Files" section of `CLAUDE.md` (Table of Contents).
+**What to do:** Create the Bootstrap KB generation skill. The primary source is `bootstrap-mapping:agent/bootstrap-mapping-plan.md` Tasks 1–6 (on the `bootstrap-mapping` branch — read with `git show bootstrap-mapping:agent/bootstrap-mapping-plan.md`); convert its checkbox steps to principles and templates, update all paths per Q6 (taxonomy → `agent/taxonomies/`, findings → `agent/review/`). The file must include all sections from Stage 1's "Skill file internal structure" block: When to use; Generation Principles; one section per each of the six output files (File 1–File 6: tokens → README); and Self-Review Checklist — nine sections in total. Also add an entry for `agent/bootstrap-kb-skill.md` under the "Knowledge Files" section of `CLAUDE.md` (Table of Contents).
 **Done when:** `agent/bootstrap-kb-skill.md` exists with all required sections; `CLAUDE.md` Table of Contents lists it.
 **Commit:** `feat: add bootstrap-kb-skill.md and update CLAUDE.md TOC`
 
@@ -85,7 +85,7 @@
 **Files:** `agent/mapping-and-references-skill.md`
 **Spec section:** Stage 4: Taxonomy + Reference Stories — Skill file changes required for Phase 3
 **What to do:** Apply all changes listed in the Stage 4 "Skill file changes required for Phase 3" block:
-- Update all file paths per Q6 (reference stories, taxonomy docs, extracted CSS, `presentation.scss`, `withBootstrap`)
+- Update all file paths: reference stories → `stories/react-aria-bootstrap/reference/`; taxonomy docs → `agent/taxonomies/`; extracted CSS → `agent/review/reference-css/`; `presentation.scss` replaces `augments.scss`; `withBootstrap` replaces `withBootstrapTest`
 - Remove KB *generation* content from Part 5 (bootstrap source file parsing, when to rebuild KB); retain M003 load sequence and query table
 - Add explicit WebFetch instruction for fetching Bootstrap documentation pages
 - Add `## Decisions` section to the taxonomy doc template

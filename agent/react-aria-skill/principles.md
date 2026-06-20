@@ -15,7 +15,7 @@ Reference for component sub-agents. Loaded by Tier 1 (component sub-agents) only
 ### Core Principles (P001–P028)
 - [P001 compound-sel](#p001-compound-sel) — Retain `.react-aria-*` alongside Bootstrap classes
 - [P002 class-in-tsx](#p002-class-in-tsx) — Bootstrap className via render-prop callback
-- [P003 scss-bridge](#p003-scss-bridge) — SCSS bridge selectors in `_bootstrap-overrides.scss`
+- [P003 scss-bridge](#p003-scss-bridge) — SCSS bridge selectors in `_bootstrap-bridges.scss`
 - [P004 conflict-css](#p004-conflict-css) — Comment out conflicting project CSS
 - [P005 bundle-isolation](#p005-bundle-isolation) — Bootstrap-test stories require bundle-level isolation
 - [P006 modifier-audit](#p006-modifier-audit) — Audit Bootstrap modifier classes before implementing variants
@@ -64,7 +64,7 @@ Reference for component sub-agents. Loaded by Tier 1 (component sub-agents) only
 - [P032 title-case-labels](#p032-title-case-labels) — Title-cased Variants story labels
 - [P044 faux-state-class](#p044-faux-state-class) — Simulate interactive states with `.faux-*` CSS
 - [P046 rac-class-replace](#p046-rac-class-replace) — RAC replaces `className` entirely with a string
-- [P047 augments-import](#p047-augments-import) — Mirror stories must import `augments.scss`
+- [P047 presentation-import](#p047-presentation-import) — Mirror stories must import `presentation.scss`
 - [P048 no-inline-style](#p048-no-inline-style) — No inline `style=` attributes
 
 ---
@@ -87,7 +87,7 @@ Do not interpolate the callback argument directly (e.g. `(className) => \`${clas
 
 ### P003: scss-bridge
 
-**SCSS bridge selectors (`_bootstrap-overrides.scss`):** Map React Aria `data-*` attributes to Bootstrap's interaction styles. Bootstrap is authoritative for interaction states.
+**SCSS bridge selectors (`src/scss/_bootstrap-bridges.scss`):** Map React Aria `data-*` attributes to Bootstrap's interaction styles. Bootstrap is authoritative for interaction states.
 ```scss
 // Example: bridge data-hovered to Bootstrap's :hover styles
 .react-aria-Button[data-hovered] {
@@ -101,7 +101,7 @@ Do not interpolate the callback argument directly (e.g. `(className) => \`${clas
 
 ### P005: bundle-isolation
 
-**Bootstrap-test stories require bundle-level CSS isolation:** Storybook compiles a single shared CSS bundle — all CSS imported anywhere in the project enters the global scope of every story. Commenting out CSS imports in bootstrap-test components is insufficient: the original stories import the original components, which import their CSS, which then matches `.react-aria-*` selectors everywhere. `@layer` deprioritization is also insufficient — it only arbitrates direct property conflicts; additive project styles (e.g. interaction-state backgrounds) apply unopposed when Bootstrap has no competing rule. The correct fix is a Storybook glob filter that loads only bootstrap-test stories, so no original component is ever imported and no project CSS enters the bundle. Storybook has no native per-story CSS isolation in any current version.
+**Bootstrap-styled stories require bundle-level CSS isolation:** Storybook compiles a single shared CSS bundle — all CSS imported anywhere in the project enters the global scope of every story. Commenting out CSS imports in styled components is insufficient: other stories import original components, which import their CSS, which then matches `.react-aria-*` selectors everywhere. `@layer` deprioritization is also insufficient — it only arbitrates direct property conflicts; additive project styles (e.g. interaction-state backgrounds) apply unopposed when Bootstrap has no competing rule. The correct fix is a Storybook glob filter that loads only `stories/react-aria-bootstrap/` stories, so no original unstyled component is ever imported and no project CSS enters the bundle. Storybook has no native per-story CSS isolation in any current version.
 
 ### P006: modifier-audit
 
@@ -150,7 +150,7 @@ This applies to any component using `.btn`, not just Button.
 
 ### P015: scss-mixins
 
-**Use Bootstrap's SCSS mixins for `$enable-*`-gated properties in bridge selectors:** Bootstrap conditionally emits certain CSS properties through mixins that check `$enable-*` flags — `@include box-shadow(...)` (`$enable-shadows`), `@include transition(...)` (`$enable-transitions`), `@include border-radius(...)` (`$enable-rounded`), `@include gradient-bg(...)` (`$enable-gradients`). Writing these as raw CSS properties in a bridge selector bypasses those flags and produces output the project may have deliberately suppressed (e.g. `$enable-shadows: false` is Bootstrap's default, so a raw `box-shadow:` declaration applies a shadow Bootstrap itself never renders). Since `_bootstrap-overrides.scss` is compiled after Bootstrap's variables and mixins are loaded, use the same mixin Bootstrap uses — not a raw property declaration.
+**Use Bootstrap's SCSS mixins for `$enable-*`-gated properties in bridge selectors:** Bootstrap conditionally emits certain CSS properties through mixins that check `$enable-*` flags — `@include box-shadow(...)` (`$enable-shadows`), `@include transition(...)` (`$enable-transitions`), `@include border-radius(...)` (`$enable-rounded`), `@include gradient-bg(...)` (`$enable-gradients`). Writing these as raw CSS properties in a bridge selector bypasses those flags and produces output the project may have deliberately suppressed (e.g. `$enable-shadows: false` is Bootstrap's default, so a raw `box-shadow:` declaration applies a shadow Bootstrap itself never renders). Since `_bootstrap-bridges.scss` is compiled after Bootstrap's variables and mixins are loaded, use the same mixin Bootstrap uses — not a raw property declaration.
 
 ### P016: fixed-dims
 
@@ -226,7 +226,7 @@ Background-image swaps cannot be transitioned — the caret snaps. This matches 
 
 ### P033: verify-scss-vars
 
-**Verify Bootstrap SCSS variables exist and resolve to what you expect before using them:** Do not infer variable names by naming pattern (e.g. `*-hover-color` exists → `*-hover-bg` must exist). Before writing any `$bootstrap-variable` in `_bootstrap-overrides.scss`, confirm it is present in Bootstrap's `_variables.scss` *and* check what it resolves to — names can be misleading (e.g. `$input-focus-color` is the input *text* color when focused, not the focus ring color). When no variable exists for a value, use the equivalent `--bs-*` CSS custom property or a hardcoded Bootstrap token value instead.
+**Verify Bootstrap SCSS variables exist and resolve to what you expect before using them:** Do not infer variable names by naming pattern (e.g. `*-hover-color` exists → `*-hover-bg` must exist). Before writing any `$bootstrap-variable` in `_bootstrap-bridges.scss`, confirm it is present in Bootstrap's `_variables.scss` *and* check what it resolves to — names can be misleading (e.g. `$input-focus-color` is the input *text* color when focused, not the focus ring color). When no variable exists for a value, use the equivalent `--bs-*` CSS custom property or a hardcoded Bootstrap token value instead.
 
 ### P034: contrast-all-states
 
@@ -327,15 +327,15 @@ This is RAC structural behaviour, not a Bootstrap state bridge — no `data-*` a
 
 ### P044: faux-state-class
 
-**Simulate non-declarative interactive states in mirror stories using `.faux-*` CSS:** Reference stories simulate interactive states (focus, hover, pressed) using `.faux-*` CSS classes on native HTML elements (e.g. `.faux-focus` on `<select>`). Mirror stories must match this coverage — do not omit an interactive state specimen just because the state cannot be triggered via React Aria props. The pattern: (1) add a `.faux-[state]` bridge rule in `_bootstrap-overrides.scss` (P003) applying the same property values Bootstrap uses for the equivalent native pseudo-class; if the RAC component replaces `className` entirely (preventing the faux class from landing on the component root), wrap the component in a `.faux-[state]-scope` div and scope the bridge rule to that wrapper; (2) wrap the component in the story with that div (or pass `className="faux-[state]"` where the class lands on a stable outer element). This is symmetric with how reference stories fake state on native elements and requires no changes to the component's core API.
+**Simulate non-declarative interactive states in mirror stories using `.faux-*` CSS:** Reference stories simulate interactive states (focus, hover, pressed) using `.faux-*` CSS classes on native HTML elements (e.g. `.faux-focus` on `<select>`). Mirror stories must match this coverage — do not omit an interactive state specimen just because the state cannot be triggered via React Aria props. The pattern: (1) add a `.faux-[state]` bridge rule in `_bootstrap-bridges.scss` (P003) applying the same property values Bootstrap uses for the equivalent native pseudo-class; if the RAC component replaces `className` entirely (preventing the faux class from landing on the component root), wrap the component in a `.faux-[state]-scope` div and scope the bridge rule to that wrapper; (2) wrap the component in the story with that div (or pass `className="faux-[state]"` where the class lands on a stable outer element). This is symmetric with how reference stories fake state on native elements and requires no changes to the component's core API.
 
 ### P046: rac-class-replace
 
 **RAC replaces `className` entirely when a string is provided — do not assume the default RAC class co-exists:** When a React Aria component receives a plain string `className` (e.g. `className="form-select"`), it renders with only that string as the element's class — the default `.react-aria-{Component}` class is dropped entirely. The default class is only used as a fallback when `className` is `undefined`. Bridge selectors must be written against the provided class, not the default RAC class. Any bridge that relies on `.react-aria-Button` on a trigger that was given `className="form-select"` will never match. Use the RAC component root's own attributes (e.g. `data-trigger="Select"`, `.react-aria-Select`) as the scope anchor instead.
 
-### P047: augments-import
+### P047: presentation-import
 
-**Mirror stories must explicitly import `augments.scss`:** The pixel diff script navigates to each story in isolation — it does not share a bundle with other stories. `augments.scss` loads as a side-effect of reference story imports during a normal Storybook session, but that import chain is not present when the script renders a mirror story alone. Any mirror story that depends on styles from `augments.scss` must import it directly: `import '../bootstrap-reference/augments.scss'`. Omitting this causes visual diffs against the reference that are pure import failures, not styling gaps.
+**Mirror stories must explicitly import `presentation.scss`:** The pixel diff script navigates to each story in isolation — it does not share a bundle with other stories. `presentation.scss` loads as a side-effect of other story imports during a normal Storybook session, but that import chain is not present when the script renders a mirror story alone. Any mirror story that depends on styles from `presentation.scss` must import it directly: `import '../presentation.scss'` (relative to the mirror story at `stories/react-aria-bootstrap/mirror/`). Omitting this causes visual diffs against the reference that are pure import failures, not styling gaps.
 
 ### P048: no-inline-style
 
@@ -345,7 +345,7 @@ This is RAC structural behaviour, not a Bootstrap state bridge — no `data-*` a
 
 ## Data-* Bridge Rules
 
-Bridge a `data-*` attribute in `_bootstrap-overrides.scss` **only when**:
+Bridge a `data-*` attribute in `_bootstrap-bridges.scss` **only when**:
 1. No native CSS pseudo-class equivalent exists (e.g., `[data-selected]`, `[data-invalid]`, `[data-indeterminate]`)
 2. The element is non-native (e.g., `<div>`, `<td>`) so pseudo-classes don't fire
 3. React Aria uses `aria-disabled` + `[data-disabled]` without native `disabled` (element must stay focusable)

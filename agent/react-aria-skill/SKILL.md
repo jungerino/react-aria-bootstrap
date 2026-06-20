@@ -10,11 +10,11 @@ Entry point for the Bootstrap-styling workflow. Maps agent tiers, specifies per-
 
 ## Tier Map
 
-| Tier | Agent | Success condition |
-|------|-------|-------------------|
-| 0 | Primary (Orchestrator) | Every component has reported `final-stories-done` and the batch report is delivered. |
-| 1 | Component Sub-Agent | All mirror stories pass the final verification sweep and `verification-sweep-passed` is reported. |
-| 1a | Final-Stories Sub-Agent | Standard stories are written and `final-stories-done` is reported. |
+| Tier | Agent | Success condition | Terminal phrases |
+|------|-------|-------------------|-----------------|
+| 0 | Primary (Orchestrator) | Every component has reported `final-stories-done` and the batch report is delivered. | — |
+| 1 | Component Sub-Agent | All mirror stories pass the final verification sweep and `verification-sweep-passed` is reported. | `verification-sweep-passed`, `Stuck: {stories}`, `Script failed: {story}`, `Context exhausted`, `EXTRACTED-CSS-GAP: {description}` |
+| 1a | Final-Stories Sub-Agent | Standard stories are written and `final-stories-done` is reported. | `final-stories-done` |
 
 ---
 
@@ -30,24 +30,15 @@ Each tier loads only the files listed for it. Loading files outside your tier is
 - `agent/react-aria-skill/SKILL.md`
 - `agent/react-aria-skill/component-agent.md`
 - `agent/react-aria-skill/principles.md`
-- `agent/reference-stories/{component}-taxonomy.md` — component taxonomy (incl. `## Decisions` section)
+- `agent/taxonomies/{component}-taxonomy.md` — component taxonomy (incl. `## Decisions` section)
 - `agent/bootstrap-kb/README.md` — Bootstrap KB index; then load relevant KB files selectively
 
 **Final-stories sub-agent (Tier 1a):**
 - `agent/react-aria-skill/SKILL.md`
 - `agent/react-aria-skill/final-stories-agent.md`
-- `agent/reference-stories/{component}-taxonomy.md`
+- `agent/taxonomies/{component}-taxonomy.md`
 
 `SKILL.md` and `orchestrator.md` are the only files loaded into the primary agent's context at session start. The primary agent does not load `component-agent.md`, `final-stories-agent.md`, or `principles.md`.
-
----
-
-## Branch Naming
-
-- `{experiment-name}` — integration branch
-- `{experiment-name}_N` — experiment branches (N = 0, 1, 2, …)
-
-`{experiment-name}` is the current integration branch name (e.g. `sub-agent-styling`).
 
 ---
 
@@ -57,11 +48,12 @@ Each tier loads only the files listed for it. Loading files outside your tier is
 
 | Phrase | Source | Meaning |
 |--------|--------|---------|
-| `verification-sweep-passed` | Component sub-agent | All mirror stories passed final verification |
-| `final-stories-done` | Final-stories sub-agent | Standard stories written |
-| `Stuck: {story}` | Component sub-agent | Fix loop hit the stuck threshold |
+| `verification-sweep-passed` | Component sub-agent | All mirror stories passed final verification sweep |
+| `final-stories-done` | Final-stories sub-agent | Standard stories written and committed |
+| `Stuck: {story1}, {story2}` | Component sub-agent | All stories attempted; listed stories hit stuck threshold; needs user guidance for all at once |
 | `Script failed: {story}` | Component sub-agent | Comparison pixel-diff script failed; check the story findings doc |
 | `Context exhausted` | Any agent | Agent detected context compression and stopped |
+| `EXTRACTED-CSS-GAP: {description}` | Component sub-agent | Cannot proceed without `bootstrap.css` access for a specific gap |
 | `Undefined return: {…}` | Any agent | Received a return matching no valid terminal phrase; content included for diagnosis |
 
 **On any non-matching return:** If a child agent's return does not exactly match one of the phrases above — partial output, unclear phrases, progress descriptions — report `Undefined return: {the return, or a one-sentence summary if longer}` to the parent (or user) and stop. Do not read files, run commands, or perform any work before that message.
@@ -70,6 +62,6 @@ Each tier loads only the files listed for it. Loading files outside your tier is
 
 ## Workflow
 
-For the full branch lifecycle — Phase 1 (scaffolding), Phase 2 (per-component work), Phase 3 (debrief), and post-debrief merge — see `agent/react-aria-skill/workflow.md`.
+For the full branch lifecycle — iteration setup, component work, debrief, and merge — see `agent/iteration-protocol.md`.
 
 For multi-agent batch operation, see `agent/react-aria-skill/orchestrator.md`.

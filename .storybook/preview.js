@@ -2,9 +2,11 @@ import { themes } from "storybook/theming";
 import './preview.css';
 import '../src/scss/styles.scss';
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import { withBootstrap } from '../stories/react-aria-bootstrap/_decorators';
 
 /** @type { import('@storybook/react').Preview } */
 const preview = {
+  decorators: [withBootstrap],
   parameters: {
     backgrounds: {
       default: 'light',

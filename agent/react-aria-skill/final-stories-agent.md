@@ -12,14 +12,15 @@ title: React Aria + Bootstrap Skill — Final-Stories Sub-Agent
 
 Provided in your dispatch prompt:
 
-- Component taxonomy: `agent/reference-stories/{component}-taxonomy.md` (incl. `## Decisions` section)
+- Component taxonomy: `agent/taxonomies/{component}-taxonomy.md` (incl. `## Decisions` section)
+- Component impl: `src/react-aria-bootstrap/{ComponentName}.tsx` (read to understand what props and variants exist before writing stories)
 - Story format conventions: call `get-storybook-story-instructions` via Storybook MCP before writing any stories
 
 ---
 
 ## Stories to Implement
 
-**Standard stories** (`stories/bootstrap-test/{ComponentName}/{ComponentName}.stories.tsx`, title `Bootstrap Test/{ComponentName}`):
+**Standard stories** (`stories/react-aria-bootstrap/{ComponentName}.stories.tsx`, title `Bootstrap/{ComponentName}`):
 - `argTypes` with explicit `options` arrays for all string-union props (2–5 values → `inline-radio`; 6+ → `select`)
 - Default story
 - Variants story — all supported values side by side, labels title-cased (not raw prop strings)

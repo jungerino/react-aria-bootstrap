@@ -92,6 +92,7 @@ Never assume component properties without verification through these tools.
 
 ### Knowledge Files
 - [React Aria Skill](./agent/react-aria-skill/SKILL.md) — Entry point for the React Aria + Bootstrap styling experiment; load at session start when running a styling experiment, then follow its session-start loading instructions
+- [Bootstrap KB Skill](./agent/bootstrap-kb-skill.md) — Skill for generating or regenerating the Bootstrap knowledge base; use when KB is missing, outdated, or a new component needs to be added
 
 ### Bootstrap Knowledge Base
 - [KB Index](./agent/bootstrap-kb/README.md) — Master index and retrieval guide; load this first

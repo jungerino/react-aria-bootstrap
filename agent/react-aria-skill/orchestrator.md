@@ -17,7 +17,7 @@ Crossing this boundary defeats the purpose of the hierarchy. A component agent's
 ### Example
 
 **Wrong — boundary crossing:**
-> The primary agent reads `button-taxonomy.md` to understand the component's sub-parts, then begins writing CSS bridge selectors in `_bootstrap-overrides.scss` for the button hover state.
+> The primary agent reads `button-taxonomy.md` to understand the component's sub-parts, then begins writing CSS bridge selectors in `_bootstrap-bridges.scss` for the button hover state.
 
 **Right — correct delegation:**
 > The primary agent emits the delegation manifest and launches a component sub-agent prompt that includes the component name, taxonomy path, and findings doc path. It waits for a terminal phrase.
@@ -43,88 +43,176 @@ Dispatch component sub-agents **serially — one at a time.** Wait for each comp
 
 ---
 
-## Dispatch Prompt Template
+## Dispatch Prompt Template — Tier 1 Component Agent
 
-Use this template **verbatim** when launching a component sub-agent. Replace `{component}` (lowercase), `{ComponentName}` (PascalCase), and `N` (iteration number). Do not add, remove, or paraphrase steps — the template is intentionally minimal so that `component-agent.md` remains the sole task definition.
+Use this template **verbatim** when launching a Tier 1 component sub-agent. Replace `{component}` (lowercase) and `{ComponentName}` (PascalCase). Do not add, remove, or paraphrase steps — the template is intentionally minimal so that `component-agent.md` remains the sole task definition.
 
 ```
-You are a Tier 1 Component Sub-Agent for the React Aria + Bootstrap styling experiment.
+You are a Tier 1 Component Sub-Agent for the React Aria + Bootstrap styled component workflow.
 
-**Component:** {ComponentName}
-**Working directory:** `/Users/josh/Library/CloudStorage/Dropbox/Github/react-aria-bootstrap`
-
-## Required deliverables
-
-These files must exist before you run `compare-stories.mjs` for the first time. Create them in Phase A — do not proceed to Phase B until they are written.
-
-- `agent/reference-stories/{component}-findings.md`
-- `agent/reference-stories/{component}-{story}-findings.md` for each story in scope
-
-You cannot report a terminal phrase without them.
+Component: {ComponentName}
 
 ## Session-start files (read in this order)
 
-1. `agent/react-aria-skill/SKILL.md`
-2. `agent/react-aria-skill/component-agent.md` — your complete task definition; follow it exactly
-3. `agent/react-aria-skill/principles.md`
-4. `agent/reference-stories/{component}-taxonomy.md`
-5. `agent/bootstrap-kb/README.md`
+1. agent/react-aria-skill/SKILL.md
+2. agent/react-aria-skill/component-agent.md — your complete task definition; follow it exactly
+3. agent/react-aria-skill/principles.md
+4. agent/taxonomies/{component}-taxonomy.md
+5. agent/bootstrap-kb/README.md
 
 ## Key paths
 
 | Artifact | Path |
 |----------|------|
-| Component impl | `src/bootstrap-test/{ComponentName}.tsx` |
-| Standard stories | `stories/bootstrap-test/{ComponentName}/{ComponentName}.stories.tsx` |
-| Mirror stories | `stories/bootstrap-test/{ComponentName}/{ComponentName}.mirror.stories.tsx` |
-| Bootstrap overrides | `src/scss/_bootstrap-overrides.scss` |
-| Component findings doc | `agent/reference-stories/{component}-findings.md` |
-| Review file | `agent/review-iteration-N.md` |
+| Component impl | src/react-aria-bootstrap/{ComponentName}.tsx |
+| Mirror stories | stories/react-aria-bootstrap/mirror/{ComponentName}.mirror.stories.tsx |
+| Bridge CSS | src/scss/_bootstrap-bridges.scss |
+| Presentation CSS | stories/react-aria-bootstrap/presentation.scss |
+| Component findings | agent/review/{component}-findings.md |
+
+## Reference inputs (read during Preparation Phase)
+
+| Artifact | Path |
+|----------|------|
+| Reference stories | stories/react-aria-bootstrap/reference/{ComponentName}.reference.stories.tsx |
+| Reference CSS | agent/review/reference-css/{component}-{StoryName}.css (one per story) |
 
 ## Terminal phrases
 
 Return exactly one of:
-- `verification-sweep-passed`
-- `Stuck: {story}`
-- `Script failed: {story}`
-- `Context exhausted`
+- verification-sweep-passed
+- Stuck: {story1}, {story2}  (emitted after all stories attempted; lists all that hit stuck threshold)
+- Script failed: {story}
+- Context exhausted
+- EXTRACTED-CSS-GAP: {one-line description}
 
-`component-agent.md` is your task definition. Do not derive your steps from this prompt.
+component-agent.md is your task definition. Do not derive your steps from this prompt.
 ```
 
 **Deriving path values from a component name:**
 - `{component}` is lowercase (e.g. `button`, `select`)
 - `{ComponentName}` is PascalCase (e.g. `Button`, `Select`)
-- `N` is the current iteration number (e.g. `0`, `1`)
+
+---
+
+## Dispatch Prompt Template — Tier 1a Final Stories Agent
+
+Use this template **verbatim** when launching the Tier 1a final stories sub-agent after `verification-sweep-passed`.
+
+```
+You are a Tier 1a Final-Stories Sub-Agent.
+
+Component: {ComponentName}
+
+## Session-start files (read in this order)
+
+1. agent/react-aria-skill/SKILL.md
+2. agent/react-aria-skill/final-stories-agent.md
+3. agent/taxonomies/{component}-taxonomy.md
+
+## Key paths
+
+| Artifact | Path |
+|----------|------|
+| Component impl | src/react-aria-bootstrap/{ComponentName}.tsx |
+| Final stories | stories/react-aria-bootstrap/{ComponentName}.stories.tsx |
+
+## Terminal phrases
+
+Return exactly one of:
+- final-stories-done
+```
 
 ---
 
 ## Loop
 
-Once per component, in order:
-
 ```
-[emit delegation manifest — required before any launch]
+emit delegation manifest (required before any dispatch)
 
-for each component:
-  launch component sub-agent (foreground — wait for completion)
+[pre-loop setup]
+  for each component in batch-{N}.md:
+    create src/react-aria-bootstrap/{ComponentName}.tsx stub (bare React Aria component, no Bootstrap classes)
+    create stories/react-aria-bootstrap/mirror/{ComponentName}.mirror.stories.tsx stub:
+
+      import type { Meta, StoryObj } from '@storybook/react';
+      import { withBootstrap } from '../_decorators';
+      import '../presentation.scss';
+
+      const meta: Meta = {
+        title: 'Bootstrap Mirror/{ComponentName}',
+        decorators: [withBootstrap],
+        parameters: { layout: 'padded' },
+      };
+      export default meta;
+
+      type Story = StoryObj<typeof meta>;
+
+      // Placeholder — replaced in Phase B
+      export const Placeholder: Story = {};
+
+  restart Storybook (lsof -ti tcp:6006 | xargs kill -9 && yarn storybook &)
+  wait for all stub story IDs to appear in http://localhost:6006/index.json
+
+  for each component in batch-{N}.md, for each story in the component's `stories:` list:
+    node scripts/reference-images.mjs \
+      --reference "bootstrap-reference-{component}--{story-name}" \
+      --out       .reference-images/{component}/{story}.png
+
+for each component in batch (serial):
+
+  dispatch Tier 1 component agent (foreground — wait for terminal phrase)
 
   on terminal phrase:
-    verification-sweep-passed
-      → launch final-stories sub-agent (foreground — wait for completion)
 
-    Stuck / Script failed / Context exhausted / Undefined return
-      → surface to user immediately with component name and phrase; stop
+    verification-sweep-passed:
+      → dispatch Tier 1a Final Stories agent (foreground — wait for terminal phrase)
 
-  on final-stories sub-agent completion:
-    final-stories-done
-      → log completion; update manifest; proceed to next component
+        on final-stories-done:
+          → log completion; update delegation manifest; proceed to next component
 
-    Undefined return: {…}
-      → surface to user immediately; stop
+        on any other return:
+          → surface as Undefined return; stop
+          If the failure is recoverable (context exhausted, story format error): user may re-dispatch Tier 1a.
+          The orchestrator resumes from after `verification-sweep-passed` without re-running the component agent.
+
+    EXTRACTED-CSS-GAP: {description}:
+      → surface to user: "Component agent cannot proceed without bootstrap.css access.
+        Gap: {description}. Approve or deny?"
+      → receive user decision
+      → resume component agent via SendMessage with: "bootstrap.css access [approved/denied].
+        [If approved: you may now read node_modules/bootstrap/dist/css/bootstrap.css for this
+        specific gap only. Log the gap and continue. If denied: log the gap, note the limitation,
+        and continue with the information available.]"
+      → continue waiting for next terminal phrase
+
+    Stuck: {story1}, {story2}:
+      → for each stuck story: read agent/review/{component}-{story}-findings.md;
+        extract FAIL/UNRESOLVED entries from the most recent iteration block
+      → surface to user: "{component} completed with stuck stories: {list}.
+        For each stuck story, include FAIL/UNRESOLVED entries from its most recent iteration block.
+        Please provide guidance for each."
+      → receive user guidance
+      → resume component agent via SendMessage with guidance for all stuck stories
+      → continue waiting for next terminal phrase
+
+    Script failed: {story}:
+      → surface to user; user restarts Storybook and resolves script issue
+      → re-dispatch the same component agent; it recovers current state from the findings doc
+        front matter and Story Registry
+
+    Context exhausted:
+      → surface to user; orchestrator re-dispatches the component agent with a checkpoint prompt
+        including the component name, findings doc path, and current story-by-story status
+        from the Story Registry
+
+    Undefined return:
+      → surface to user immediately as Undefined return; stop
 
 when all components done:
-  compile batch report; present to user
+  compile batch report (delegation manifest + findings summary per component)
+  present to user
+  conduct post-batch debrief (see agent/iteration-protocol.md)
 ```
 
 ---

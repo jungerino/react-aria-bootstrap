@@ -8,7 +8,7 @@ title: React Aria + Bootstrap Skill — Component Sub-Agent
 
 ---
 
-**Hard constraint — no exceptions:** All bridge selectors go in `src/scss/_bootstrap-overrides.scss`. Do not create new CSS or SCSS files in `stories/`. Do not write bridge rules anywhere else. Why: bridge rules in story-scoped files create split coverage, load inconsistently, and are invisible to future agents. Story-specific layout utilities (fixed pixel widths, static specimen positioning) belong in the mirror story TSX as `className` assignments using classes from `augments.scss`, or — for new layout utilities — added to `augments.scss` itself. Do not create separate CSS files for story layout. `augments.scss` is the shared home for all story layout utilities (both reference and mirror stories import it via P047).
+**Hard constraint — no exceptions:** All bridge selectors go in `src/scss/_bootstrap-bridges.scss`. Do not create new CSS or SCSS files in `stories/`. Do not write bridge rules anywhere else. Why: bridge rules in story-scoped files create split coverage, load inconsistently, and are invisible to future agents. Story-specific layout utilities (fixed pixel widths, static specimen positioning) belong in the mirror story TSX as `className` assignments using classes from `stories/react-aria-bootstrap/presentation.scss`, or — for new layout utilities — added to `presentation.scss` itself. Do not create separate CSS files for story layout.
 
 ---
 
@@ -19,106 +19,113 @@ Load at session start (provided in your dispatch prompt):
 1. `agent/react-aria-skill/SKILL.md`
 2. `agent/react-aria-skill/component-agent.md` (this file)
 3. `agent/react-aria-skill/principles.md`
-4. `agent/reference-stories/{component}-taxonomy.md` — component taxonomy (incl. `## Decisions` section)
+4. `agent/taxonomies/{component}-taxonomy.md` — component taxonomy (incl. `## Decisions` section)
 5. `agent/bootstrap-kb/README.md` — Bootstrap KB index; load relevant KB files selectively per component
-
-Then run the task ID self-identification command below and record the result — you will include it in every findings doc iteration block and Work Log entry:
-
-```bash
-PROJ="/private/tmp/claude-$(id -u)/-Users-josh-Library-CloudStorage-Dropbox-Github-react-aria-bootstrap"
-SESSION=$(ls -t "$PROJ" | head -1)
-ls -lat "$PROJ/$SESSION/tasks/" | awk '/^l/{print $9; exit}' | sed 's/\.output$//'
-```
 
 ---
 
 ## Preparation Phase
 
-Complete these steps once for the component before the story-level pipeline:
+Complete these steps once for the component before any implementation.
 
 **P1. Internalize inputs:**
 1. Read the taxonomy `## Decisions` section — pre-resolved decisions; do not re-derive them.
 2. Call `mcp__react-aria__get_react_aria_page` for the component. Cross-check: every `data-*` attribute in the docs must appear in the taxonomy's state mappings.
 3. Load Bootstrap KB: `components.md` entry for the matched Bootstrap component → `states.md` → `patterns.md` if a DOM conflict entry exists.
-4. Read the pre-extracted reference CSS for every story in scope: `agent/reference-stories/reference-css/{component}-{story}.css`. These files contain only the Bootstrap rules that applied to the rendered reference story DOM — they are the definitive list of CSS rules to replicate. Use them as your primary source for understanding target CSS rather than searching `bootstrap.css`. (`.faux-*` rules in these files show the target appearance for interactive states.)
+4. Read all pre-extracted reference CSS files: `agent/review/reference-css/{component}-{StoryName}.css` (one per story in scope). These contain only the Bootstrap rules that applied to the rendered reference story DOM — they are the primary CSS specification for what to replicate. Read them now, not during Phase C.
 5. Review all principles. Flag any with structural or sizing implications (P008, P010, P016, P040, P041, P042) — address during TSX/bridge implementation, not at diff time.
+6. Load all pre-captured reference images: `.reference-images/{component}/{story}.png` — one per story in scope. These were captured by the orchestrator during pre-loop setup using `scripts/reference-images.mjs`. Read them once here. **Do NOT re-read reference images during Phase C or the Final Verification Sweep** — reference images are static and don't change during implementation; re-reading wastes context.
 
-**P2. Implement TSX:**
+---
+
+## Phase A — TSX and Bridge CSS
+
+**Implement TSX:**
 - Apply `className` render-prop pattern (P002) for Bootstrap classes.
 - Use `variantClassMap` for variant props (P007); read Bootstrap docs before finalizing the variant set.
 - Honor all taxonomy `## Decisions` entries.
 - Apply Bootstrap component classes (P013); reserve utility classes for genuine one-off cases.
 - For each interactive element React Aria renders as a non-anchor/non-button (list items, option items, trigger divs, etc.): verify the chosen Bootstrap class provides `cursor: pointer` on that element type. Bootstrap classes designed for `<a>` or `<button>` elements do not deliver pointer cursor on `<div>` — add it explicitly in the bridge (P011).
-- Address all structural and sizing principles flagged in P1.
+- Address all structural and sizing principles flagged in Preparation Phase.
 
-**P3. Write base bridge selectors:**
-- Write all bridge selectors in `src/scss/_bootstrap-overrides.scss` (P003).
+**Write base bridge selectors:**
+- Write all bridge selectors in `src/scss/_bootstrap-bridges.scss` (P003).
 - Use SCSS mixins for `$enable-*`-gated properties (P015).
 - Cover all states in the taxonomy's state mappings; follow the Data-* Bridge Rules in `principles.md`.
 
----
+**Create component-wide findings doc:**
 
-## Phase A — Story Implementation
+Path: `agent/review/{component}-findings.md`
 
-**Before the per-story loop**, create the component-wide findings doc:
-
-- Path: `agent/reference-stories/{component}-findings.md`
-- Initialize with an empty Story Registry table and a `## Work Log` header:
+Initialize with YAML front matter, a Story Registry heading, an empty table, and a Work Log header:
 
 ```markdown
+---
+component: {ComponentName}
+iteration: 1
+---
+
+## Story Registry
+
 | Story | Status | Iteration | Stuck | Diff% |
 |-------|--------|-----------|-------|-------|
 
 ## Work Log
 ```
 
-For each mirror story:
+---
 
-1. Implement CSS and write the mirror story:
-   - One story per reference story in scope; story names must match reference story names exactly
-   - Replicate reference story layout: same wrapper classes (`ref-specimen-row`, `ref-flex-row`), same `specimen()` helper pattern, same variant order
-   - See `principles.md` → Stories Conventions for CSS conventions (faux states, augments import, inline style rules)
+## Phase B — Mirror Stories
+
+For each story in scope (derived from the taxonomy's "Reference story canvas" section):
+
+1. Implement the mirror story in `stories/react-aria-bootstrap/mirror/{ComponentName}.mirror.stories.tsx`:
+   - Story names must match reference story names exactly (required for pixel-diff ID matching)
+   - Replicate reference story layout: same wrapper classes, same `specimen()` helper pattern, same variant order
+   - Cover all visual states from the taxonomy; use faux-state classes from `presentation.scss` (P044)
+   - Import `../presentation.scss` directly (P047)
+
 2. Run CSS extraction:
    ```bash
    node scripts/extract-story-css.mjs \
-     --story {mirror-story-id} \
-     --out   agent/reference-stories/mirror-css/{component}-{story}.css
+     --story "Bootstrap Mirror/{ComponentName}/{StoryName}" \
+     --out   agent/review/mirror-css/{component}-{StoryName}.css
    ```
-   Re-run on every implementation iteration — new selectors may be introduced. Output is git-tracked and overwritten each run.
-3. Create story findings doc at `agent/reference-stories/{component}-{story}-findings.md`:
-   - Front matter: `Status: In review`, `Iteration: 0`, `Stuck: 0`
+   Re-run on every implementation iteration — new selectors may be introduced.
 
-After all mirror stories are implemented, begin Phase B — Comparison Loop.
+3. Create story findings doc at `agent/review/{component}-{story}-findings.md`:
+   - Front matter: `Status: In review`, `Iteration: 0`, `Stuck: 0`
+   - Initialize a session-scoped iteration counter **N = 0** for this story. N determines the `--out` directory for each `compare-stories.mjs` run (`iteration-{N}`). Increment N at the end of every comparison pass, before writing findings. N is durable: if context is compressed, recover the current value from the findings doc front matter (`Iteration:` field).
+
+After all mirror stories are implemented, begin Phase C — Comparison Loop.
 
 ---
 
-## Phase B — Comparison Loop
+## Phase C — Comparison Loop
 
 ### Inception
 
-Before making any code changes, run `compare-stories.mjs` for every story in one pass. This generates `reference.png`, `implementation.png`, and `diff.png` for each story:
+Before making any code changes, run `compare-stories.mjs` for every story in one pass:
 
 ```bash
 node scripts/compare-stories.mjs \
-  --reference {reference-story-id} \
-  --impl      {mirror-story-id} \
-  --out       .story-diffs/{component}/{story} \
+  --reference "bootstrap-reference-{component}--{story-name}" \
+  --impl      "bootstrap-mirror-{component}--{story-name}" \
+  --out       agent/review/diffs/{component}/{story}/iteration-{N} \
   --threshold 0.003
 ```
 
-After the first pass, read `.story-diffs/{component}/{story}/reference.png` for **every** story. Do this once — **never re-read `reference.png` again for the rest of the session.** Reference stories do not change; re-reading them on each pass wastes ~3,500 tokens per story.
-
-Record exit code and diff% for each story. Stories with exit code 0 are immediately `Pass` — log them and move on. Stories with exit code 1 enter the fix loop.
+Use the current N for each story (initialized to 0 in Phase B). Record exit code and diff% for each story. Stories with exit code 0 are immediately `Pass`. Stories with exit code 1 enter the fix loop.
 
 ---
 
 ### Image Read Rules (hard constraint)
 
-| Image | When to read |
-|-------|-------------|
-| `reference.png` | **Once at Phase B inception.** Never again. |
-| `diff.png` | On any failure. Re-read after each fix attempt to check for change. |
-| `implementation.png` | **Only** after a fix attempt that produced no visible change in `diff.png` (i.e., you tried and missed — the diff looks the same). `reference.png` in context plus `diff.png` is sufficient to diagnose most failures; read `implementation.png` only when the fix had no effect and you need to see what is actually rendering to understand why. Do not read before attempting a fix. |
+| Image | Path | When to read |
+|-------|------|-------------|
+| `reference.png` | `.reference-images/{component}/{story}.png` | Once during Preparation Phase. Never again. |
+| `diff.png` | `agent/review/diffs/{component}/{story}/iteration-{N}/diff.png` | On any failure. Re-read after each fix attempt. |
+| `implementation.png` | `agent/review/diffs/{component}/{story}/iteration-{N}/implementation.png` | On any failure, when it would be informative to see what is actually rendering. |
 
 ---
 
@@ -129,22 +136,38 @@ For each failing story, repeat until Pass or Stuck threshold is reached:
 ```
 read diff.png
   → describe what is visible: which specimen, which anatomical region, visible red
+  → compare reference-css vs. mirror-css:
+      compare agent/review/reference-css/{component}-{StoryName}.css (target)
+      against  agent/review/mirror-css/{component}-{StoryName}.css (current implementation)
+      rules in reference absent from mirror are candidates for missing bridge rules or missing className
   → apply fix to bridge CSS and/or mirror TSX
-  → re-run scripts/extract-story-css.mjs for this story (keep mirror CSS current)
-  → re-run compare-stories.mjs for this story
-    → exit 0: mark Pass; update findings doc; done with this story
-    → exit 1 and diff.png changed: continue loop
-    → exit 1 and diff.png unchanged: read implementation.png; continue loop
-  → if no fix can be identified: increment Stuck counter
-      → if Stuck >= threshold (default 3): write Status = Stuck; report `Stuck: {story}` to primary agent; stop
-  → write iteration block to findings doc after every pass (pass or fail)
+  → re-run extract-story-css.mjs for this story (keep mirror CSS current)
+  → increment N; re-run compare-stories.mjs with --out agent/review/diffs/{component}/{story}/iteration-{N}
+    → exit 0: mark Pass; update findings doc (record N); done with this story
+    → exit 1: read diff.png; read implementation.png if it would be informative; continue loop
+  → if fix cannot be identified:
+      → increment Stuck counter
+      → if Stuck >= threshold (default 3): mark story `Stuck` in Story Registry and findings doc
+        front matter; move to next story (do NOT stop — process all remaining stories first)
 ```
 
-**Reference CSS vs mirror CSS gap analysis:** When a story fails and the diff alone doesn't pinpoint the cause, compare `agent/reference-stories/reference-css/{component}-{story}.css` (target) against `agent/reference-stories/mirror-css/{component}-{story}.css` (implementation). Rules present in the reference CSS but absent from the mirror CSS are likely missing bridge rules or className assignments.
+**After all stories processed:** If any stories are marked `Stuck`, output terminal phrase `Stuck: {story1}, {story2}` (comma-separated list of all stuck story names) and stop. The orchestrator surfaces all stuck stories to the user at once, collects guidance, then resumes this agent via `SendMessage`. The agent then retries the stuck stories. Once no stories remain Stuck, proceed to the Final Verification Sweep.
 
-**Shared selector changes:** If a fix modifies bridge selectors that could affect other stories, re-run `compare-stories.mjs` for those stories too and update their findings.
+---
 
-**Script failure:** If any of `reference.png`, `implementation.png`, or `diff.png` is missing after a script run, write `Status: Script failed` to the findings doc front matter, then report `Script failed: {story}` to the primary agent and stop.
+### Extracted CSS Gap Protocol (EXTRACTED-CSS-GAP)
+
+When a property or selector cannot be found in the pre-extracted reference CSS and `bootstrap.css` access is needed to proceed:
+
+1. **Log immediately** — append an "Extracted CSS Gaps" entry to `agent/review/{component}-findings.md`: what selector/property was searched for, which extracted file was consulted, why it was insufficient.
+2. **Output terminal phrase:** `EXTRACTED-CSS-GAP: {one-line description of what's missing and why}` — stop.
+3. **Wait for permission** — orchestrator surfaces to user; user decides whether to allow access. Orchestrator resumes via `SendMessage` with the decision.
+
+---
+
+### Shared Selector Changes
+
+If a fix modifies bridge selectors that could affect other stories, re-run `compare-stories.mjs` for those stories and update their findings docs.
 
 ---
 
@@ -178,14 +201,19 @@ Before writing findings for a new pass, review all prior iteration blocks in the
 
 ---
 
+### Script Failure
+
+If `implementation.png` or `diff.png` is missing after a script run, write `Status: Script failed` to the findings doc front matter, then report `Script failed: {story}` to the primary agent and stop. The absence of `reference.png` is not a failure condition — the script no longer writes `reference.png`.
+
+---
+
 ### Findings Doc Updates
 
-Append an Iteration block after each comparison pass:
+Append an iteration block after each comparison pass (pass or fail):
 
-```
+```markdown
 ## Iteration {N}
 
-**Task ID**: {task-id}
 **Diff%:** {value} | **Status:** pass / fail | **Stuck:** {n}
 
 ### Specimens
@@ -199,25 +227,28 @@ UNRESOLVED:
 - Specimen [label]: [describe what is visible but unexplained]
 ```
 
-**Observations, not conclusions.** Record what is visible — where the red appears, which specimen, which anatomical region, diff% — and what fix you applied. Your reasoning lives in your conversation context. The findings doc is the observable record, not a theory log.
+Update front matter after each pass:
 
-Update front matter:
-- Pass: `Status: Pass`, `Iteration: N+1`, `Stuck: 0`
-- Fail, improved vs. prior: `Status: Fail`, `Iteration: N+1`, `Stuck: 0`
-- Fail, no improvement: `Status: Fail`, `Iteration: N+1`, `Stuck++`
-- After a code fix: `Status: In review`
-- When Stuck reaches threshold: `Status: Stuck`
+| Outcome | Status | Iteration | Stuck |
+|---------|--------|-----------|-------|
+| Pass | `Pass` | N | `0` |
+| Fail, improved | `Fail` | N | `0` |
+| Fail, no improvement | `Fail` | N | `Stuck++` |
+| After a code fix, before re-run | `In review` | — | — |
+| Stuck counter reaches threshold | `Stuck` | N | threshold |
+| Context compression detected | `Context exhausted` | N | — |
+| Script produced no output images | `Script failed` | N | — |
+
+Valid status values: `In review` · `Pass` · `Fail` · `Stuck` · `Context exhausted` · `Script failed`
 
 ---
 
 ### Component-Wide Registry Updates
 
-After each story pass, update the Story Registry table in `agent/reference-stories/{component}-findings.md`. Append a Work Log entry after every comparison pass:
+After each comparison pass, update the Story Registry table in `agent/review/{component}-findings.md`. Append a Work Log entry:
 
-```
+```markdown
 ### {story} — Iteration {N}
-
-**Task ID**: {task-id}
 
 **Observations:** (copied from story findings doc FAIL/UNRESOLVED entries)
 
@@ -239,15 +270,16 @@ If you detect that your prior context has been compressed/summarized (earlier me
 
 ## Final Verification Sweep
 
-After all stories reach `Pass`, before reporting completion:
+After all stories reach `Pass`:
 
 **Pre-completion check — CSS file placement:**
 ```bash
-git diff --name-only $(git merge-base HEAD main)..HEAD | grep 'stories/.*\.scss'
+git diff --name-only $(git merge-base HEAD main)..HEAD | grep 'stories/react-aria-bootstrap/.*\.scss'
 ```
-If any new SCSS files appear in `stories/`, move their bridge rules to `src/scss/_bootstrap-overrides.scss` and delete the story-scoped files before proceeding.
+If any new SCSS files appear under `stories/`, move their bridge rules to `src/scss/_bootstrap-bridges.scss` and delete the story-scoped files.
 
-Run one final round of `compare-stories.mjs` across all stories with `--threshold 0.003`. This catches regressions from shared-selector changes that slipped through the fix loop. Do not re-read `reference.png` — it remains in context from Phase B inception.
+**Run final `compare-stories.mjs` sweep** across all stories with `--threshold 0.003`. Do not re-read reference images — they remain in context from Preparation Phase.
+- If any story fails: re-enter the fix loop (Phase C mechanics) for those stories only, then re-run the full sweep. Repeat until all stories pass.
 
 When all stories pass the sweep, report `verification-sweep-passed` to the primary agent.
 
@@ -255,9 +287,9 @@ When all stories pass the sweep, report `verification-sweep-passed` to the prima
 
 ## Per-Story Findings Doc
 
-**Path:** `agent/reference-stories/{component}-{story}-findings.md`
+**Path:** `agent/review/{component}-{story}-findings.md`
 
-**Written by:** This agent (Tier 1). Created during Phase A; populated during Phase B.
+**Written by:** This agent (Tier 1). Created during Phase B; populated during Phase C.
 
 **Front matter:**
 
@@ -270,38 +302,19 @@ Stuck: <n>
 **Status transitions:**
 
 - Initial: `In review`
-- Comparison pass, diff passes: `Status = Pass`, `Iteration++`, `Stuck = 0`
-- Comparison pass, diff fails, improved: `Status = Fail`, `Iteration++`, `Stuck = 0`
-- Comparison pass, diff fails, no improvement: `Status = Fail`, `Iteration++`, `Stuck++`
+- Comparison pass, diff passes: `Status = Pass`, `Iteration = N`, `Stuck = 0`
+- Comparison pass, diff fails, improved: `Status = Fail`, `Iteration = N`, `Stuck = 0`
+- Comparison pass, diff fails, no improvement: `Status = Fail`, `Iteration = N`, `Stuck++`
 - After rework by this agent: `Status = In review`
 - When `Stuck` reaches threshold (default: 3): `Status = Stuck`
 - Context compression detected: `Status = Context exhausted`
 - Script failure (missing output images): `Status = Script failed`
 
-**Body (appended per iteration by this agent):**
-
-```
-## Iteration {N}
-
-**Task ID**: {task-id}
-**Diff%:** {value} | **Status:** pass / fail | **Stuck:** {n}
-
-### Specimens
-
-PASS: [specimen labels]
-
-FAIL:
-- Specimen [label]: Red at [location]. Fix attempted: [description].
-
-UNRESOLVED:
-- Specimen [label]: [describe what is visible but unexplained]
-```
-
 ---
 
 ## Component-Wide Findings Doc
 
-**Path:** `agent/reference-stories/{component}-findings.md`
+**Path:** `agent/review/{component}-findings.md`
 
 **Story Registry** (updated after each comparison pass):
 
@@ -312,10 +325,8 @@ UNRESOLVED:
 
 **Work Log** (per-story, per-iteration, written by this agent after every comparison pass):
 
-```
+```markdown
 ### {story} — Iteration {N}
-
-**Task ID**: {task-id}
 
 **Observations:** (copied from story findings doc FAIL/UNRESOLVED entries)
 
@@ -335,4 +346,3 @@ UNRESOLVED:
 |-----------|---------|-------|
 | Stuck counter threshold | 3 | Consecutive non-improving iterations before Status = Stuck |
 | Pass/fail threshold | 0.3% | Diff% cutoff |
-

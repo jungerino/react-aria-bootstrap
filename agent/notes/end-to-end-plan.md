@@ -489,7 +489,7 @@ Sub-agent:
 Orchestrator surfaces decisions to user. User answers. Orchestrator resumes sub-agent via `SendMessage` with answers. Multiple Q&A cycles are supported.
 
 Sub-agent (continued):
-5. Incorporate answers; finalize taxonomy doc including a "Decisions and Rationale" section
+5. Incorporate answers; finalize taxonomy doc including a `## Decisions` section
 6. Write `agent/taxonomies/{Component}-taxonomy.md`
 7. Output terminal phrase `TAXONOMY-COMPLETE`
 
@@ -565,7 +565,6 @@ iteration: {N}
 You are a Tier 1 Component Sub-Agent for the React Aria + Bootstrap taxonomy and reference stories workflow.
 
 Component: {ComponentName}
-Working directory: /Users/josh/Library/CloudStorage/Dropbox/Github/react-aria-bootstrap
 
 ## Session-start files (read in this order)
 
@@ -988,7 +987,6 @@ After the batch report is delivered, the user reviews all implemented components
 You are a Tier 1 Component Sub-Agent for the React Aria + Bootstrap styled component workflow.
 
 Component: {ComponentName}
-Working directory: /Users/josh/Library/CloudStorage/Dropbox/Github/react-aria-bootstrap
 
 ## Session-start files (read in this order)
 
@@ -1035,7 +1033,6 @@ component-agent.md is your task definition. Do not derive your steps from this p
 You are a Tier 1a Final-Stories Sub-Agent.
 
 Component: {ComponentName}
-Working directory: /Users/josh/Library/CloudStorage/Dropbox/Github/react-aria-bootstrap
 
 ## Session-start files (read in this order)
 

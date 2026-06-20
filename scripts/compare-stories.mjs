@@ -17,14 +17,16 @@
  *   bootstrap-test-button--default
  *
  * Exits 0 if diff pixel count is within threshold, 1 otherwise.
- * Writes three PNGs to --out (default: .story-diffs/):
- *   reference.png, implementation.png, diff.png
+ * Writes two PNGs to --out (default: .story-diffs/):
+ *   implementation.png, diff.png
+ * Creates the --out directory if it does not exist.
  */
 
 import { chromium } from '@playwright/test';
 import { PNG } from 'pngjs';
 import pixelmatch from 'pixelmatch';
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 
 const STORYBOOK_URL = 'http://localhost:6006';
@@ -95,22 +97,25 @@ const height = parseInt(raw.height ?? DEFAULTS.height, 10);
 
 fs.mkdirSync(out, { recursive: true });
 
-const refOut = path.join(out, 'reference.png');
 const implOut = path.join(out, 'implementation.png');
 const diffOut = path.join(out, 'diff.png');
+
+// Temporary file for reference screenshot — written to system temp, not the output directory
+const refTmp = path.join(os.tmpdir(), `compare-stories-ref-${process.pid}.png`);
 
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width, height } });
 
 console.log(`Capturing reference: ${reference}`);
-await screenshot(page, reference, refOut, width, height);
+await screenshot(page, reference, refTmp, width, height);
 
 console.log(`Capturing implementation: ${impl}`);
 await screenshot(page, impl, implOut, width, height);
 
 await browser.close();
 
-const { numDiff, totalPixels } = diffImages(refOut, implOut, diffOut, pixelThreshold);
+const { numDiff, totalPixels } = diffImages(refTmp, implOut, diffOut, pixelThreshold);
+fs.unlinkSync(refTmp);
 const pct = ((numDiff / totalPixels) * 100).toFixed(2);
 
 console.log(`Diff pixels: ${numDiff} / ${totalPixels} (${pct}%)`);

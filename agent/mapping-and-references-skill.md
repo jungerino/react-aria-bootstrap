@@ -312,7 +312,7 @@ Reference stories depict what a correctly styled component should look like — 
 
 ### P-S006: Extract reference CSS after each story is written
 
-After writing each story file and confirming Storybook renders it, run `scripts/extract-story-css.mjs` for that story and save the output to `agent/review/reference-css/{component}-{StoryName}.css` (kebab-case, matching the story's title path). Storybook must be running on port 6006.
+After writing each story file and confirming Storybook renders it, run `scripts/extract-story-css.mjs` for that story and save the output to `agent/artifacts/reference-css/{component}-{StoryName}.css` (kebab-case, matching the story's title path). Storybook must be running on port 6006.
 
 ```bash
 node scripts/extract-story-css.mjs "Bootstrap Reference/{Component}/{StoryName}"

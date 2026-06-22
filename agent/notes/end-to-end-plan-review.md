@@ -63,7 +63,7 @@ At minimum the prompt should include: the batch log path, taxonomy output path, 
 > | Batch log | agent/logs/batch-{N}.md |
 > | Taxonomy output | agent/taxonomies/{component}-taxonomy.md |
 > | Reference stories | stories/react-aria-bootstrap/reference/{ComponentName}.reference.stories.tsx |
-> | Reference CSS | agent/review/reference-css/{component}-{StoryName}.css (one per story) |
+> | Reference CSS | agent/artifacts/reference-css/{component}-{StoryName}.css (one per story) |
 > | Bootstrap KB | agent/bootstrap-kb/README.md |
 >
 > ## SendMessage resumption

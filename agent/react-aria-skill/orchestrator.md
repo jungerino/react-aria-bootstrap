@@ -68,14 +68,14 @@ Component: {ComponentName}
 | Mirror stories | stories/react-aria-bootstrap/mirror/{ComponentName}.mirror.stories.tsx |
 | Bridge CSS | src/scss/_bootstrap-bridges.scss |
 | Presentation CSS | stories/react-aria-bootstrap/presentation.scss |
-| Component findings | agent/review/{component}-findings.md |
+| Component findings | agent/artifacts/findings/{component}-findings.md |
 
 ## Reference inputs (read during Preparation Phase)
 
 | Artifact | Path |
 |----------|------|
 | Reference stories | stories/react-aria-bootstrap/reference/{ComponentName}.reference.stories.tsx |
-| Reference CSS | agent/review/reference-css/{component}-{StoryName}.css (one per story) |
+| Reference CSS | agent/artifacts/reference-css/{component}-{StoryName}.css (one per story) |
 
 ## Terminal phrases
 
@@ -187,7 +187,7 @@ for each component in batch (serial):
       → continue waiting for next terminal phrase
 
     Stuck: {story1}, {story2}:
-      → for each stuck story: read agent/review/{component}-{story}-findings.md;
+      → for each stuck story: read agent/artifacts/findings/{component}-{story}-findings.md;
         extract FAIL/UNRESOLVED entries from the most recent iteration block
       → surface to user: "{component} completed with stuck stories: {list}.
         For each stuck story, include FAIL/UNRESOLVED entries from its most recent iteration block.

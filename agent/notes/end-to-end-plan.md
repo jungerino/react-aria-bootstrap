@@ -202,7 +202,7 @@ grep "bootstrap-kb-skill" CLAUDE.md               # TOC entry present
 
 **Cross-batch accumulation:**
 - The Bootstrap KB is static — generated once in Stage 1 and not updated during component work unless a gap or error is discovered. When a component agent finds the KB incomplete or incorrect, it flags the gap in its findings doc; those flags are reviewed before the next batch and trigger a targeted KB update if warranted.
-- Findings docs (`agent/review/{component}-findings.md`) accumulate across batches as the permanent per-component record. Any broadly applicable pattern discovered during implementation is promoted to a P-code in `principles.md` at debrief time — that is the mechanism for making knowledge available to future agents, not automated file aggregation.
+- Findings docs (`agent/artifacts/findings/{component}-findings.md`) accumulate across batches as the permanent per-component record. Any broadly applicable pattern discovered during implementation is promoted to a P-code in `principles.md` at debrief time — that is the mechanism for making knowledge available to future agents, not automated file aggregation.
 
 **Note on components worked in prior experiments:**
 - Components produced in prior experimental branches (Button, Tabs, ListBox, Calendar, TextField, Select) are throwaway — they will be created anew by this workflow.
@@ -234,7 +234,7 @@ grep "bootstrap-kb-skill" CLAUDE.md               # TOC entry present
 **Outputs (per component):**
 - `agent/taxonomies/{Component}-taxonomy.md`
 - `stories/react-aria-bootstrap/reference/{Component}.reference.stories.tsx`
-- `agent/review/reference-css/{Component}-{StoryName}.css` — one file per story, extracted via `scripts/extract-story-css.mjs`
+- `agent/artifacts/reference-css/{Component}-{StoryName}.css` — one file per story, extracted via `scripts/extract-story-css.mjs`
 
 **Human review points:**
 1. Answer taxonomy decisions block (surfaced by orchestrator after Phase A)
@@ -279,7 +279,7 @@ Orchestrator prompts user to open Storybook and review. User responds with feedb
 
 Sub-agent (continued):
 4. Apply feedback; loop back to `REFERENCE-STORY-READY-FOR-REVIEW` until approved
-5. For each approved story: run `node scripts/extract-story-css.mjs "Bootstrap Reference/{Component}/{StoryName}"` and save output to `agent/review/reference-css/{Component}-{StoryName}.css`
+5. For each approved story: run `node scripts/extract-story-css.mjs "Bootstrap Reference/{Component}/{StoryName}"` and save output to `agent/artifacts/reference-css/{Component}-{StoryName}.css`
 6. Output terminal phrase `COMPONENT-STAGE-4-COMPLETE`
 
 ---
@@ -343,7 +343,7 @@ Component: {ComponentName}
 | Batch log | agent/logs/batch-{N}.md |
 | Taxonomy output | agent/taxonomies/{component}-taxonomy.md |
 | Reference stories | stories/react-aria-bootstrap/reference/{ComponentName}.reference.stories.tsx |
-| Reference CSS | agent/review/reference-css/{component}-{StoryName}.css (one per story) |
+| Reference CSS | agent/artifacts/reference-css/{component}-{StoryName}.css (one per story) |
 | Bootstrap KB | agent/bootstrap-kb/README.md |
 
 ## SendMessage resumption
@@ -364,7 +364,7 @@ mapping-and-references-skill.md is your task definition. Do not derive your step
 ---
 
 **Skill file changes required for Phase 3** (`agent/mapping-and-references-skill.md`):
-- Update all paths per Q6 (reference stories → `stories/react-aria-bootstrap/reference/`, taxonomy docs → `agent/taxonomies/`, extracted CSS → `agent/review/reference-css/`, `presentation.scss` replaces `augments.scss`, `withBootstrap` replaces `withBootstrapTest`)
+- Update all paths per Q6 (reference stories → `stories/react-aria-bootstrap/reference/`, taxonomy docs → `agent/taxonomies/`, extracted CSS → `agent/artifacts/reference-css/`, `presentation.scss` replaces `augments.scss`, `withBootstrap` replaces `withBootstrapTest`)
 - Remove KB *generation* content from Part 5 (when to rebuild the KB, which Bootstrap source files to parse) — that content moves to `bootstrap-kb-skill.md`. Retain M003 load sequence and query table in `mapping-and-references-skill.md`.
 - Add: explicit instruction to fetch Bootstrap documentation pages via WebFetch for reference story HTML
 - Add: `## Decisions` section to taxonomy doc template
@@ -398,7 +398,7 @@ Stage 4 and Stage 5 each run in a separate orchestrator session. The batch log (
 - `agent/logs/batch-{N}.md` — component list and batch log for this run (from Stage 3)
 - `agent/taxonomies/{Component}-taxonomy.md` — per-component taxonomy and pre-resolved decisions (from Stage 4)
 - `stories/react-aria-bootstrap/reference/{Component}.reference.stories.tsx` — Bootstrap reference stories (from Stage 4)
-- `agent/review/reference-css/{Component}-{StoryName}.css` — pre-extracted Bootstrap CSS, one file per reference story (from Stage 4; component agent's primary CSS reference — `bootstrap.css` is structurally blocked per Appendix B Pattern 7)
+- `agent/artifacts/reference-css/{Component}-{StoryName}.css` — pre-extracted Bootstrap CSS, one file per reference story (from Stage 4; component agent's primary CSS reference — `bootstrap.css` is structurally blocked per Appendix B Pattern 7)
 - `.reference-images/{component}/{story}.png` — reference story screenshots, one per story; captured by the orchestrator during pre-loop setup using `scripts/reference-images.mjs`; read into context by component agent during Preparation Phase
 - `src/scss/_bootstrap-bridges.scss` — shared bridge CSS file; component agent appends new rules for this component
 - `stories/react-aria-bootstrap/presentation.scss` — faux-state and layout utilities; component agent extends as needed
@@ -412,10 +412,10 @@ Stage 4 and Stage 5 each run in a separate orchestrator session. The batch log (
 | Styled component | `src/react-aria-bootstrap/{ComponentName}.tsx` |
 | Mirror stories | `stories/react-aria-bootstrap/mirror/{ComponentName}.mirror.stories.tsx` |
 | Final/standard stories | `stories/react-aria-bootstrap/{ComponentName}.stories.tsx` |
-| Component findings doc | `agent/review/{component}-findings.md` |
-| Story findings docs | `agent/review/{component}-{story}-findings.md` (one per story) |
-| Extracted mirror CSS | `agent/review/mirror-css/{component}-{StoryName}.css` (one per story) |
-| Diff images (per pass) | `agent/review/diffs/{component}/{story}/iteration-{N}/` (`diff.png`, `implementation.png`) |
+| Component findings doc | `agent/artifacts/findings/{component}-findings.md` |
+| Story findings docs | `agent/artifacts/findings/{component}-{story}-findings.md` (one per story) |
+| Extracted mirror CSS | `agent/artifacts/mirror-css/{component}-{StoryName}.css` (one per story) |
+| Diff images (per pass) | `agent/artifacts/diffs/{component}/{story}/iteration-{N}/` (`diff.png`, `implementation.png`) |
 | Bridge CSS (updated) | `src/scss/_bootstrap-bridges.scss` |
 
 **Story title conventions:**
@@ -446,7 +446,7 @@ Before any implementation, the component agent:
 1. **Internalize taxonomy:** Read `agent/taxonomies/{component}-taxonomy.md` in full, especially `## Decisions` — pre-resolved decisions; do not re-derive them.
 2. **Query React Aria docs:** Call `mcp__react-aria__get_react_aria_page` for the component. Cross-check: every `data-*` attribute in the docs must appear in the taxonomy's state mappings.
 3. **Load Bootstrap KB:** `README.md` → then the relevant component, states, and patterns sections for this component.
-4. **Read reference CSS:** Read all `agent/review/reference-css/{component}-{StoryName}.css` files. These contain only the Bootstrap rules that applied to the rendered reference story DOM — they are the primary CSS specification for what to replicate. Read them now, not during the comparison loop.
+4. **Read reference CSS:** Read all `agent/artifacts/reference-css/{component}-{StoryName}.css` files. These contain only the Bootstrap rules that applied to the rendered reference story DOM — they are the primary CSS specification for what to replicate. Read them now, not during the comparison loop.
 5. **Review principles:** Read `principles.md` in full. Flag any with structural or sizing implications (P008, P010, P016, P040, P041, P042) — address during TSX/bridge implementation, not at diff time.
 
 6. **Load reference images:** Read all `.reference-images/{component}/{story}.png` files into context — one per story in scope. These were captured by the orchestrator during pre-loop setup using `scripts/reference-images.mjs`. Reference images are static — they don't change during implementation. Read them once here; do not re-read them during Phase C or the Final Verification Sweep.
@@ -469,7 +469,7 @@ Before any implementation, the component agent:
 
 **Create component-wide findings doc:**
 
-Path: `agent/review/{component}-findings.md`
+Path: `agent/artifacts/findings/{component}-findings.md`
 
 Initialize with an empty Story Registry and Work Log header:
 
@@ -503,11 +503,11 @@ For each story in scope (derived from the taxonomy's "Reference story canvas" se
    ```bash
    node scripts/extract-story-css.mjs \
      --story "Bootstrap Mirror/{ComponentName}/{StoryName}" \
-     --out   agent/review/mirror-css/{component}-{StoryName}.css
+     --out   agent/artifacts/mirror-css/{component}-{StoryName}.css
    ```
    Re-run on every implementation iteration — new selectors may be introduced.
 
-3. **Create story findings doc** at `agent/review/{component}-{story}-findings.md`:
+3. **Create story findings doc** at `agent/artifacts/findings/{component}-{story}-findings.md`:
    - Front matter: `Status: In review`, `Iteration: 0`, `Stuck: 0`
    - Initialize a session-scoped iteration counter **N = 0** for this story. N determines the `--out` directory for each `compare-stories.mjs` run (`iteration-{N}`). Increment N at the end of every comparison pass, before writing findings. N is durable: if context is compressed, recover the current value from the findings doc front matter (`Iteration:` field).
 
@@ -523,7 +523,7 @@ After all mirror stories are implemented, begin Phase C — Comparison Loop.
 node scripts/compare-stories.mjs \
   --reference "bootstrap-reference-{component}--{story-name}" \
   --impl      "bootstrap-mirror-{component}--{story-name}" \
-  --out       agent/review/diffs/{component}/{story}/iteration-{N} \
+  --out       agent/artifacts/diffs/{component}/{story}/iteration-{N} \
   --threshold 0.003
 ```
 
@@ -534,8 +534,8 @@ Use the current N for each story (initialized to 0 in Phase B). Record exit code
 | Image | Path | When to read |
 |-------|------|-------------|
 | `reference.png` | `.reference-images/{component}/{story}.png` | Once during Preparation Phase. Never again. |
-| `diff.png` | `agent/review/diffs/{component}/{story}/iteration-{N}/diff.png` | On any failure. Re-read after each fix attempt. |
-| `implementation.png` | `agent/review/diffs/{component}/{story}/iteration-{N}/implementation.png` | On any failure, when `diff.png` alone doesn't show what's rendering. |
+| `diff.png` | `agent/artifacts/diffs/{component}/{story}/iteration-{N}/diff.png` | On any failure. Re-read after each fix attempt. |
+| `implementation.png` | `agent/artifacts/diffs/{component}/{story}/iteration-{N}/implementation.png` | On any failure, when `diff.png` alone doesn't show what's rendering. |
 
 **Fix loop** (per failing story, repeat until Pass or Stuck threshold):
 
@@ -545,7 +545,7 @@ read diff.png
   → compare reference-css vs. mirror-css: rules in reference absent from mirror are candidates for missing bridge rules or missing className
   → apply fix to bridge CSS and/or mirror TSX
   → re-run extract-story-css.mjs for this story (keep mirror CSS current)
-  → increment N; re-run compare-stories.mjs with --out agent/review/diffs/{component}/{story}/iteration-{N}
+  → increment N; re-run compare-stories.mjs with --out agent/artifacts/diffs/{component}/{story}/iteration-{N}
     → exit 0: mark Pass; update findings doc (record N); done with this story
     → exit 1: read diff.png; read implementation.png if diff.png alone doesn't show what's rendering; continue loop
   → if fix cannot be identified:
@@ -556,13 +556,13 @@ read diff.png
 
 **After all stories processed:** If any stories are marked `Stuck`, output terminal phrase `Stuck: {story1}, {story2}` (comma-separated list of stuck story names) and stop. The orchestrator surfaces all stuck stories to the user at once, collects guidance, then resumes this agent via `SendMessage` with guidance for all of them. The agent then retries the stuck stories. Once no stories remain `Stuck`, proceed to the Final Verification Sweep.
 
-**Reference CSS vs. mirror CSS comparison (mandatory):** On every iteration, compare `agent/review/reference-css/{component}-{StoryName}.css` (target) against `agent/review/mirror-css/{component}-{StoryName}.css` (current implementation). Rules present in the reference CSS but absent from the mirror CSS are candidates for missing bridge rules or missing className assignments.
+**Reference CSS vs. mirror CSS comparison (mandatory):** On every iteration, compare `agent/artifacts/reference-css/{component}-{StoryName}.css` (target) against `agent/artifacts/mirror-css/{component}-{StoryName}.css` (current implementation). Rules present in the reference CSS but absent from the mirror CSS are candidates for missing bridge rules or missing className assignments.
 
 **Extracted CSS gap protocol (EXTRACTED-CSS-GAP):**
 
 When a property or selector cannot be found in the pre-extracted reference CSS and `bootstrap.css` access is needed to proceed:
 
-1. **Log immediately** — append an "Extracted CSS Gaps" entry to `agent/review/{component}-findings.md`: what selector/property was searched for, which extracted file was consulted, why it was insufficient.
+1. **Log immediately** — append an "Extracted CSS Gaps" entry to `agent/artifacts/findings/{component}-findings.md`: what selector/property was searched for, which extracted file was consulted, why it was insufficient.
 2. **Output terminal phrase:** `EXTRACTED-CSS-GAP: {one-line description of what's missing and why}` — stop.
 3. **Wait for permission** — orchestrator surfaces to user; user decides whether to allow access. Orchestrator resumes via `SendMessage` with the decision.
 
@@ -574,7 +574,7 @@ See Appendix B Pattern 7 for the enforcement mechanism.
 
 **Findings doc updates:**
 
-*Story findings doc* (`agent/review/{component}-{story}-findings.md`) — append an iteration block after every comparison pass:
+*Story findings doc* (`agent/artifacts/findings/{component}-{story}-findings.md`) — append an iteration block after every comparison pass:
 
 ```markdown
 ## Iteration {N}
@@ -606,7 +606,7 @@ Update front matter after each pass:
 
 Valid status values: `In review` · `Pass` · `Fail` · `Stuck` · `Context exhausted` · `Script failed`
 
-*Component-wide findings doc* (`agent/review/{component}-findings.md`) — update the Story Registry table and append a Work Log entry after every comparison pass:
+*Component-wide findings doc* (`agent/artifacts/findings/{component}-findings.md`) — update the Story Registry table and append a Work Log entry after every comparison pass:
 
 ```markdown
 ### {story} — Iteration {N}
@@ -710,7 +710,7 @@ for each component in batch (serial):
       → continue waiting for next terminal phrase
 
     Stuck: {story1}, {story2}:
-      → for each stuck story: read agent/review/{component}-{story}-findings.md; extract FAIL/UNRESOLVED entries from the most recent iteration block
+      → for each stuck story: read agent/artifacts/findings/{component}-{story}-findings.md; extract FAIL/UNRESOLVED entries from the most recent iteration block
       → surface to user: "{component} completed with stuck stories: {list}.
         For each stuck story, include FAIL/UNRESOLVED entries from its most recent iteration block.
         Please provide guidance for each."
@@ -770,14 +770,14 @@ Component: {ComponentName}
 | Mirror stories | stories/react-aria-bootstrap/mirror/{ComponentName}.mirror.stories.tsx |
 | Bridge CSS | src/scss/_bootstrap-bridges.scss |
 | Presentation CSS | stories/react-aria-bootstrap/presentation.scss |
-| Component findings | agent/review/{component}-findings.md |
+| Component findings | agent/artifacts/findings/{component}-findings.md |
 
 ## Reference inputs (read during Preparation Phase)
 
 | Artifact | Path |
 |----------|------|
 | Reference stories | stories/react-aria-bootstrap/reference/{ComponentName}.reference.stories.tsx |
-| Reference CSS | agent/review/reference-css/{component}-{StoryName}.css (one per story) |
+| Reference CSS | agent/artifacts/reference-css/{component}-{StoryName}.css (one per story) |
 
 ## Terminal phrases
 
@@ -839,7 +839,7 @@ Return exactly one of:
 
 **SKILL.md:**
 - Update tier map: reflect `EXTRACTED-CSS-GAP` as a valid terminal phrase
-- Update session-start loading paths: taxonomy → `agent/taxonomies/`, findings → `agent/review/`
+- Update session-start loading paths: taxonomy → `agent/taxonomies/`, findings → `agent/artifacts/findings/`
 - Update terminal phrase table: add `EXTRACTED-CSS-GAP: {description}` and `final-stories-done`
 - Remove branch naming section (no longer relevant; branches are now managed at the workflow level)
 
@@ -858,12 +858,12 @@ Return exactly one of:
   - `src/scss/_bootstrap-overrides.scss` → `src/scss/_bootstrap-bridges.scss`
   - `stories/bootstrap-test/bootstrap-reference/augments.scss` → `stories/react-aria-bootstrap/presentation.scss`
   - `withBootstrapTest` → `withBootstrap`
-  - `agent/reference-stories/{component}-findings.md` → `agent/review/{component}-findings.md`
-  - `agent/reference-stories/{component}-{story}-findings.md` → `agent/review/{component}-{story}-findings.md`
-  - `agent/reference-stories/reference-css/` → `agent/review/reference-css/`
-  - `agent/reference-stories/mirror-css/` → `agent/review/mirror-css/`
+  - `agent/reference-stories/{component}-findings.md` → `agent/artifacts/findings/{component}-findings.md`
+  - `agent/reference-stories/{component}-{story}-findings.md` → `agent/artifacts/findings/{component}-{story}-findings.md`
+  - `agent/reference-stories/reference-css/` → `agent/artifacts/reference-css/`
+  - `agent/reference-stories/mirror-css/` → `agent/artifacts/mirror-css/`
   - `agent/reference-stories/{component}-taxonomy.md` → `agent/taxonomies/{component}-taxonomy.md`
-- Add step to Preparation Phase: read all reference CSS files (`agent/review/reference-css/{component}-*.css`)
+- Add step to Preparation Phase: read all reference CSS files (`agent/artifacts/reference-css/{component}-*.css`)
 - Add final step to Preparation Phase: read all pre-captured `.reference-images/{component}/{story}.png` files into context (images were captured by the orchestrator during pre-loop setup using `reference-images.mjs`; do not run any script to generate them); note these images must not be re-read during Phase C or the Final Verification Sweep — reference images are static and don't change during implementation, so re-reading wastes context without benefit
 - Update Phase C image read rules table: `reference.png` row — "Once at Phase C inception. Never again." → "Once during Preparation Phase. Never again."
 - Remove from Phase C inception: the instruction to read `reference.png` after the first pass
@@ -898,7 +898,7 @@ Return exactly one of:
 - `withBootstrapTest` → `withBootstrap`
 - `Bootstrap Test Mirror/{ComponentName}` → `Bootstrap Mirror/{ComponentName}` (story title)
 - `Bootstrap Test/{ComponentName}` → `Bootstrap/{ComponentName}` (story title)
-- `agent/reference-stories/` → `agent/review/` or `agent/taxonomies/` as appropriate
+- `agent/reference-stories/` → `agent/artifacts/` or `agent/taxonomies/` as appropriate
 
 **comparison-agent.md:**
 - Deleted on branch `end-to-end-workflow`. No Phase 3 action needed.
@@ -908,7 +908,7 @@ Return exactly one of:
 
 **scripts/compare-stories.mjs:**
 - Does not write `reference.png`. Writes only `implementation.png` and `diff.png` to the `--out` directory.
-- Output directory convention: `agent/review/diffs/{component}/{story}/iteration-{N}/`. The caller passes an iteration-specific `--out` path on each invocation; the script creates the directory if it does not exist.
+- Output directory convention: `agent/artifacts/diffs/{component}/{story}/iteration-{N}/`. The caller passes an iteration-specific `--out` path on each invocation; the script creates the directory if it does not exist.
 
 ---
 
@@ -974,7 +974,7 @@ The parent agent controls each sub-agent's tool roster via frontmatter. This is 
 
 An agent cannot proceed to its next step without producing a specific artifact. The artifact's existence is verifiable by the orchestrator or the spec.
 
-- Component agent must create `agent/review/{component}-findings.md` before Phase B
+- Component agent must create `agent/artifacts/findings/{component}-findings.md` before Phase B
 - Component agent must append an iteration block to the findings doc after every comparison pass (not batched at end)
 - Final-stories agent must produce committed story files before reporting `final-stories-done`
 
@@ -1003,12 +1003,12 @@ When Agent Teams are enabled, three hooks can enforce compliance:
 
 #### 7. Extracted CSS primacy with gap protocol
 
-The component agent's primary Bootstrap CSS reference is the pre-extracted file at `agent/review/reference-css/{component}-{story}.css`. Direct access to `node_modules/bootstrap/dist/css/bootstrap.css` is structurally blocked.
+The component agent's primary Bootstrap CSS reference is the pre-extracted file at `agent/artifacts/reference-css/{component}-{story}.css`. Direct access to `node_modules/bootstrap/dist/css/bootstrap.css` is structurally blocked.
 
 **Enforcement:** Add `Read(node_modules/bootstrap/dist/css/bootstrap.css)` to `disallowedTools` in the component agent's sub-agent definition (or to the project `.claude/settings.json` deny list). The agent physically cannot read `bootstrap.css`; any attempt produces a permission prompt that only the user can approve.
 
 **Gap protocol — when extracted CSS is insufficient:**
 
-1. **Log immediately** — append a "Extracted CSS Gaps" entry to `agent/review/{component}-findings.md` recording: the specific selector or property searched for, which extracted file was consulted, and why it was insufficient.
+1. **Log immediately** — append a "Extracted CSS Gaps" entry to `agent/artifacts/findings/{component}-findings.md` recording: the specific selector or property searched for, which extracted file was consulted, and why it was insufficient.
 2. **Signal the orchestrator** — output the terminal phrase `EXTRACTED-CSS-GAP: {description of what's missing}` so the orchestrator can surface it to the user rather than the agent silently proceeding.
 3. **Wait for permission** — the deny rule enforces the pause; the user sees the permission prompt and decides whether to allow the `bootstrap.css` read for this specific gap.

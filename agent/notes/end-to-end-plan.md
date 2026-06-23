@@ -213,7 +213,7 @@ grep "bootstrap-kb-skill" CLAUDE.md               # TOC entry present
 
 **Purpose:** Per-component stage run once per batch. For each component, produces a taxonomy doc, a Bootstrap reference story, and pre-extracted CSS for each story. These serve two roles downstream: the taxonomy doc is the mapping specification consumed by Stage 5; the reference story and its extracted CSS are the pixel-diff targets against which Stage 5's mirror stories are compared.
 
-**Skill file:** `agent/mapping-and-references-skill.md` (existing; refactored in Phase 3 per the changes listed below). Single file — the component sub-agent loads it in full at startup. Parts 1–4 of this skill govern taxonomy generation; Parts 5–6 govern reference story construction.
+**Skill files:** `agent/mapping-and-references-skill/` directory — orchestrator loads `SKILL.md` + `orchestrator.md`; component sub-agent loads `SKILL.md` + `component-agent.md`. Parts 1–4 of `component-agent.md` govern taxonomy generation; Parts 5–6 govern reference story construction.
 
 **Architecture:** Two-tier (Tier 0 orchestrator + one Tier 1 component sub-agent at a time).
 
@@ -224,7 +224,7 @@ grep "bootstrap-kb-skill" CLAUDE.md               # TOC entry present
 
 **Inputs:**
 - `agent/logs/batch-{N}.md` — component list and batch log for this run
-- `agent/mapping-and-references-skill.md` — primary instruction set for taxonomy and reference story work
+- `agent/mapping-and-references-skill/SKILL.md` + `agent/mapping-and-references-skill/component-agent.md` — primary instruction set for taxonomy and reference story work
 - `agent/bootstrap-kb/` — loaded selectively (README first, then relevant component/state/pattern sections)
 - `node_modules/bootstrap/dist/css/bootstrap.css` — compiled CSS; required for selector verification (M007) and reproducing specimen HTML context (P-S002). The KB covers structure and class names but not the mixin-generated selector surface.
 - Bootstrap documentation site (`https://getbootstrap.com/docs/5.3/`) — source of reference story HTML; the agent fetches specific component docs pages via WebFetch to obtain example HTML for each story variant
@@ -286,7 +286,7 @@ Sub-agent (continued):
 
 **Taxonomy doc structure** (`agent/taxonomies/{Component}-taxonomy.md`):
 
-The format is defined by the M-codes in `mapping-and-references-skill.md` and has been established through prior experiments (see `agent/reference-stories/*-taxonomy.md` for examples). The implementing agent follows the skill; the spec records the sections for reference only.
+The format is defined by the M-codes in `mapping-and-references-skill/component-agent.md` and has been established through prior experiments (see `agent/reference-stories/*-taxonomy.md` for examples). The implementing agent follows the skill; the spec records the sections for reference only.
 
 ```markdown
 ---
@@ -334,7 +334,8 @@ Component: {ComponentName}
 
 ## Session-start files (read in this order)
 
-1. agent/mapping-and-references-skill.md
+1. agent/mapping-and-references-skill/SKILL.md
+2. agent/mapping-and-references-skill/component-agent.md
 
 ## Key paths
 
@@ -358,14 +359,14 @@ Return exactly one of:
 - REFERENCE-STORY-READY-FOR-REVIEW
 - COMPONENT-STAGE-4-COMPLETE
 
-mapping-and-references-skill.md is your task definition. Do not derive your steps from this prompt.
+component-agent.md is your task definition. Do not derive your steps from this prompt.
 ```
 
 ---
 
-**Skill file changes required for Phase 3** (`agent/mapping-and-references-skill.md`):
+**Skill file changes required for Phase 3** (now implemented in `agent/mapping-and-references-skill/component-agent.md`):
 - Update all paths per Q6 (reference stories → `stories/react-aria-bootstrap/reference/`, taxonomy docs → `agent/taxonomies/`, extracted CSS → `agent/artifacts/reference-css/`, `presentation.scss` replaces `augments.scss`, `withBootstrap` replaces `withBootstrapTest`)
-- Remove KB *generation* content from Part 5 (when to rebuild the KB, which Bootstrap source files to parse) — that content moves to `bootstrap-kb-skill.md`. Retain M003 load sequence and query table in `mapping-and-references-skill.md`.
+- Remove KB *generation* content from Part 5 (when to rebuild the KB, which Bootstrap source files to parse) — that content moves to `bootstrap-kb-skill.md`. Retain M003 load sequence and query table in `component-agent.md`.
 - Add: explicit instruction to fetch Bootstrap documentation pages via WebFetch for reference story HTML
 - Add: `## Decisions` section to taxonomy doc template
 - Add: terminal phrase protocol (`TAXONOMY-DECISIONS-NEEDED`, `TAXONOMY-COMPLETE`, `REFERENCE-STORY-READY-FOR-REVIEW`, `COMPONENT-STAGE-4-COMPLETE`)

@@ -1,11 +1,10 @@
 ---
-title: Mapping and References Skill
-status: iteration 0 pending — consolidated from bootstrap-mapping and reference-stories experiments
+title: Mapping and References Skill — Component Sub-Agent (Tier 1)
 ---
 
-# Mapping and References Skill
+# Component Sub-Agent (Tier 1)
 
-This skill guides the consolidated workflow: for each component in an iteration, produce a taxonomy document covering sub-part identification, state mappings with bridge strategy, DOM conflicts, variants, and decisions needed — then implement the approved taxonomy as Storybook reference stories.
+This skill guides the consolidated Stage 4 workflow: for each component in a batch, produce a taxonomy document covering sub-part identification, state mappings with bridge strategy, DOM conflicts, variants, and decisions needed — then implement the approved taxonomy as Storybook reference stories with extracted CSS.
 
 It consolidates methodology principles from the `bootstrap-mapping` experiment (M-codes) and reference story construction principles from the `reference-stories` experiment (P-codes) into a single reference.
 
@@ -310,9 +309,9 @@ Include all substantive sub-parts in a component's reference stories, even if th
 
 Reference stories depict what a correctly styled component should look like — they are visual targets. Never include specimens that show an incorrect, unstyled, or intermediate state as a contrast or "baseline." Implementation challenges are documented in the taxonomy's DOM conflicts and decisions-needed sections, not illustrated in reference stories.
 
-### P-S006: Extract reference CSS after each story is written
+### P-S006: Extract reference CSS after each story is approved
 
-After writing each story file and confirming Storybook renders it, run `scripts/extract-story-css.mjs` for that story and save the output to `agent/artifacts/reference-css/{component}-{StoryName}.css` (kebab-case, matching the story's title path). Storybook must be running on port 6006.
+After the user approves a reference story, run `scripts/extract-story-css.mjs` for each story and save the output to `agent/artifacts/reference-css/{component}-{StoryName}.css` (kebab-case, matching the story's title path). Storybook must be running on port 6006.
 
 ```bash
 node scripts/extract-story-css.mjs "Bootstrap Reference/{Component}/{StoryName}"
@@ -330,7 +329,7 @@ All terminal phrases must be the final line of the agent's response. Return exac
 |--------|-------------|
 | `TAXONOMY-DECISIONS-NEEDED: {list}` | Taxonomy has open forks that require user input. List the specific decisions needed. |
 | `TAXONOMY-COMPLETE` | Taxonomy doc has been written to `agent/taxonomies/{Component}-taxonomy.md`; no open decisions remain. |
-| `REFERENCE-STORY-READY-FOR-REVIEW` | Reference story has been written; CSS has been extracted for all stories; ready for user visual review in Storybook. |
+| `REFERENCE-STORY-READY-FOR-REVIEW` | Reference story has been written and Storybook is serving it; ready for user visual review. |
 | `COMPONENT-STAGE-4-COMPLETE` | All stories approved; CSS extracted for all stories; all committed. |
 
 **Flow:**

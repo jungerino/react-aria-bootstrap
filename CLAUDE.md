@@ -93,6 +93,8 @@ Never assume component properties without verification through these tools.
 - [React Aria Skill](./agent/react-aria-skill/SKILL.md) — Entry point for the React Aria + Bootstrap styling experiment; load at session start when running a styling experiment, then follow its session-start loading instructions
 - [Bootstrap KB Skill](./agent/bootstrap-kb-skill.md) — Skill for generating or regenerating the Bootstrap knowledge base; use when KB is missing, outdated, or a new component needs to be added
 - [Mapping and References Skill](./agent/mapping-and-references-skill/SKILL.md) — Entry point for Stage 4 (taxonomy + reference stories); load at session start, then follow its session-start loading instructions
+- [Storybook Setup](./agent/set-up-storybook.md) — One-time checklist for setting up the end-to-end workflow Storybook config
+- [Define Component Batch](./agent/define-component-batch.md) — Creates `batch-{N}.md` when user provides a component list for Stage 3
 
 ### Bootstrap Knowledge Base
 - [KB Index](./agent/bootstrap-kb/README.md) — Master index and retrieval guide; load this first

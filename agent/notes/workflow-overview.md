@@ -23,6 +23,20 @@ A **batch** is a set of ~5 components you define in Stage 3. Stages 4 and 5 each
 
 ---
 
+## How to Start Each Stage
+
+| Stage | What to say | Agent instruction file |
+|-------|-------------|------------------------|
+| 1 | "Regenerate the Bootstrap KB" | `agent/bootstrap-kb-skill.md` |
+| 2 | "Set up Storybook for the end-to-end workflow" | `agent/set-up-storybook.md` |
+| 3 | "Create batch N with components: X, Y, Z" | `agent/define-component-batch.md` |
+| 4 | "Run Stage 4 for batch N" | `agent/mapping-and-references-skill/SKILL.md` |
+| 5 | "Run Stage 5 for batch N" | `agent/react-aria-skill/SKILL.md` |
+
+For Stages 4 and 5, the agent loads `SKILL.md` first, which specifies which additional files to load per tier.
+
+---
+
 ## Stage 1 — Bootstrap Knowledge Base
 
 **Purpose:** Build a structured knowledge base from Bootstrap's source code that agents can query during later stages instead of reading raw Bootstrap files directly.

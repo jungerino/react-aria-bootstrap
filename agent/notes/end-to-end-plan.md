@@ -83,7 +83,7 @@ grep "bootstrap-kb-skill" CLAUDE.md               # TOC entry present
 
 **Purpose:** One-time setup. Creates the canonical `stories/react-aria-bootstrap/` directory tree, moves shared files to their Q6 paths, and updates Storybook config to cover all three story categories. After this stage Storybook starts cleanly; no component stories exist yet (expected — they are added in Stages 4 and 5).
 
-**Skill file:** None. This is a short mechanical checklist; the spec below is the complete instruction set.
+**Instruction file:** `agent/set-up-storybook.md` — the complete checklist; extracted from this planning doc.
 
 **Inputs:** None from prior stages — all changes are to existing config and shared files.
 

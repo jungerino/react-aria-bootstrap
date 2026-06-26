@@ -1,4 +1,4 @@
-Commit `.claude/settings.json` and/or `CLAUDE.md` on the current branch, propagate to `main`, then merge `main` into every integration branch.
+Commit `.claude/settings.json` and/or `CLAUDE.md` on the current branch, propagate to `main`, then copy those same files onto every integration branch.
 
 ## Scope
 
@@ -63,16 +63,23 @@ git branch -r \
   | grep -v "^${ORIGINAL_BRANCH}$"
 ```
 
-For each integration branch:
+For each integration branch, copy only the files in scope from `main` — no merge:
 
 ```bash
 git switch <branch>
 git pull origin <branch>
-git merge main --no-edit
-git push origin <branch>
+git checkout main -- .claude/settings.json   # if in scope
+git checkout main -- CLAUDE.md               # if in scope
+# Only commit if something actually changed:
+if ! git diff --cached --quiet; then
+  git commit -m "chore: sync config"
+  git push origin <branch>
+else
+  echo "Already up to date"
+fi
 ```
 
-**On merge conflict:** stop immediately. Report which branch conflicted and which files are in conflict. Do not continue to the remaining branches.
+Using `git checkout main -- <file>` rather than `git merge main` avoids triggering conflicts from unrelated divergence between the branch and main.
 
 ### Step 5 — Return to original branch
 

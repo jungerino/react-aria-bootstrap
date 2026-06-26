@@ -16,7 +16,8 @@
       "mcp__react-aria__get_react_aria_page",
       "mcp__react-aria__list_react_aria_pages",
       "mcp__react-aria__get_react_aria_page_info",
-      "WebSearch"
+      "WebSearch",
+      "mcp__figma__whoami"
     ],
     "additionalDirectories": [
       "/Users/josh/.claude/plans"

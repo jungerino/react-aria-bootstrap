@@ -130,7 +130,10 @@ When a React Aria structural variant has no Bootstrap modifier class equivalent,
 
 When the mapping encounters a genuine fork — multiple legitimate Bootstrap variants for the same semantic role, or a React Aria feature with multiple viable Bootstrap implementation paths — do not resolve it unilaterally. Record each open question in the **`## Stage 4`** section of the current `agent/logs/batch-{N}.md`, under a **Decisions needed** heading. Stop short of recommending an answer.
 
-Once the user resolves a decision, record the answer in the `## Decisions` section of the component's taxonomy doc (`agent/taxonomies/{component}-taxonomy.md`). The batch log retains the original questions as a historical record.
+Once the user resolves a decision:
+- **Taxonomy doc (`## Decisions` section):** record both the question (the fork description, copied from the batch log) and the user's answer. The question must appear so the answer is interpretable without cross-referencing the batch log.
+- **Batch log (`## Stage 4` section):** add the user's answer beneath the original question entry. After Q&A is complete, each decision block in the batch log must contain both the question and the answer.
+- **Batch log `Principles used` list:** Before emitting `COMPONENT-STAGE-4-COMPLETE`, record applied M-codes and P-codes — with ID and slug — in the component's `**Principles used:**` bulleted list in `## Stage 4`.
 
 **Taxonomy doc template** (write to `agent/taxonomies/{Component}-taxonomy.md`):
 
@@ -166,7 +169,12 @@ iteration: {N}
 [High/Medium/Low with rationale]
 
 ## Decisions
-[Resolved user decisions from Q&A — the authoritative record for Stage 5 to consume]
+
+[For each resolved decision, include both the question and the answer:]
+
+### D{N} — {Decision title}
+**Question:** {The fork description — what was the open choice?}
+**Answer:** {The user's resolution.}
 ```
 
 **Four trigger patterns** must elevate items to Decisions needed:
@@ -276,6 +284,13 @@ For Bootstrap components that drive pseudo-class styles via CSS custom propertie
 Apply the same pattern for each component using its own CSS variable namespace (e.g., `--bs-list-group-action-hover-*`, `--bs-dropdown-link-hover-*`). States representable via static HTML attributes or Bootstrap classes (e.g., `disabled`, `.active`, `.is-invalid`) do not need faux classes.
 
 If `presentation.scss` does not yet have faux-state classes for the component being worked on, add them now.
+
+**Focused state is required for every interactive element.** For any sub-part that can receive keyboard focus — buttons, triggers, list items, menu items, links, form controls — the reference story must include a focused specimen (`.faux-focus` or `.faux-focus-visible`). Focus is visually distinct from hover in Bootstrap and must appear as its own specimen, not be subsumed under hover or omitted. A story that covers hover and selected/active without a focused specimen is incomplete.
+
+**Faux focus source rule — check before writing any `.faux-focus` class.** Before writing a `.faux-focus` rule, grep Bootstrap's compiled CSS (`node_modules/bootstrap/dist/css/bootstrap.css`) for `:focus` and `:focus-visible` selectors on the element's class.
+
+- **Bootstrap defines a custom focus style** (e.g. `box-shadow` on `.btn:focus-visible`): replicate those Bootstrap tokens in the faux class.
+- **No custom focus style in Bootstrap's CSS**: Bootstrap leaves `outline` unsuppressed and the UA stylesheet owns the ring. Use `outline: auto -webkit-focus-ring-color` — do not substitute Bootstrap tokens (`--bs-focus-ring-color`, `--bs-primary`, etc.), which produce the wrong color and will not match.
 
 ### P-S002: Reproduce the Bootstrap selector context for each specimen
 

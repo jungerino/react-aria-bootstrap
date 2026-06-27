@@ -252,8 +252,8 @@ After each comparison pass, update the Story Registry table in `agent/artifacts/
 
 **Observations:** (copied from story findings doc FAIL/UNRESOLVED entries)
 
-**Principles consulted:**
-- [Cite specific skill principles or component decisions that guided the fix]
+**Principles used:**
+- [Cite specific skill principles or component decisions that guided the fix; format: `ID slug`, e.g., `P014 data-pressed`]
 
 **Code changes made:** (or "None — [reason]" if no changes)
 - [file:line]: [description]
@@ -280,6 +280,8 @@ If any new SCSS files appear under `stories/`, move their bridge rules to `src/s
 
 **Run final `compare-stories.mjs` sweep** across all stories with `--threshold 0.003`. Do not re-read reference images — they remain in context from Preparation Phase.
 - If any story fails: re-enter the fix loop (Phase C mechanics) for those stories only, then re-run the full sweep. Repeat until all stories pass.
+
+Before reporting `verification-sweep-passed`: record applied M-codes and P-codes — with ID and slug — in the component's `**Principles used:**` bulleted list in `## Stage 5` of `agent/logs/batch-{N}.md`.
 
 When all stories pass the sweep, report `verification-sweep-passed` to the primary agent.
 
@@ -330,8 +332,8 @@ Stuck: <n>
 
 **Observations:** (copied from story findings doc FAIL/UNRESOLVED entries)
 
-**Principles consulted:**
-- [Cite specific skill principles or component decisions that guided the fix]
+**Principles used:**
+- [Cite specific skill principles or component decisions that guided the fix; format: `ID slug`, e.g., `P014 data-pressed`]
 
 **Code changes made:** (or "None — [reason]" if no changes)
 - [file:line]: [description]

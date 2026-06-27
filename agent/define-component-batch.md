@@ -35,11 +35,27 @@ Load this file when the user provides a component list for a new batch. Your tas
 
 ## Stage 4
 
+### {Component1}
 *(Populated during Stage 4)*
+
+**Principles used:**
+- *(e.g., `M016 decisions-needed`, `P-S001 faux-focus`)*
+
+### {Component2}
+*(Populated during Stage 4)*
+
+**Principles used:**
+- *(e.g., `M016 decisions-needed`, `P-S001 faux-focus`)*
 
 ## Stage 5
 
-*(Populated during Stage 5)*
+### {Component1}
+**Principles used:**
+- *(e.g., `P014 data-pressed`, `P022 bs-icons`)*
+
+### {Component2}
+**Principles used:**
+- *(e.g., `P014 data-pressed`, `P022 bs-icons`)*
 ```
 
 ---

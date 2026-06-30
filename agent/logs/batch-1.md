@@ -11,7 +11,9 @@
 
 ## Stage 4
 
-### Button — Decisions needed
+### batch-1/stage-4/iter-1
+
+#### Button — Decisions needed
 
 **D1 — Pending state visual pattern**
 
@@ -35,7 +37,35 @@ Which scope is preferred?
 
 **Answer:** All 17 Bootstrap variants — 8 solid `.btn-{color}`, 8 outline `.btn-outline-{color}`, 1 `.btn-link`.
 
-### Button — Taxonomy and reference stories
+#### Select — Decisions needed
+
+**D1 — Trigger caret approach**
+
+Bootstrap's `.dropdown-toggle::after` generates a CSS caret pseudo-element. React Aria's typical Select implementation uses an explicit icon child (e.g., `<ChevronDown>`) inside the button. Two options:
+
+- **(a) Suppress `::after` caret, use explicit icon child** — `.dropdown-toggle::after { display: none }` on the Select trigger; place a `<ChevronDown>` (or Bootstrap Icons chevron) inside the button as a React child. Matches `.form-select` visual appearance exactly (custom chevron icon).
+- **(b) Accept Bootstrap's CSS caret** — keep `.dropdown-toggle::after`; no icon child needed. Results in Bootstrap's standard dropdown caret (small triangle), not `.form-select`'s chevron.
+
+Option (a) matches the `.form-select` visual target more closely and gives implementation-phase control over icon source. Which should the reference story demonstrate?
+
+**Answer:** Suppress `::after` caret — set `.dropdown-toggle::after { display: none }` on the Select trigger. Use an explicit Bootstrap Icons chevron child (`<i class="bi bi-chevron-down">`). Matches `.form-select` visual appearance.
+
+### batch-1/stage-4/iter-2
+
+**Outcome:** Partial. Button reached `COMPONENT-STAGE-4-COMPLETE`. Select stories were written but not approved; iteration closed early to sync learnings. Select work carries forward to iter-3.
+
+**Button:** Taxonomy and 4 reference stories (States, Pending, Variants, Sizes) approved; CSS extracted; committed. `COMPONENT-STAGE-4-COMPLETE`.
+
+**Select:** Taxonomy written. 4 reference stories written (TriggerStates, OpenState, ItemStates, FormIntegration). Review surfaced three CSS bugs:
+- Trigger border transparent in all states — root cause: `.btn` defaults `--bs-btn-*-border-color` to `transparent`; sub-agent patched the output `border-color` property instead of overriding the CSS variables, so Bootstrap's own state pseudo-classes re-applied the transparent value on hover/active. Fixed by setting `--bs-btn-hover-border-color` etc. on the element (P-012).
+- Two carets rendering — `::after` triangle caret not suppressed despite D1 decision; fixed by adding `.dropdown-toggle.select-trigger::after { display: none }`.
+- Focus item indistinguishable from hover — sub-agent saw Bootstrap's `:focus` rule uses the same tokens as `:hover` and concluded the states were visually identical, omitting `outline: auto -webkit-focus-ring-color`. Root cause: Bootstrap's CSS is not a complete description of visual appearance; the UA focus ring is active when `outline` is not suppressed (P-014, P-015, P-016).
+
+**Principles added to component-agent.md:** P-012, P-013, P-014, P-015, P-016.
+
+**Files synced to integration-batch-1:** `agent/mapping-and-references-skill/component-agent.md`, `agent/logs/batch-1.md`.
+
+#### Button — Taxonomy and reference stories
 
 Taxonomy written to `agent/taxonomies/button-taxonomy.md`.
 
@@ -55,20 +85,7 @@ Taxonomy written to `agent/taxonomies/button-taxonomy.md`.
 - P-004 flex-wrap — specimens in `display: flex; flex-wrap: wrap` containers
 - P-010 absolute-overlay-centering — removed `top/left/transform: translate(-50%,-50%)` from `.btn-pending-spinner`; Bootstrap's `spinner-border` `@keyframes` replaces the entire `transform` value on every frame, wiping out the translate; `position: absolute` with no inset values correctly centers the spinner inside the `inline-flex` wrapper
 
-### Select — Decisions needed
-
-**D1 — Trigger caret approach**
-
-Bootstrap's `.dropdown-toggle::after` generates a CSS caret pseudo-element. React Aria's typical Select implementation uses an explicit icon child (e.g., `<ChevronDown>`) inside the button. Two options:
-
-- **(a) Suppress `::after` caret, use explicit icon child** — `.dropdown-toggle::after { display: none }` on the Select trigger; place a `<ChevronDown>` (or Bootstrap Icons chevron) inside the button as a React child. Matches `.form-select` visual appearance exactly (custom chevron icon).
-- **(b) Accept Bootstrap's CSS caret** — keep `.dropdown-toggle::after`; no icon child needed. Results in Bootstrap's standard dropdown caret (small triangle), not `.form-select`'s chevron.
-
-Option (a) matches the `.form-select` visual target more closely and gives implementation-phase control over icon source. Which should the reference story demonstrate?
-
-**Answer:** Suppress `::after` caret — set `.dropdown-toggle::after { display: none }` on the Select trigger. Use an explicit Bootstrap Icons chevron child (`<i class="bi bi-chevron-down">`). Matches `.form-select` visual appearance.
-
-### Select — Taxonomy
+#### Select — Taxonomy
 
 Taxonomy written to `agent/taxonomies/select-taxonomy.md`.
 
@@ -87,21 +104,6 @@ Taxonomy written to `agent/taxonomies/select-taxonomy.md`.
 - M015 variant-authority — Bootstrap dropdown-item states (`.active`, `.disabled`) are the authority for list items; React Aria-only values not mapped
 - M016 decisions-needed — D1 (trigger caret) was pre-resolved in batch log; no new decisions surfaced
 - M018 elem-type-sub — ListBoxItem renders `<div>` (not `<a>` or `<button>` as Bootstrap typically shows for `.dropdown-item`); `:disabled` pseudo will not fire on `<div>`; only `[data-disabled]` bridge applies
-
-## Stage 4 / Iteration 2 — 2026-06-30
-
-**Outcome:** Partial. Button reached `COMPONENT-STAGE-4-COMPLETE`. Select stories were written but not approved; iteration closed early to sync learnings. Select work carries forward to iter-3.
-
-**Button:** Taxonomy and 4 reference stories (States, Pending, Variants, Sizes) approved; CSS extracted; committed. `COMPONENT-STAGE-4-COMPLETE`.
-
-**Select:** Taxonomy written. 4 reference stories written (TriggerStates, OpenState, ItemStates, FormIntegration). Review surfaced three CSS bugs:
-- Trigger border transparent in all states — root cause: `.btn` defaults `--bs-btn-*-border-color` to `transparent`; sub-agent patched the output `border-color` property instead of overriding the CSS variables, so Bootstrap's own state pseudo-classes re-applied the transparent value on hover/active. Fixed by setting `--bs-btn-hover-border-color` etc. on the element (P-012).
-- Two carets rendering — `::after` triangle caret not suppressed despite D1 decision; fixed by adding `.dropdown-toggle.select-trigger::after { display: none }`.
-- Focus item indistinguishable from hover — sub-agent saw Bootstrap's `:focus` rule uses the same tokens as `:hover` and concluded the states were visually identical, omitting `outline: auto -webkit-focus-ring-color`. Root cause: Bootstrap's CSS is not a complete description of visual appearance; the UA focus ring is active when `outline` is not suppressed (P-014, P-015, P-016).
-
-**Principles added to component-agent.md:** P-012, P-013, P-014, P-015, P-016.
-
-**Files synced to integration-batch-1:** `agent/mapping-and-references-skill/component-agent.md`, `agent/logs/batch-1.md`.
 
 ## Stage 5
 

@@ -21,9 +21,16 @@ This protocol governs the cut → iterate → debrief → merge lifecycle for it
 
 Cut `batch-{N}/stage-{M}/iter-{P}` from `integration-batch-{N}`.
 
-Ask the user: **"Are there any files that should be stubbed before work begins?"**
+**Stub question:** Ask the user: **"Are there any files that should be stubbed before work begins?"**
 - If yes: create stubs in a separate commit; commit message: `chore: stub files for batch-{N}/stage-{M}/iter-{P}`
 - If no: proceed directly to iteration work
+
+**Batch log stub (ask explicitly):** Ask the user: **"Should the batch log be stubbed?"**
+
+- **Stub** (default while skills are still being refined): Reset the log to the structural template (see Batch log stub template below). The agent works from skills alone, unconstrained by prior iteration findings.
+- **Carry forward** (once skills are mature): Leave the log as-is. The agent can see accumulated findings from prior iterations.
+
+If stubbing, include the stub in the same commit as other stubbed files (`chore: stub files for ...`), or as its own commit if the batch log is the only file being stubbed.
 
 See the stage's skill doc for in-iteration implementation specifics.
 
@@ -39,16 +46,16 @@ The user reviews output and provides observations. Record each observation immed
 
 ### Successful iteration
 
-1. Record the outcome in the batch log (see below).
+1. Record the outcome in the batch log under the current iteration's sub-heading (see Batch log below).
 2. Update skill docs and knowledge files if the process changed.
 3. **Component work gate:** Ask the user: **"Is this component's implementation ready to move on, or should we do another iteration?"** If another iteration is requested, cut a new iteration branch (back to "Cutting an iteration branch" above).
 4. Ask the user: **"Which files from this iteration should be merged to `integration-batch-{N}`?"**
 5. Merge confirmed files via file-by-file checkout, then commit.
-6. Add a success entry to the batch log.
+6. **Merge the batch log additively:** Do not checkout the batch log file — this would overwrite the integration branch's cumulative history. Instead, copy the current iteration's sub-heading and its content from the iteration branch log, then append it under the correct stage section of the integration branch log. Commit with message: `chore: sync batch log from batch-{N}/stage-{M}/iter-{P}`
 
 ### Failed iteration
 
-1. Record what was attempted and why it failed in the batch log.
+1. Record what was attempted and why it failed in the batch log under the current iteration's sub-heading.
 2. Update skill docs and knowledge files with learnings from the failure.
 3. Cut a new iteration branch (back to "Cutting an iteration branch" above).
 
@@ -58,6 +65,60 @@ The user reviews output and provides observations. Record each observation immed
 
 Each batch has a log at `agent/logs/batch-{N}.md`.
 
-**Entry heading format:** `## Stage {M} / Iteration {P} — {YYYY-MM-DD}`
+The **integration branch** log is cumulative — every iteration's findings accumulate under their own sub-heading in chronological order. The **iteration branch** log contains only the structural template plus the current iteration's sub-heading.
 
-Every iteration gets an entry — successful and failed alike. Failed entries note what was attempted and why it was abandoned. The final successful entry for each stage summarizes what was accomplished and any notable observations.
+### Sub-heading format
+
+Within each stage section, each iteration gets its own sub-heading:
+
+```
+### batch-{N}/stage-{M}/iter-{P}
+```
+
+The outcome summary and all component findings (decisions, taxonomy notes, principles used) are written under this heading. There is no separate summary entry — the sub-heading is the entry.
+
+### Batch log stub template
+
+When stubbing the batch log on a new iteration branch, reset it to this template (replace `{N}`, `{P}`, and component names with actual values):
+
+```markdown
+# Batch {N}
+
+## Components
+
+- {ComponentA}
+- {ComponentB}
+
+## Stories
+
+*Populated by Stage 4 orchestrator after each component's reference stories are approved.*
+
+## Stage 4
+
+### batch-{N}/stage-4/iter-{P}
+
+*(In progress)*
+
+## Stage 5
+
+*(Populated during Stage 5)*
+```
+
+The `*(In progress)*` placeholder marks where the orchestrator writes findings during the iteration.
+
+### Integration branch log structure
+
+The integration branch log accumulates all iterations' sub-headings in chronological order within each stage section:
+
+```markdown
+## Stage 4
+
+### batch-{N}/stage-4/iter-1
+[iter-1 content]
+
+### batch-{N}/stage-4/iter-2
+[iter-2 content]
+
+### batch-{N}/stage-4/iter-3
+[iter-3 content]
+```

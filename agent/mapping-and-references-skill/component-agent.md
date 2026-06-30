@@ -246,7 +246,7 @@ For form components: `https://getbootstrap.com/docs/5.3/forms/{form-component}/`
 
 Annotate each story with its Bootstrap docs source URL in a JSDoc comment above the export.
 
-### P-S001: Faux state classes for pseudo-class specimens
+### P-001: Faux state classes for pseudo-class specimens
 
 Reference stories must statically render all interactive states to support screenshot-based visual comparison. Never instruct the reviewer to interact with the browser to see a state.
 
@@ -292,7 +292,54 @@ If `presentation.scss` does not yet have faux-state classes for the component be
 - **Bootstrap defines a custom focus style** (e.g. `box-shadow` on `.btn:focus-visible`): replicate those Bootstrap tokens in the faux class.
 - **No custom focus style in Bootstrap's CSS**: Bootstrap leaves `outline` unsuppressed and the UA stylesheet owns the ring. Use `outline: auto -webkit-focus-ring-color` — do not substitute Bootstrap tokens (`--bs-focus-ring-color`, `--bs-primary`, etc.), which produce the wrong color and will not match.
 
-### P-S002: Reproduce the Bootstrap selector context for each specimen
+### P-012: For dual-counterpart components, override CSS variables at the element level — not the output property
+
+When a dual-counterpart component (M014) requires Bootstrap's state rules to produce a different visual than the structural counterpart's defaults, override the CSS custom properties on the element class — not the output properties (`border-color`, `background-color`, etc.) directly.
+
+Bootstrap's component state rules (`.btn:hover`, `.btn:first-child:active`, etc.) set output properties by reading CSS custom properties (e.g. `border-color: var(--bs-btn-hover-border-color)`). Those variables default to `transparent` on an unstyled `.btn`. Overriding the output property in a class rule is fragile because:
+
+- Bootstrap's own state pseudo-classes (`.btn:hover`) fire when the user's cursor is over a faux-state specimen and will re-apply the variable — even if your class rule has higher specificity.
+- CSS cascade battles (specificity + source order) are load-order-sensitive and hard to reason about across separate SCSS files.
+
+Overriding the variable on the element means every rule that reads it — Bootstrap's state rules, faux-state class rules, real pseudo-classes — all resolve to the correct value automatically.
+
+```scss
+// Wrong — output property override; defeated by Bootstrap's .btn:hover
+.select-trigger {
+  border-color: var(--bs-border-color);
+}
+
+// Also wrong — still an output property; specificity battles are fragile
+.btn.select-trigger.faux-hover {
+  border-color: var(--bs-border-color);
+}
+
+// Correct — variable override at element level; propagates through all state rules
+.select-trigger {
+  --bs-btn-border-color: var(--bs-border-color);
+  --bs-btn-hover-border-color: var(--bs-border-color);
+  --bs-btn-active-border-color: var(--bs-border-color);
+  --bs-btn-disabled-border-color: var(--bs-border-color);
+}
+```
+
+**Identify the complete variable set.** Grep the compiled CSS for the structural counterpart's state rules and enumerate every CSS custom property they read. Override the complete set — partial overrides leave some states falling through to wrong defaults.
+
+**Applies to:** any component using M014 where the visual counterpart's defaults differ from the structural counterpart's (e.g. Select trigger: `.btn.dropdown-toggle` has transparent borders; `.form-select` has visible ones).
+
+### P-014: Bootstrap's `:focus` sharing tokens with `:hover` does not mean focus is visually identical to hover
+
+When Bootstrap's `:focus` rule on a component reads the same CSS custom properties as `:hover`, the two states are still visually distinct. Bootstrap does not suppress `outline` on many components, so the UA focus ring is still active and visible when the element has real keyboard focus.
+
+"Same Bootstrap token values" and "same visual appearance" are not the same thing. The P-001 faux-focus-source rule is the mechanism for handling this correctly — this principle exists to prevent the inference from being skipped. When you see a `:focus` rule with hover-identical values, do not conclude "focus = hover." Instead: check whether Bootstrap suppresses `outline`. If it does not, the faux-focus class must include both the shared hover tokens AND `outline: auto -webkit-focus-ring-color`.
+
+### P-015: Bootstrap's compiled CSS is not a complete description of a state's visual appearance
+
+The UA stylesheet contributes rendering that does not appear anywhere in Bootstrap's CSS — most importantly, focus rings on focused elements unless Bootstrap explicitly suppresses them with `outline: 0` or `outline: none`. When determining what a state looks like, Bootstrap's CSS captures Bootstrap's explicit overrides only; it does not capture what the browser renders by default or what persists after those overrides are applied.
+
+When checking a state's appearance, the authoritative source is the actual browser rendering — not Bootstrap's CSS alone. Bootstrap's absence of a rule for a property means the UA default is active, not that the property is irrelevant. Always ask: "What does the browser render for this state?" not "What does Bootstrap's CSS say about this state?"
+
+### P-002: Reproduce the Bootstrap selector context for each specimen
 
 For each sub-part specimen, search the compiled Bootstrap CSS (`node_modules/bootstrap/dist/css/bootstrap.css`) for all selectors containing the sub-part's class. The specimen must reproduce whatever ancestor and sibling context those selectors require.
 
@@ -300,7 +347,7 @@ For each sub-part specimen, search the compiled Bootstrap CSS (`node_modules/boo
 
 **Sibling context:** Required when selectors use adjacent sibling combinators (`.sub-part + .sub-part`) or position pseudo-classes (`:first-child`, `:last-child`, `:not(:last-child)`) that would affect the visual state being shown. Add the minimum siblings needed to place the specimen in the correct position.
 
-### P-S003: Use CSS classes, not inline styles
+### P-003: Use CSS classes, not inline styles
 
 Reference story render functions should not use inline `style` props for visual styling. All visual CSS — including faux state values, layout, sizing, and spacing — belongs in `presentation.scss` as named classes. The story file applies class names only.
 
@@ -308,23 +355,79 @@ Reference story render functions should not use inline `style` props for visual 
 
 The only case where an inline style would be justified is one that cannot be expressed as a reusable class — for example, a per-specimen value that is genuinely unique and data-driven. No such case has arisen in practice.
 
-### P-S004: Lay out specimens in a flex-wrap container
+### P-004: Lay out specimens in a flex-wrap container
 
 Specimens should wrap naturally in a `display: flex; flex-wrap: wrap` container. Never specify a fixed column count.
 
-### P-S005: Open-state specimens show a selected value in the trigger
+### P-005: Open-state specimens show a selected value in the trigger
 
 When a story specimen shows a component in its open state (dropdown open, popover visible, panel expanded), the trigger must display the currently selected value — not a placeholder or empty state. The selected value should match the visually active item in the open panel. This reflects the most common real-world open interaction: the user has a prior selection and reopens the component to review or change it. An empty trigger paired with an open panel is an unrealistic combination that misrepresents the target appearance.
 
-### P-T001: Err on the side of over-inclusion
+### P-006: Err on the side of over-inclusion
 
 Include all substantive sub-parts in a component's reference stories, even if the Bootstrap class appears in another component's stories. Sharing a class name is not grounds for omission — compound selectors in the implementation can produce different visual results for the same Bootstrap class in different component contexts (e.g., `.react-aria-Select .invalid-feedback` vs. `.react-aria-TextField .invalid-feedback`). Never use "covered in another component's story" as justification for omitting a sub-part.
 
-### P-T002: Reference stories show target appearances only
+### P-007: Reference stories show target appearances only
 
 Reference stories depict what a correctly styled component should look like — they are visual targets. Never include specimens that show an incorrect, unstyled, or intermediate state as a contrast or "baseline." Implementation challenges are documented in the taxonomy's DOM conflicts and decisions-needed sections, not illustrated in reference stories.
 
-### P-S006: Extract reference CSS after each story is approved
+### P-008: Label every specimen with what it demonstrates
+
+Each specimen in a reference story must carry a visible text label identifying its state, variant, or class. Labels make stories readable without browser inspection — a reviewer should be able to identify what each specimen represents at a glance. When specimens are grouped by variant family, label both the group and each individual specimen within it.
+
+### P-009: Show interactive states across all structurally distinct variant families
+
+When a component has variant families whose state styling differs structurally — not just in token values but in the CSS properties that change — the States story must show the full interactive state matrix for at least one representative of each family. Verifying states against a single variant cannot confirm that other families behave correctly, because families may share token property names while producing different visual mechanisms in the same state (e.g. a fill appearing vs. a fill darkening).
+
+Two variant families are structurally distinct if the same state produces a different *kind* of visual change between them. Differences in token values alone do not require separate rows.
+
+### P-010: Center `position: absolute` overlays in flex containers by omitting inset properties
+
+When centering a `position: absolute` element inside a `display: flex; align-items: center; justify-content: center` container, omit `top`, `left`, and `transform` entirely. With no inset values set, the browser places the element at its **static position** — the position it would occupy if it were in-flow. Inside a centered flex container, that static position is the center.
+
+**Do not use:**
+```scss
+.overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);  // conflicts with animation transforms
+}
+```
+
+**Use instead:**
+```scss
+.overlay {
+  position: absolute;
+  // No top/left/transform — flex container centers it via static position
+}
+```
+
+**Why this matters:** CSS `@keyframes` that set `transform` replace the entire `transform` value on every frame — they do not compose with a base `transform` on the same element. Applying `transform: translate(-50%, -50%)` for centering on an element that also carries a `transform`-based animation causes it to snap back to its un-translated position on every animation tick, producing incorrect movement instead of in-place animation.
+
+**Applies to:** Any `position: absolute` overlay that must be centered within a flex container — spinner overlays, loading indicators, icon overlays.
+
+### P-013: Verify every faux-state specimen before emitting `REFERENCE-STORY-READY-FOR-REVIEW`
+
+Before emitting the terminal phrase, step through every specimen in Storybook and confirm its visual output matches the Bootstrap reference for that state. Do not rely on verifying only the default specimen — a story that is correct in its default state and wrong in hover, active, focus, or disabled is not ready for review; it only appears correct at first glance.
+
+**Minimum verification checklist per story:**
+- Default / resting state
+- Hover (faux or real — both must match)
+- Focus / focus-visible
+- Active / pressed
+- Disabled
+- Any additional states shown in that story (open, selected, invalid, etc.)
+
+Pay particular attention to hover and active: these are the states most likely to silently fall through to structural counterpart defaults when CSS custom properties have not been fully overridden (see P-012). If any specimen is wrong, fix the CSS before emitting the terminal phrase — do not surface a known-broken story for user review.
+
+### P-016: A faux-focus specimen that is visually indistinguishable from faux-hover is wrong
+
+A correctly implemented faux-focus is always visually distinct from faux-hover. They may share background color and text color (see P-014), but the UA focus ring separates them. If, after writing the class, the focused specimen looks identical to the hovered specimen, the class is incomplete — most commonly, `outline: auto -webkit-focus-ring-color` is missing.
+
+Use this as a falsification test: visual indistinguishability from another state is a definitive signal of an incomplete implementation. Do not ship a faux-focus that cannot be told apart from faux-hover; fix it before emitting `REFERENCE-STORY-READY-FOR-REVIEW` (see P-013).
+
+### P-011: Extract reference CSS after each story is approved
 
 After the user approves a reference story, run `scripts/extract-story-css.mjs` for each story and save the output to `agent/artifacts/reference-css/{component}-{StoryName}.css` (kebab-case, matching the story's title path). Storybook must be running on port 6006.
 

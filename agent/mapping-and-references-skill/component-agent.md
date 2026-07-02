@@ -375,6 +375,8 @@ Reference stories depict what a correctly styled component should look like — 
 
 Each specimen in a reference story must carry a visible text label identifying its state, variant, or class. Labels make stories readable without browser inspection — a reviewer should be able to identify what each specimen represents at a glance. When specimens are grouped by variant family, label both the group and each individual specimen within it.
 
+Labels must never appear inside a component's visual container. Injecting text nodes into a dropdown menu, listbox, or other bounded component corrupts its appearance and makes correctness impossible to judge. For collection components where items fill the visual boundary, use the item text itself as the label — the item content is "Hover", "Focused", "Selected", etc. External labels (above or below a standalone specimen) are always acceptable; internal labels are not.
+
 ### P-009: Show interactive states across all structurally distinct variant families
 
 When a component has variant families whose state styling differs structurally — not just in token values but in the CSS properties that change — the States story must show the full interactive state matrix for at least one representative of each family. Verifying states against a single variant cannot confirm that other families behave correctly, because families may share token property names while producing different visual mechanisms in the same state (e.g. a fill appearing vs. a fill darkening).
@@ -426,6 +428,14 @@ Pay particular attention to hover and active: these are the states most likely t
 A correctly implemented faux-focus is always visually distinct from faux-hover. They may share background color and text color (see P-014), but the UA focus ring separates them. If, after writing the class, the focused specimen looks identical to the hovered specimen, the class is incomplete — most commonly, `outline: auto -webkit-focus-ring-color` is missing.
 
 Use this as a falsification test: visual indistinguishability from another state is a definitive signal of an incomplete implementation. Do not ship a faux-focus that cannot be told apart from faux-hover; fix it before emitting `REFERENCE-STORY-READY-FOR-REVIEW` (see P-013).
+
+### P-018: Open-state specimens must show the caret in its rotated position via CSS transform
+
+Any reference story that includes an open-state specimen for a trigger with a directional caret or chevron must show the caret flipped to the open position. Apply `transform: rotate(180deg)` to the caret element via a `.faux-open` class in `presentation.scss` — do not swap icon variants or toggle visibility. Consistent with P-001 faux-state handling and mirrors P024 in `agent/react-aria-skill/principles.md`.
+
+### P-017: Asymmetric spacing that reserves clearance for an element or background-image must be verified against what the reference component actually renders
+
+When asymmetric padding or margin in a Bootstrap counterpart exists to reserve clearance for an absolutely-positioned element or background-image (such as an icon or indicator), confirm that element or image is actually rendered in the reference component. If it is not, eliminate the asymmetric spacing.
 
 ### P-011: Extract reference CSS after each story is approved
 

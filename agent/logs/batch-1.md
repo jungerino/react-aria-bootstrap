@@ -105,6 +105,95 @@ Taxonomy written to `agent/taxonomies/select-taxonomy.md`.
 - M016 decisions-needed — D1 (trigger caret) was pre-resolved in batch log; no new decisions surfaced
 - M018 elem-type-sub — ListBoxItem renders `<div>` (not `<a>` or `<button>` as Bootstrap typically shows for `.dropdown-item`); `:disabled` pseudo will not fire on `<div>`; only `[data-disabled]` bridge applies
 
+### batch-1/stage-4/iter-3
+
+**Outcome:** Both components reached `COMPONENT-STAGE-4-COMPLETE`. Button: taxonomy + 4 reference stories + CSS extracted. Select: taxonomy + 4 reference stories + CSS extracted. Several review cycles surfaced new principles (P-008 amendment, P-017, P-018).
+
+**Principles added to component-agent.md:** P-008 amendment (labels must not appear inside component visual containers), P-017 (asymmetric spacing verification), P-018 (open-state caret flip via CSS transform).
+
+**Files synced to integration-batch-1:** `agent/mapping-and-references-skill/component-agent.md`, `agent/logs/batch-1.md`.
+
+#### Button
+
+**Taxonomy:** `agent/taxonomies/button-taxonomy.md`
+**Reference stories:** `stories/react-aria-bootstrap/reference/Button.reference.stories.tsx`
+**Presentation CSS:** `stories/react-aria-bootstrap/presentation.scss`
+
+**Stories written:**
+- `Bootstrap Reference/Button — Color Variants — Solid` (9 solid variants incl. link)
+- `Bootstrap Reference/Button — Color Variants — Outline` (8 outline variants)
+- `Bootstrap Reference/Button — Sizes` (sm / default / lg)
+- `Bootstrap Reference/Button — States` (Solid Primary + Outline Primary state matrix)
+
+**Reference CSS extracted (approved, P-011):**
+- `agent/artifacts/reference-css/button-ColorVariantsSolid.css` (86 rules)
+- `agent/artifacts/reference-css/button-ColorVariantsOutline.css` (86 rules)
+- `agent/artifacts/reference-css/button-Sizes.css` (87 rules)
+- `agent/artifacts/reference-css/button-States.css` (92 rules)
+
+**Decisions resolved in taxonomy:**
+- D1: Pending specimen uses plain Bootstrap spinner HTML (`.spinner-border-sm`) per P-007 (reference stories = visual target).
+- D2: States story covers both Solid and Outline Primary per P-009 (structurally distinct hover mechanism).
+
+**Principles used:**
+- M001 (dom-first) — Button renders `<button>`; exact match for Bootstrap's `.btn`. No element substitution.
+- M002 (sub-parts) — Single root element; pending spinner identified as state-driven child per M010.
+- M004 (three-bridges) — All Button pseudo-classes (`:hover`, `:focus-visible`, `:active`, `:disabled`) fire natively; no compound selector bridges needed.
+- M008 (data-attrs) — Full `data-*` surface enumerated from React Aria docs.
+- M010 (content-states) — Pending state drives `.spinner-border-sm` child element; scanned Bootstrap catalog; canonical spinner pattern confirmed in Bootstrap docs.
+- M015 (variant-authority) — Bootstrap's `.btn-{color}` / `.btn-outline-{color}` / `.btn-sm` / `.btn-lg` are authoritative variant set.
+- M016 (decisions-needed) — Two decisions surfaced and resolved within taxonomy (D1, D2).
+- P-001 (faux-states) — `.btn.faux-hover`, `.btn.faux-focus`, `.btn.faux-active` added to `presentation.scss`; focus source checked against compiled CSS; `--bs-btn-focus-box-shadow` token used.
+- P-002 (selector-context) — Button is single-element; no ancestor/sibling context required.
+- P-004 (flex-wrap) — Flex-wrap layout used for all specimen rows.
+- P-007 (target-appearances-only) — No unstyled baseline specimens included.
+- P-008 (labels) — All specimens labeled; States story labels variant families.
+- P-009 (state-matrix-coverage) — States story shows full state matrix for both Solid and Outline Primary.
+- P-013 (verify-before-emitting) — Analytical verification: token chain confirmed via Bootstrap compiled CSS grep; focus ring token confirmed distinct from hover.
+- P-016 (focus-not-identical-to-hover) — `.btn-primary` and `.btn-outline-primary` both define `--bs-btn-focus-shadow-rgb`; focus box-shadow produces visible ring absent from hover.
+
+#### Select
+
+**Taxonomy:** `agent/taxonomies/select-taxonomy.md`
+**Reference stories:** `stories/react-aria-bootstrap/reference/Select.reference.stories.tsx`
+**Presentation CSS:** `stories/react-aria-bootstrap/presentation.scss`
+
+**Mapping type:** Composite (M002)
+- Trigger → `.btn.dropdown-toggle` (structural) + `.form-select` token overrides (visual) — M014 dual-counterpart
+- Popover → `.dropdown-menu`
+- ListBoxItem → `.dropdown-item`
+- Label → `.form-label`
+- FieldError → `.invalid-feedback`
+- Description → `.form-text`
+
+**Stories written:**
+- `Bootstrap Reference/Select — Trigger States`
+- `Bootstrap Reference/Select — Popover & Items`
+- `Bootstrap Reference/Select — Form Field`
+- `Bootstrap Reference/Select — Sizes`
+
+**Review cycles:**
+- Trigger States: extra `padding-right: 2.25rem` on trigger pushed chevron inward — value exists in `.form-select` to reserve space for a `background-image` chevron, which is absent in the reference component. Removed per P-017.
+- Popover & Items: state labels injected as text nodes inside the dropdown menu container. Replaced with item-text-as-label per amended P-008.
+- Popover & Items: open-state trigger did not flip the chevron. Added `.faux-open svg { transform: rotate(180deg) }` per new P-018.
+
+**Principles added this iteration:**
+- P-008 amendment — labels must not appear inside a component's visual container; item text serves as the label for collection components
+- P-017 — asymmetric spacing reserving clearance for an absent element or background-image must be eliminated
+- P-018 — open-state specimens must show the caret flipped 180° via CSS transform (mirrors P024 in react-aria-skill)
+
+**Principles used:**
+- M001 (dom-first) — Select renders `<button>` + Popover + ListBox; does NOT map to `.form-select` (`<select>`).
+- M002 (sub-parts) — 8 named sub-parts identified; each with independent Bootstrap counterpart.
+- M014 (dual-counterpart) — Trigger is structurally `.btn.dropdown-toggle` but visually `.form-select`; token overrides applied to structural counterpart.
+- M004 (three-bridges) — Trigger pseudo-classes fire natively; compound selector bridges needed for `[data-open]`, `[data-invalid]`, `[data-selected]` on items, `[data-disabled]` on items.
+- M007 (scss-verify) — Compiled CSS grepped for `.dropdown-item`, `.dropdown-menu`, `.form-select`, `.btn` state selectors; all tokens confirmed.
+- M008 (data-attrs) — Full `data-*` surface enumerated from React Aria docs for Select, Button, ListBoxItem.
+- M015 (variant-authority) — Bootstrap's `.form-select-sm`/`.form-select-lg` size modifiers are authoritative.
+- M018 (elem-type-sub) — ListBoxItem renders `<div>` where Bootstrap expects `<a>`/`<button>`; `:disabled` pseudo is INERT on `<div>`; bridge required.
+- P-017 — asymmetric `padding-right` from `.form-select` eliminated (no background-image chevron present).
+- P-018 — open-state trigger specimen shows chevron rotated 180° via `.faux-open`.
+
 ## Stage 5
 
 *(Populated during Stage 5)*

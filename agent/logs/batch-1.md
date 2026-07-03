@@ -283,4 +283,82 @@ Taxonomy written to `agent/taxonomies/select-taxonomy.md`.
 
 ## Stage 5
 
-*(Populated during Stage 5)*
+### Button — batch-1/stage-5/iter-1
+
+All 6 mirror stories passed the final verification sweep on the first run (iteration 0).
+
+**Results:**
+
+| Story | Diff% | Status |
+|-------|-------|--------|
+| Variants | 0.00% | Pass |
+| OutlineVariants | 0.00% | Pass |
+| Sizes | 0.00% | Pass |
+| States | 0.00% | Pass |
+| LinkStyle | 0.00% | Pass |
+| Pending | 0.01% | Pass (animation exception) |
+
+**Principles used:**
+- `P002 class-in-tsx` — render-prop `className` builds `react-aria-Button btn btn-{variant} [btn-sm|btn-lg]`
+- `P007 variant-replace` — all 17 Bootstrap variants (8 solid, 8 outline, 1 link) plus sm/lg sizes exposed as typed props via `variantClassMap` and `sizeClassMap`
+- `P003 scss-bridge` — `[data-pending]` bridge in `_bootstrap-bridges.scss` for `pointer-events: none`
+- `P044 faux-state-class` — `.faux-hover`, `.faux-focus`, `.faux-active` from `presentation.scss` applied via `className` prop in mirror stories
+- `P047 presentation-import` — mirror story imports `../presentation.scss` directly
+- `P013 prefer-component-cls` — no utility classes; all styling via Bootstrap component classes (`.btn`, `.btn-{variant}`, `.btn-sm`, `.btn-lg`)
+- Animation exception — Pending story 0.01% diff is spinner animation frame difference; all 4 exception conditions met
+
+### Select — batch-1/stage-5/iter-1
+
+All 3 mirror stories passed the final verification sweep.
+
+**Results:**
+
+| Story | Final Diff% | Iterations | Status |
+|-------|-------------|------------|--------|
+| TriggerStates | 0.00% | 1 | Pass |
+| DropdownMenu | 0.14% | 3 | Pass |
+| FormField | 0.00% | 3 | Pass |
+
+**Files produced:**
+- `src/react-aria-bootstrap/Select.tsx` — full `Select<T>` + `SelectItem` implementation
+- `src/scss/_bootstrap-bridges.scss` — Select bridge rules added after Button bridge
+- `src/scss/styles.scss` — added `@import 'bootstrap-bridges'`
+- `stories/react-aria-bootstrap/mirror/Select.mirror.stories.tsx` — 3 mirror stories
+- `stories/react-aria-bootstrap/presentation.scss` — `.dropdown-divider-section` class added
+
+**Principles used:**
+- `P002 class-in-tsx` — trigger className built in Select.tsx; includes `react-aria-Button` explicitly so bridge selectors still match
+- `P003 scss-bridge` — `[data-selected]`, `[data-disabled]`, `[data-focused]` → dropdown-item states; `display:block` for Label/Text; `display:block` for Popover; line-height for dropdown-header
+- `P011 cursor-pointer` — `.react-aria-ListBoxItem.dropdown-item { cursor: pointer; }` in bridges
+- `P024 caret-flip` — SVG swap via `--bs-form-select-bg-img` on `.faux-open` (presentation.scss) and `[data-open]` (bridges)
+- `P025 hardcode-show` — `.react-aria-Popover.dropdown-menu { display: block; position: unset; }` in bridges
+- `P044 faux-state-class` — `faux-hover`, `faux-focus`, `faux-open` applied via `triggerClassName` prop
+- `P046 rac-class-replace` — plain string className on Button, ListBoxItem includes `react-aria-*` explicitly
+- `P049 rac-trigger-width` — `.react-aria-Popover[data-trigger="Select"] { width: var(--trigger-width); }` in bridges
+- `P050 reboot-mismatch` — `.dropdown-header { line-height: 1.2; }` — RAC renders `<header>` (1.5 lh) vs reference `<h6>` (1.2 lh)
+
+**Issues discovered and fixed:**
+
+1. **`styles.scss` missing `@import 'bootstrap-bridges'`** — bridge CSS existed but was never loaded; all bridge selectors were dead until this import was added.
+
+2. **DropdownMenu divider** — RAC ListBox does not accept raw `<hr>` children. Workaround: empty `ListBoxSection` with `dropdown-divider-section` class (height:0; border-top) to replicate `<hr class="dropdown-divider">`.
+
+3. **DropdownMenu header line-height** — RAC `ListBoxSection + Header` renders as `<header>` (line-height 1.5 from body reboot) vs reference `<h6>` (line-height 1.2 from Bootstrap heading styles). Fixed via P050 bridge.
+
+4. **FormField conditional FieldError** — FieldError always rendered even when no error, adding invisible height. Fixed: conditional render in Select.tsx.
+
+5. **FormField Label/Text inline display** — RAC renders `<Label>` and `<Text>` as `<span>` (inline). Bootstrap `.form-label` / `.form-text` expect block-level margins. Fixed: bridge rules `.react-aria-Label.form-label { display: block; }` and `.react-aria-Text.form-text { display: block; }`.
+
+**New pattern (unlabeled):** RAC Label and Text render as inline `<span>` elements; Bootstrap class margin behavior requires `display: block`. This pattern will need a P-code in the taxonomy.
+
+### Debrief — batch-1/stage-5/iter-1
+
+**Outcome:** Successful. Both components complete. Two post-merge issues discovered during manual testing and resolved as a new principle.
+
+**Issues found in manual testing:**
+
+1. **ListBox container focus ring on mouse open** — Clicking the trigger produced a focus ring around the entire dropdown container. Root cause: RAC calls `.focus()` programmatically on the ListBox when the popover opens; browsers apply `:focus-visible` to programmatic focus regardless of input mode. Fix pattern: suppress UA outline; restore via `[data-focus-visible]`. Since keyboard users see the ring on focused items, the container ring is always wrong — `outline: none` alone suffices for the container.
+
+2. **ListBoxItem focus ring on mouse hover** — Hovering an item produced a blue outline ring. Same root cause: RAC moves DOM focus to items on hover (programmatic focus). Fix pattern: full P051 — suppress UA outline; restore via `[data-focus-visible]` so keyboard navigation retains the ring.
+
+**New principle added:** P051 `programmatic-focus-visible` — suppress the UA outline on RAC-managed elements; restore only via `[data-focus-visible]`. Both fixes intentionally not pre-applied; next iteration's sub-agent is expected to discover and apply P051 independently.

@@ -42,7 +42,7 @@ Reference for component sub-agents. Loaded by Tier 1 (component sub-agents) only
 - [P027 btn-non-button](#p027-btn-non-button) — `btn` on non-`<button>` interactive elements
 - [P028 btn-sm-dense](#p028-btn-sm-dense) — `btn-sm` in grid-constrained contexts
 
-### Extended Principles (P033–P043, P049–P050)
+### Extended Principles (P033–P043, P049–P051)
 - [P033 verify-scss-vars](#p033-verify-scss-vars) — Verify Bootstrap SCSS variables before using
 - [P034 contrast-all-states](#p034-contrast-all-states) — Maintain ≥ 4.5:1 contrast through all interaction states
 - [P035 no-color-alone](#p035-no-color-alone) — Non-color attribute as primary state differentiator
@@ -56,6 +56,7 @@ Reference for component sub-agents. Loaded by Tier 1 (component sub-agents) only
 - [P043 visual-metaphor-completeness](#p043-visual-metaphor-completeness) — Verify full Bootstrap visual metaphor
 - [P049 rac-trigger-width](#p049-rac-trigger-width) — Consume RAC's `--trigger-width` for dropdown width
 - [P050 reboot-mismatch](#p050-reboot-mismatch) — Element type substitution invalidates Bootstrap reboot rules
+- [P051 programmatic-focus-visible](#p051-programmatic-focus-visible) — Suppress UA outline; use `[data-focus-visible]` for keyboard-only ring
 
 ### Stories Conventions (P029–P032, P044, P046–P048)
 - [P029 argtypes-control](#p029-argtypes-control) — Constrained argTypes for string union props
@@ -300,6 +301,23 @@ Do not use Bootstrap's `.visually-hidden` — it sets `position: absolute; width
 ```
 
 This is RAC structural behaviour, not a Bootstrap state bridge — no `data-*` attribute is involved. Apply to any component where the dropdown or popover should match its trigger width (Select, ComboBox, etc.). The `[data-trigger="Select"]` attribute is set by RAC on the Popover automatically — no TSX change needed.
+
+### P051: programmatic-focus-visible
+
+**Suppress the UA focus outline on RAC-managed elements; restore it only via `[data-focus-visible]`:** React Aria calls `.focus()` programmatically to manage focus — for example, moving focus into a container when an overlay opens. Browsers treat programmatic `.focus()` as keyboard-like and apply `:focus-visible` regardless of the actual input mode, so a mouse interaction that triggers a programmatic focus transfer produces a focus ring even though the user never touched the keyboard. React Aria tracks input mode independently and sets `[data-focus-visible]` only when the user is genuinely in keyboard mode. The fix pattern:
+
+```scss
+.react-aria-Menu:focus {
+  outline: none;           // suppress browser's unconditional :focus-visible
+}
+.react-aria-Menu[data-focus-visible] {
+  outline: revert;         // restore ring for keyboard users via RAC's own tracking
+}
+```
+
+Apply this to any RAC element that receives programmatic focus and where the resulting ring is visually incorrect. When a container receives focus programmatically but individual child items show their own focus rings for keyboard users, the container ring is always wrong regardless of input mode — in that case `outline: none` alone suffices and the `[data-focus-visible]` restore line can be omitted.
+
+---
 
 ### P050: reboot-mismatch
 

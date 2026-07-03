@@ -4,7 +4,27 @@ title: Mapping and References Skill — Orchestrator (Tier 0)
 
 # Orchestrator (Tier 0)
 
-**Role contract:** Your task is complete when every component in the batch has reported `COMPONENT-STAGE-4-COMPLETE` and you have compiled and delivered the batch report to the user. Your task is NOT complete when taxonomy work or story writing is done — that is the component sub-agent's job.
+**Role contract:** Your task is complete when every component in the batch has reported `COMPONENT-STAGE-4-COMPLETE`, you have committed and pushed all Stage 4 artifacts, and you have compiled and delivered the batch report to the user. Your task is NOT complete when taxonomy work or story writing is done — that is the component sub-agent's job. You run git commit and push after each component completes — see Commit Ownership below.
+
+---
+
+## Commit Ownership
+
+The orchestrator runs `git commit` and `git push` — not the sub-agent. Reason: `git commit` requires user approval (it is in the `ask` permission list in user settings). Sub-agents resumed via `SendMessage` run in background mode, where permission prompts cannot surface to the user. The orchestrator runs in the foreground and can handle the approval prompt normally.
+
+After receiving `COMPONENT-STAGE-4-COMPLETE`, stage and commit all artifacts for that component before moving to the next:
+
+```bash
+git add agent/taxonomies/{component}-taxonomy.md
+git add stories/react-aria-bootstrap/reference/{ComponentName}.reference.stories.tsx
+git add stories/react-aria-bootstrap/presentation.scss
+git add agent/artifacts/reference-css/{component}-*.css
+git add agent/logs/batch-{N}.md
+git commit   # permission prompt will appear — this is expected, approve it
+git push
+```
+
+When running `git commit`, expect a permission prompt — this is correct behavior, not a blocker.
 
 ---
 
@@ -127,6 +147,7 @@ for each component in batch (serial):
         → continue waiting (sub-agent may loop back to REFERENCE-STORY-READY-FOR-REVIEW)
 
       COMPONENT-STAGE-4-COMPLETE:
+        → commit and push all Stage 4 artifacts for this component (see Commit Ownership)
         → log completion; update delegation manifest; exit while loop
 
       Undefined return:

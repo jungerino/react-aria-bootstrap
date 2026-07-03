@@ -458,13 +458,13 @@ All terminal phrases must be the final line of the agent's response. Return exac
 | `TAXONOMY-DECISIONS-NEEDED: {list}` | Taxonomy has open forks that require user input. List the specific decisions needed. |
 | `TAXONOMY-COMPLETE` | Taxonomy doc has been written to `agent/taxonomies/{Component}-taxonomy.md`; no open decisions remain. |
 | `REFERENCE-STORY-READY-FOR-REVIEW` | Reference story has been written and Storybook is serving it; ready for user visual review. |
-| `COMPONENT-STAGE-4-COMPLETE` | All stories approved; CSS extracted for all stories; all committed. |
+| `COMPONENT-STAGE-4-COMPLETE` | All stories approved; CSS extracted for all stories. Do not commit or push — the orchestrator handles git operations. |
 
 **Flow:**
 1. Phase A: emit `TAXONOMY-DECISIONS-NEEDED` if any decisions remain; otherwise emit `TAXONOMY-COMPLETE`.
 2. After orchestrator relays user answers (via `SendMessage`), continue from where you stopped — do not re-read session-start files.
 3. Phase B: emit `REFERENCE-STORY-READY-FOR-REVIEW` when the reference story is ready. Apply user feedback; loop back to `REFERENCE-STORY-READY-FOR-REVIEW` as needed.
-4. After approval: extract CSS for all stories; emit `COMPONENT-STAGE-4-COMPLETE`.
+4. After approval: extract CSS for all stories; emit `COMPONENT-STAGE-4-COMPLETE`. Do not commit or push — the orchestrator handles git operations.
 
 ---
 

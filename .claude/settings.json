@@ -19,7 +19,7 @@
       "WebSearch",
       "mcp__figma__whoami",
       "Bash(node *)",
-      "Bash(git *)"
+      "Bash(git diff *)"
     ],
     "additionalDirectories": [
       "/Users/josh/.claude/plans"

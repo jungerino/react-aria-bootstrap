@@ -6,3 +6,5 @@ storybook-static/
 .claude/worktrees/
 .yarn/install-state.gz
 .story-diffs/
+.reference-images/*
+agent/artifacts/diffs/*

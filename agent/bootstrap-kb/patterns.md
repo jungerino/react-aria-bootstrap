@@ -1,7 +1,7 @@
 ---
 what: Bootstrap 5.3.8 compound component patterns, DOM conflicts with React Aria, and composable patterns
 contains: Four sections — (1) how Bootstrap structures compound components and the CSS selectors that bind sub-elements, (2) DOM conflicts between React Aria and Bootstrap's expected HTML, (3) JS state mutation conflicts where Bootstrap toggles classes but React Aria uses data-* attributes, (4) Bootstrap patterns that compose cleanly with React Aria.
-when-to-load: When mapping a React Aria component to Bootstrap, or when writing bridge CSS in _bootstrap-overrides.scss. Load alongside states.md for the full picture.
+when-to-load: When mapping a React Aria component to Bootstrap, or when writing bridge CSS in _bootstrap-bridges.scss. Load alongside states.md for the full picture.
 related: states.md for bridge strategy details; components.md for per-component DOM and class listings; tokens.md for CSS custom properties to override
 ---
 
@@ -431,7 +431,7 @@ Bootstrap's form validation uses `.is-valid` and `.is-invalid` classes plus `.va
 
 **Bridge**:
 ```css
-/* In component CSS or _bootstrap-overrides.scss */
+/* In _bootstrap-bridges.scss */
 .react-aria-TextField[data-invalid] .react-aria-Input {
   border-color: var(--bs-form-invalid-border-color);
   box-shadow: none;

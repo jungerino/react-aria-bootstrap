@@ -362,3 +362,62 @@ All 3 mirror stories passed the final verification sweep.
 2. **ListBoxItem focus ring on mouse hover** — Hovering an item produced a blue outline ring. Same root cause: RAC moves DOM focus to items on hover (programmatic focus). Fix pattern: full P051 — suppress UA outline; restore via `[data-focus-visible]` so keyboard navigation retains the ring.
 
 **New principle added:** P051 `programmatic-focus-visible` — suppress the UA outline on RAC-managed elements; restore only via `[data-focus-visible]`. Both fixes intentionally not pre-applied; next iteration's sub-agent is expected to discover and apply P051 independently.
+
+### batch-1/stage-5/iter-2
+
+#### Button — Mirror Stories
+
+All 6 stories passed on the first comparison pass with 0.00% diff (Pending: 0.01% — Animation Exception applied).
+
+**Principles used:**
+- P001 compound-sel — `.react-aria-Button` retained alongside `.btn.btn-{variant}`
+- P002 class-in-tsx — Bootstrap classes applied as explicit className string (not callback pattern; RAC class included explicitly)
+- P003 scss-bridge — `[data-pending]` bridge in `_bootstrap-bridges.scss`
+- P007 variant-replace — variantClassMap covers all 17 Bootstrap button variants (8 solid, 8 outline, link); `variant` prop typed to Bootstrap's authoritative set per D1
+- P044 faux-state-class — `.faux-hover`, `.faux-focus`, `.faux-active` from `presentation.scss` passed via `className` prop for States and LinkStyle stories
+- D1 — combination: explicit `variant` prop + `className` passthrough
+- D2 — explicit `size="sm" | "lg"` prop
+
+#### Select — Mirror Stories
+
+All 3 stories pass the verification sweep within threshold 0.003:
+- TriggerStates: 0.00%
+- DropdownMenu: 0.26%
+- FormField: 0.00%
+
+**Principles used:**
+- M014 dual-counterpart — trigger uses `.btn` (behavior) + `.select-trigger` (form-select token overrides via CSS custom properties)
+- M018 div-substitution — ListBoxItem renders `<div>`, not `<a>` or `<li>`; dropdown-item class-based styles still apply
+- P001 compound-sel — `.react-aria-Button`, `.react-aria-Select`, `.react-aria-ListBoxItem` retained for bridge selectors
+- P002 class-in-tsx — all Bootstrap classes as explicit className strings
+- P003 scss-bridge — bridges for `[data-invalid]`, `[data-open]`, `[data-selected]`, `[data-disabled]` in `_bootstrap-bridges.scss`
+- P011 cursor-pointer — explicit `cursor: pointer` bridge on `.react-aria-ListBoxItem.dropdown-item`
+- P024 caret-swap — `[data-open]` swaps `--bs-form-select-bg-img` to up-pointing chevron SVG
+- P025 hardcode-show — `.react-aria-Popover.dropdown-menu { display: block }` since RAC controls mount/unmount
+- P044 faux-state-class — `triggerClassName` prop on Select for faux-hover/focus/open; `activeItem` prop for faux-active on dropdown items
+- P049 rac-trigger-width — `.react-aria-Popover.dropdown-menu { width: var(--trigger-width) }`
+- D1 — explicit `size="sm" | "lg"` prop → `.select-trigger-sm`/`.select-trigger-lg`
+- D2 — background-image SVG chevron via `--bs-form-select-bg-img` override
+
+**Bridge infrastructure fix:**
+`_bootstrap-bridges.scss` was not imported in the SCSS chain. Added `@import 'bootstrap-bridges'` to `_bootstrap-overrides.scss`. This is a one-time infrastructure fix needed for all components.
+
+**Non-obvious findings:**
+- RAC `<Label>` renders as `<span>` — needs `d-inline-block` to match Bootstrap's `label { display: inline-block }` reboot rule
+- RAC `<Text slot="description">` renders as `<span>` — needs `d-block` to match `<div.form-text>` behaviour
+- `.dropdown-header` on `<div>` gets body line-height (1.5); reference uses `<h6>` with heading line-height (1.2). Bridge rule `.dropdown-header { line-height: 1.2 }` corrects this
+- `defaultSelectedKeys` in standalone ListBox does not reliably set `[data-selected]` for static screenshot capture; use explicit `faux-active` class instead
+- `select-trigger-block` must be added to trigger when `label` is present (form-field mode requires block-level trigger)
+
+#### Debrief — batch-1/stage-5/iter-2
+
+**Observations:**
+1. Styling is nearly flawless on first glance.
+2. The Select menu does not expand when clicking the trigger — dropdown does not open in live use.
+
+**Root cause (observation 2):**
+RAC Popover renders in a DOM portal (attached to document body), NOT inside the `.react-aria-Select` wrapper. The bridge selector `.react-aria-Select .react-aria-Popover.dropdown-menu` never matched, so Bootstrap's `display:none` default on `.dropdown-menu` was never overridden. Fix: target `.react-aria-Popover.dropdown-menu` directly without an ancestor selector. Same issue applied to `.react-aria-Select .react-aria-ListBox` — changed to `.react-aria-Popover .react-aria-ListBox`.
+
+**New principle added:** P052 `portal-no-ancestor-sel` — RAC overlay elements render in portals; ancestor bridge selectors never match them.
+
+**P051 post-debrief update:** The container-centric qualification in P051 ("When a container receives focus programmatically but individual child items show their own focus rings…") was removed. It implied items are self-managing and led to P051 being applied to the ListBox container but not to ListBoxItems. Principle now reads: "Apply this to any RAC element that receives programmatic focus and where the resulting ring is visually incorrect."

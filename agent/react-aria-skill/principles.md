@@ -42,7 +42,7 @@ Reference for component sub-agents. Loaded by Tier 1 (component sub-agents) only
 - [P027 btn-non-button](#p027-btn-non-button) — `btn` on non-`<button>` interactive elements
 - [P028 btn-sm-dense](#p028-btn-sm-dense) — `btn-sm` in grid-constrained contexts
 
-### Extended Principles (P033–P043, P049–P051)
+### Extended Principles (P033–P043, P049–P052)
 - [P033 verify-scss-vars](#p033-verify-scss-vars) — Verify Bootstrap SCSS variables before using
 - [P034 contrast-all-states](#p034-contrast-all-states) — Maintain ≥ 4.5:1 contrast through all interaction states
 - [P035 no-color-alone](#p035-no-color-alone) — Non-color attribute as primary state differentiator
@@ -57,6 +57,7 @@ Reference for component sub-agents. Loaded by Tier 1 (component sub-agents) only
 - [P049 rac-trigger-width](#p049-rac-trigger-width) — Consume RAC's `--trigger-width` for dropdown width
 - [P050 reboot-mismatch](#p050-reboot-mismatch) — Element type substitution invalidates Bootstrap reboot rules
 - [P051 programmatic-focus-visible](#p051-programmatic-focus-visible) — Suppress UA outline; use `[data-focus-visible]` for keyboard-only ring
+- [P052 portal-no-ancestor-sel](#p052-portal-no-ancestor-sel) — RAC overlay elements render in portals; ancestor bridge selectors never match them
 
 ### Stories Conventions (P029–P032, P044, P046–P048)
 - [P029 argtypes-control](#p029-argtypes-control) — Constrained argTypes for string union props
@@ -207,7 +208,7 @@ Background-image swaps cannot be transitioned — the caret snaps. This matches 
 
 ### P025: hardcode-show
 
-**Hardcode `.show` on Bootstrap overlay elements:** Bootstrap JS toggles overlay visibility by adding/removing `.show` on elements like `.dropdown-menu`, `.collapse`, and `.modal`. React Aria manages visibility by mounting/unmounting the element instead. When using Bootstrap overlay classes, hardcode `.show` permanently — React Aria's mount/unmount provides the visibility control; `.show` just ensures Bootstrap's visible styles are always active when the element exists in the DOM.
+**Hardcode `.show` on Bootstrap overlay elements:** Bootstrap JS toggles overlay visibility by adding/removing `.show` on elements like `.dropdown-menu`, `.collapse`, and `.modal`. React Aria manages visibility by mounting/unmounting the element instead. When using Bootstrap overlay classes, hardcode `.show` permanently — React Aria's mount/unmount provides the visibility control; `.show` just ensures Bootstrap's visible styles are always active when the element exists in the DOM. For portal-rendered elements (Popover, Modal), add `.show` directly to `className` in TSX rather than via a bridge rule — ancestor selectors don't reach portal elements (see P052).
 
 ### P026: use-rem
 
@@ -300,7 +301,11 @@ Do not use Bootstrap's `.visually-hidden` — it sets `position: absolute; width
 }
 ```
 
-This is RAC structural behaviour, not a Bootstrap state bridge — no `data-*` attribute is involved. Apply to any component where the dropdown or popover should match its trigger width (Select, ComboBox, etc.). The `[data-trigger="Select"]` attribute is set by RAC on the Popover automatically — no TSX change needed.
+This is RAC structural behaviour, not a Bootstrap state bridge — no `data-*` attribute is involved. Apply to any component where the dropdown or popover should match its trigger width (Select, ComboBox, etc.). The `[data-trigger="Select"]` attribute is set by RAC on the Popover automatically — no TSX change needed. `[data-trigger="Select"]` is used rather than `.react-aria-Select .react-aria-Popover` because Popover is portal-rendered; ancestor selectors never match (see P052).
+
+### P050: reboot-mismatch
+
+**Element type substitution invalidates Bootstrap reboot rules:** Bootstrap's `_reboot.scss` applies baseline CSS to specific HTML element types. When React Aria renders a different element type than the Bootstrap counterpart assumes for a sub-part, those rules load globally but do not match the substitute. During the preparation phase, for each sub-part where element types differ, read `src/scss/vendor/bootstrap-5.3.8/_reboot.scss` and identify rules scoped to the original element type. Apply the invalidated properties explicitly in the bridge — they will not take effect through the loaded stylesheet.
 
 ### P051: programmatic-focus-visible
 
@@ -315,13 +320,18 @@ This is RAC structural behaviour, not a Bootstrap state bridge — no `data-*` a
 }
 ```
 
-Apply this to any RAC element that receives programmatic focus and where the resulting ring is visually incorrect. When a container receives focus programmatically but individual child items show their own focus rings for keyboard users, the container ring is always wrong regardless of input mode — in that case `outline: none` alone suffices and the `[data-focus-visible]` restore line can be omitted.
+Apply this to any RAC element that receives programmatic focus and where the resulting ring is visually incorrect.
 
 ---
 
-### P050: reboot-mismatch
+### P052: portal-no-ancestor-sel
 
-**Element type substitution invalidates Bootstrap reboot rules:** Bootstrap's `_reboot.scss` applies baseline CSS to specific HTML element types. When React Aria renders a different element type than the Bootstrap counterpart assumes for a sub-part, those rules load globally but do not match the substitute. During the preparation phase, for each sub-part where element types differ, read `src/scss/vendor/bootstrap-5.3.8/_reboot.scss` and identify rules scoped to the original element type. Apply the invalidated properties explicitly in the bridge — they will not take effect through the loaded stylesheet.
+**RAC overlay elements render in DOM portals — ancestor selectors in bridge CSS never reach them.** React Aria renders `Popover`, `Modal`, `Tooltip`, and `OverlayArrow` in a portal at `document.body`, outside the triggering component's subtree. A bridge selector like `.react-aria-Select .react-aria-Popover` compiles without error but never matches at runtime. The failure is silent.
+
+Three corollaries:
+1. **No parent prefix in bridge rules for portal elements.** Write `.react-aria-Popover.dropdown-menu { … }`, never `.react-aria-Select .react-aria-Popover.dropdown-menu { … }`.
+2. **Scope to a triggering component via attributes on the portal element itself.** RAC sets `[data-trigger="{ComponentName}"]` on Popover automatically — use that (see P049).
+3. **Prefer TSX `className` over bridge CSS for Bootstrap visibility classes on portal elements.** Adding `.show` directly to `className` is immune to portal positioning; a bridge rule requires getting the selector right (see P025).
 
 ---
 

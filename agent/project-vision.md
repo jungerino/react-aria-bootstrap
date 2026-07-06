@@ -23,4 +23,4 @@ Bootstrap styling pass (phase 2). Working branch: `bootstrap-trials_v2`.
 - React Aria provides accessible behavior and ARIA semantics; Bootstrap provides visual styling
 - Bootstrap loads globally (no `:where(.bs-scope)` scoping); test component CSS wins via compound-selector specificity
 - Only Bootstrap-styled test stories are shown in Storybook (`stories/test/`); original stories exist in git for reference
-- Bridge rules for React Aria data-attribute states (`[data-pressed]`, `[data-selected]`, etc.) live in `_bootstrap-overrides.scss`
+- Bridge rules for React Aria data-attribute states (`[data-pressed]`, `[data-selected]`, etc.) live in `_bootstrap-bridges.scss`

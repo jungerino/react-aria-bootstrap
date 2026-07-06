@@ -238,9 +238,9 @@ React Aria never adds Bootstrap's class-based states (`.active`, `.show`, `.coll
 - Valid → `[data-valid]` → `.is-valid` visual
 - Indeterminate → `[data-indeterminate]` → `:indeterminate` visual
 
-### Strategy 3: `_bootstrap-overrides.scss` global bridge layer
+### Strategy 3: `_bootstrap-bridges.scss` global bridge layer
 
-Located at `src/scss/_bootstrap-overrides.scss`. Used for bridge rules that apply across multiple components (shared token overrides, global focus ring adjustments, etc.). Component-specific bridges belong in the component's own CSS file; shared structural patterns belong here.
+Located at `src/scss/_bootstrap-bridges.scss`. Used for bridge rules that apply across multiple components (shared token overrides, global focus ring adjustments, etc.). Component-specific bridges belong in the component's own CSS file; shared structural patterns belong here.
 
 **When to use:** When a rule is needed by 2+ components, or when it modifies a global Bootstrap token (e.g. adjusting `--bs-focus-ring-color` globally to match a design decision).
 

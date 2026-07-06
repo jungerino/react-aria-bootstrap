@@ -18,7 +18,7 @@ Use this skill when an agent needs to build or rebuild the Bootstrap knowledge b
 
 4. **Do not infer token names:** Before recording any `--bs-*` token, confirm it exists in `_root.scss` or the component's own SCSS file. Names can be misleading (e.g. `--bs-input-focus-color` is the text color, not the focus ring color).
 
-5. **Bridge file:** The current bridge layer is `src/scss/_bootstrap-bridges.scss`. When documenting patterns and bridge strategies, reference this file — not the old `_bootstrap-overrides.scss` name.
+5. **Bridge file:** The bridge layer is `src/scss/_bootstrap-bridges.scss`.
 
 ---
 
@@ -262,5 +262,4 @@ Before reporting the KB as complete:
 - [ ] tokens.md has 80+ token entries (`grep -c "| \`--bs-" agent/bootstrap-kb/tokens.md`)
 - [ ] states.md has 13+ state sections (`grep -c "^## " agent/bootstrap-kb/states.md`)
 - [ ] README.md completion table is filled in with actual dates
-- [ ] patterns.md references `src/scss/_bootstrap-bridges.scss` (not the old `_bootstrap-overrides.scss` name)
 - [ ] README.md is the last file written in this session

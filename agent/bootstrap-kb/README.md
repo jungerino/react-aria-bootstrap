@@ -28,7 +28,7 @@ This knowledge base documents Bootstrap 5.3.8 at the level of detail needed to p
 
 ### [states.md](./states.md)
 **What**: How Bootstrap encodes and styles interactive states; bridge strategies for mapping React Aria `data-*` attributes to Bootstrap state selectors.  
-**Contains**: State catalog table (13 states × mechanism/selector/token columns), detailed notes per state, JS mutation class catalog (8 classes), and three bridge strategies: (1) native CSS pseudo-class overlap, (2) compound selector bridge in component CSS, (3) `_bootstrap-overrides.scss` global layer.  
+**Contains**: State catalog table (13 states × mechanism/selector/token columns), detailed notes per state, JS mutation class catalog (8 classes), and three bridge strategies: (1) native CSS pseudo-class overlap, (2) compound selector bridge in component CSS, (3) `_bootstrap-bridges.scss` global layer.  
 **Load when**: Writing bridge CSS rules; deciding how to handle a state that Bootstrap triggers via JS class toggle but React Aria signals via `data-*` attribute.
 
 ### [components.md](./components.md)

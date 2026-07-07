@@ -19,7 +19,12 @@
       "WebSearch",
       "mcp__figma__whoami",
       "Bash(node *)",
-      "Bash(git diff *)"
+      "Bash(git diff *)",
+      "Bash(python3 -c *)",
+      "Bash(echo *)",
+      "Bash(curl -s \"http://localhost:6006/*\")",
+      "Bash(npx tsc *)",
+      "Bash(git switch *)"
     ],
     "additionalDirectories": [
       "/Users/josh/.claude/plans"

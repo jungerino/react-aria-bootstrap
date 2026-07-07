@@ -421,3 +421,47 @@ RAC Popover renders in a DOM portal (attached to document body), NOT inside the 
 **New principle added:** P052 `portal-no-ancestor-sel` — RAC overlay elements render in portals; ancestor bridge selectors never match them.
 
 **P051 post-debrief update:** The container-centric qualification in P051 ("When a container receives focus programmatically but individual child items show their own focus rings…") was removed. It implied items are self-managing and led to P051 being applied to the ListBox container but not to ListBoxItems. Principle now reads: "Apply this to any RAC element that receives programmatic focus and where the resulting ring is visually incorrect."
+
+### batch-1/stage-5/iter-3
+
+#### Button — verification-sweep-passed
+
+**Principles used:**
+- P001 compound-sel — retained `.react-aria-Button` alongside `.btn.btn-{variant}` on all stories
+- P002 class-in-tsx — Bootstrap classes applied via explicit `className` string in `Button.tsx`
+- P003 scss-bridge — `[data-pending]` bridge added to `_bootstrap-bridges.scss` (pointer-events + cursor)
+- P007 variant-replace — `variantClassMap` covers all 8 solid variants, 8 outline variants, and `link`
+- P044 faux-state-class — `.faux-hover`, `.faux-focus`, `.faux-active` from `presentation.scss` applied in States and LinkStyle stories via `className` prop
+- D1 (Button decision) — combination approach: explicit `variant` prop + `className` passthrough
+- D2 (Button decision) — explicit typed `size="sm" | "lg"` prop mapped to `btn-sm` / `btn-lg`
+
+#### Select — verification-sweep-passed
+
+**Principles used:**
+- P002 class-in-tsx — Bootstrap classes via explicit `className` string on all sub-parts in `Select.tsx`
+- P003 scss-bridge — bridge selectors for `[data-open]` caret, `[data-invalid]` border, `[data-selected]`, `[data-disabled]`, cursor: pointer, `.dropdown-header` line-height
+- P010 form-attach — `.form-select` cannot attach to RAC `<button>`; replicate visual tokens on `.btn.select-trigger` via CSS custom property overrides
+- P011 cursor-pointer — explicit `cursor: pointer` on `.react-aria-ListBoxItem.dropdown-item` (renders as `<div>`, not `<a>`)
+- P012 match-dom — matched `.btn.dropdown-toggle` (structural) + `.form-select` token overrides (visual) for trigger (M014 dual-counterpart)
+- P024 caret-flip — background-image SVG swap for open state (CSS transform has no effect on `background-image`); dark-mode variant uses light-stroke SVG
+- P025 hardcode-show — `.show` hardcoded on Popover className; `d-block` on FieldError className
+- P036 derive-from-counterpart — trigger token values derived from `.form-select` compiled CSS; ListBoxItem state values derived from `.dropdown-item.active` / `.dropdown-item.disabled`
+- P044 faux-state-class — `.faux-hover`, `.faux-focus`, `.faux-open`, `.faux-active` from `presentation.scss` applied to specimen buttons in mirror stories
+- P047 presentation-import — all three mirror stories import `../presentation.scss`
+- P049 rac-trigger-width — `.react-aria-Popover[data-trigger="Select"].dropdown-menu { width: var(--trigger-width) }` bridge
+- P050 reboot-mismatch — `d-inline-block` on `<Label>` (RAC renders `<span>`, Bootstrap reboot sets `label { display: inline-block }`); `d-block` on `<Text slot="description">`
+- P052 portal-no-ancestor-sel — Popover bridge uses `[data-trigger="Select"]` attribute, not ancestor selector `.react-aria-Select .react-aria-Popover`
+- D1 (Select decision) — explicit `size="sm" | "lg"` prop mapped to `select-trigger-sm` / `select-trigger-lg`
+- D2 (Select decision) — `.form-select` background-image SVG chevron approach; trigger does NOT carry `.dropdown-toggle`
+
+#### Debrief
+
+**Issue identified:** P051 (programmatic-focus-visible) was not applied. Focus outlines appeared on the ListBox container on trigger click and on ListBoxItems on hover — both caused by RAC's programmatic `.focus()` calls, which browsers treat as keyboard-like and apply `:focus-visible` unconditionally.
+
+**Root cause of miss:** P051's original trigger ("any RAC element that receives programmatic focus where the resulting ring is visually incorrect") required live behavioral observation. The pixel-diff verification loop is blind to this — static screenshots never show a spurious hover focus ring. The principle had a behavioral escape hatch that made it effectively optional.
+
+**Fixes applied:**
+- P051 rewritten with doc-derivable trigger: `autoFocus` prop on container sub-elements and `shouldFocusOnHover` prop on container APIs are explicit RAC declarations of programmatic focus, readable from `mcp__react-aria__get_react_aria_page` during Preparation Phase. Phase constraint added (run before writing bridge CSS). Escape hatch removed.
+- `agent/notes/principle-templates.md` created: MECE taxonomy of principle types (Detection Rule, Selection Rule, Procedure, Epistemic Guard) with templates and diagnostic checklist. Surfaced that the initial four-type taxonomy was neither mutually exclusive nor collectively exhaustive.
+
+**Outcome:** Both components pass at 0.00% diff. P051 fix deferred to next iteration.

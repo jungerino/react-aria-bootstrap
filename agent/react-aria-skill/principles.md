@@ -309,18 +309,36 @@ This is RAC structural behaviour, not a Bootstrap state bridge — no `data-*` a
 
 ### P051: programmatic-focus-visible
 
-**Suppress the UA focus outline on RAC-managed elements; restore it only via `[data-focus-visible]`:** React Aria calls `.focus()` programmatically to manage focus — for example, moving focus into a container when an overlay opens. Browsers treat programmatic `.focus()` as keyboard-like and apply `:focus-visible` regardless of the actual input mode, so a mouse interaction that triggers a programmatic focus transfer produces a focus ring even though the user never touched the keyboard. React Aria tracks input mode independently and sets `[data-focus-visible]` only when the user is genuinely in keyboard mode. The fix pattern:
+**Trigger:** During the Preparation Phase sub-element survey, read each sub-element's
+API table via `mcp__react-aria__get_react_aria_page`. Apply the suppression pattern
+below — unconditionally, no exceptions — to:
+
+- Any **container** sub-element whose API includes an `autoFocus` prop. This prop
+  is RAC's explicit declaration that the container receives programmatic focus
+  (e.g. when an overlay opens).
+- Any **item** sub-element whose parent container API includes a `shouldFocusOnHover`
+  prop. This prop is RAC's explicit declaration that hover transfers programmatic
+  focus to items.
+
+**Phase:** Preparation Phase — run before writing any bridge CSS for the component.
+
+**Action:**
 
 ```scss
-.react-aria-Menu:focus {
-  outline: none;           // suppress browser's unconditional :focus-visible
+.react-aria-{Element}:focus {
+  outline: none;        /* suppress browser's unconditional :focus-visible */
 }
-.react-aria-Menu[data-focus-visible] {
-  outline: revert;         // restore ring for keyboard users via RAC's own tracking
+.react-aria-{Element}[data-focus-visible] {
+  outline: revert;      /* restore ring for genuine keyboard navigation only */
 }
 ```
 
-Apply this to any RAC element that receives programmatic focus and where the resulting ring is visually incorrect.
+**Why:** Browsers treat any programmatic `.focus()` call as keyboard-like and fire
+`:focus-visible` regardless of input mode — so a mouse interaction that triggers
+focus transfer (opening a dropdown, hovering an item) produces a visible ring.
+RAC's `[data-focus-visible]` tracks actual keyboard input independently and is the
+correct restore signal. This bug is undetectable by pixel-diff verification, making
+the Phase constraint load-bearing: the check must happen before diffing, not after.
 
 ---
 

@@ -79,7 +79,7 @@ iteration: 1
 
 For each story in scope (derived from the taxonomy's "Reference story canvas" section):
 
-1. Implement the mirror story in `stories/react-aria-bootstrap/mirror/{ComponentName}.mirror.stories.tsx`:
+1. Implement the mirror story in `stories/react-aria-bootstrap/mirror/{ComponentName}.mirror.stories.tsx`. A mirror story should be visually identical to the reference story, but built with the React Aria component (`src/react-aria-bootstrap/{ComponentName}.tsx`) instead of static HTML.
    - Story names must match reference story names exactly (required for pixel-diff ID matching)
    - Replicate reference story layout: same wrapper classes, same `specimen()` helper pattern, same variant order
    - Cover all visual states from the taxonomy; use faux-state classes from `presentation.scss` (P044)

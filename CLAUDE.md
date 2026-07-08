@@ -21,12 +21,12 @@ This is a component library that layers **Bootstrap 5 visual styling** on top of
 - React Aria Components handle accessible behavior and ARIA semantics via `.react-aria-*` CSS classes and `data-*` state attributes (`[data-pressed]`, `[data-selected]`, `[data-focused]`, etc.)
 - Bootstrap loads globally and provides visual styling
 - Components are styled using compound selectors (e.g., `.react-aria-Button.btn.btn-primary`) so component CSS wins via specificity
-- `src/scss/_bootstrap-overrides.scss` bridges React Aria state attributes to Bootstrap visual states
-- Bootstrap loads globally into the Storybook preview iframe (no scoping wrapper). The story glob is restricted to `stories/bootstrap-test/**` so original component CSS is never bundled, and the preview iframe boundary isolates Bootstrap from the Storybook manager shell.
+- `src/scss/_bootstrap-bridges.scss` bridges React Aria state attributes to Bootstrap visual states
+- Bootstrap loads globally into the Storybook preview iframe (no scoping wrapper). The story glob is restricted to `stories/react-aria-bootstrap/**` so original component CSS is never bundled, and the preview iframe boundary isolates Bootstrap from the Storybook manager shell.
 
 **Key directories:**
 - `src/` — Component implementations (`.tsx`) and scoped styles (`.css`)
-- `stories/` — Storybook stories (`.stories.tsx`); Bootstrap-styled test stories live in `stories/test/`
+- `stories/` — Storybook stories (`.stories.tsx`); Bootstrap-styled reference and mirror stories live in `stories/react-aria-bootstrap/`
 - `agent/` — Agent-oriented documentation: vision, guidelines, analysis, session logs
 - `.storybook/` — Storybook config (Webpack 5 + Babel + Lightning CSS)
 
@@ -55,7 +55,7 @@ Never assume component properties without verification through these tools.
 
 ## Working Guidelines
 
-- **Session start**: Read `agent/todos.md` and summarize open items to the user at the start of every session. When working on a skill-based experiment, read the relevant entry-point skill file (see Agent Documentation below) and follow its session-start loading instructions before doing anything else — the skill is authoritative.
+- **Session start**: When working on a skill-based task, read the relevant entry-point skill file (see Agent Documentation below) and follow its session-start loading instructions before doing anything else — the skill is authoritative.
 - **Honesty about limitations**: Do not make stuff up or provide invalid code. If uncertain, acknowledge it. "I don't know" is acceptable.
 - **Context exhaustion**: If context is running short or a mandatory step cannot be completed, produce a handoff summary and stop. Do not skip, approximate, or fabricate results for incomplete steps — a pending step is recoverable; a falsely-reported step is not.
 - **Markdown summaries**: When asked to "summarize in markdown", provide a concise summary enclosed in a code block using four backticks (```` ```` ````) so inner triple-backtick fences do not close the outer block.
@@ -79,12 +79,8 @@ Never assume component properties without verification through these tools.
 
 ## Agent Documentation
 
-### Reference Documentation
-- [Project Commands](./agent/project-commands.md) — Common CLI commands (package manager, Storybook, etc.)
-- [Todos](./agent/todos.md) — Open tasks, proposals, and ideas
-
 ### Vision
-- [Project Vision](./agent/project-vision.md) — End goal, roadmap, and key architectural decisions
+- [Project Vision](./agent/notes/project-vision.md) — End goal, roadmap, and key architectural decisions
 
 ### Experiment
 - [Iteration Protocol](./agent/iteration-protocol.md) — How to start and close out iterations for any iterative experiment

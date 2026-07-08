@@ -465,3 +465,32 @@ RAC Popover renders in a DOM portal (attached to document body), NOT inside the 
 - `agent/notes/principle-templates.md` created: MECE taxonomy of principle types (Detection Rule, Selection Rule, Procedure, Epistemic Guard) with templates and diagnostic checklist. Surfaced that the initial four-type taxonomy was neither mutually exclusive nor collectively exhaustive.
 
 **Outcome:** Both components pass at 0.00% diff. P051 fix deferred to next iteration.
+
+### batch-1/stage-5/iter-4
+
+**Outcome:** Failed. Mirror stories for Select used static HTML instead of the React Aria component.
+
+**Root cause:** Iter-4 was cut after stale findings docs were deleted from the integration branch (`e56ad08 Delete stale findings`). The iter-3 agent had access to iter-2's per-story findings docs, which showed the `triggerClassName` prop and component-driven mirror story pattern. Without those docs, iter-4 derived a decomposed API (`SelectTrigger`, `SelectPopover`, `SelectListBox`, `SelectOption` as separate exports) with no `triggerClassName` prop. When writing Phase B stories, there was no way to pass faux-state classes to the trigger through the component API, so the agent fell back to plain HTML. The diff "passed" tautologically — HTML matches HTML.
+
+**Button:** Passed correctly. Mirror stories used the React Aria Button component; all 6 stories passed at 0.00–0.01%.
+
+**Select:** TSX implemented but mirror stories used static HTML. Pixel diffs passed without testing the component.
+
+### batch-1/stage-5/iter-5
+
+**Outcome:** Failed. Repeated iter-4's mirror-story regression.
+
+**Root cause:** Iter-5 inherited iter-4's findings, which documented plain HTML as intentional ("for visual surface isolation"). Phase B's instruction — "replicate reference story layout" — was ambiguous: the iter-5 agent read it as license to copy the HTML structure from the reference story directly. There was no explicit statement in `component-agent.md` that mirror stories must use the component.
+
+**Fix applied (this session):** Phase B, step 1 of `agent/react-aria-skill/component-agent.md` now begins: *"A mirror story should be visually identical to the reference story, but built with the React Aria component (`src/react-aria-bootstrap/{ComponentName}.tsx`) instead of static HTML."* Synced to `integration-batch-1`.
+
+**Button:** Passed correctly. All 6 stories at 0.00–0.01%.
+
+**Select:** TSX implementation written with correct principles; mirror stories still used static HTML. Real component work done this iteration:
+- P010 form-attach — `.form-select` cannot attach to RAC `<button>`; replicated tokens via CSS variable overrides
+- P011 cursor-pointer — `ListBoxItem` renders `<div>`; explicit `cursor: pointer` bridge added
+- P024 caret-flip — background-image SVG swap for open state via `[data-open]` bridge
+- P025 hardcode-show — `.show` hardcoded on Popover className
+- P049 rac-trigger-width — consumed `--trigger-width` on Popover
+- P051 programmatic-focus-visible — applied focus suppression to `ListBoxItem` (`shouldFocusOnHover`)
+- P052 portal-no-ancestor-sel — Popover bridge uses `[data-trigger="Select"]` attribute

@@ -2,17 +2,10 @@
 
 ## Components
 
-- Button
 - Select
 
 ## Stories
 
-- Bootstrap Reference/Button/Variants
-- Bootstrap Reference/Button/OutlineVariants
-- Bootstrap Reference/Button/Sizes
-- Bootstrap Reference/Button/States
-- Bootstrap Reference/Button/LinkStyle
-- Bootstrap Reference/Button/Pending
 - Bootstrap Reference/Select/TriggerStates
 - Bootstrap Reference/Select/DropdownMenu
 - Bootstrap Reference/Select/FormField
@@ -20,30 +13,6 @@
 ## Stage 4
 
 ### batch-1/stage-4/iter-1
-
-#### Button — Decisions needed
-
-**D1 — Pending state visual pattern**
-
-React Aria's `isPending` prop enables a loading state. Bootstrap's canonical pattern places `.spinner-border-sm` inside the button while the label is hidden. Two options for the reference story:
-
-- **(a) Hidden label + spinner overlay:** `visibility: hidden` on label content + spinner rendered via `position: absolute` overlay. Button width stays stable (no resize on pending).
-- **(b) Label replaced by spinner:** Label removed from DOM / hidden with `display: none`; spinner takes its place. Button may resize.
-
-Option (a) matches Bootstrap's own docs example most closely. Which should the reference story demonstrate?
-
-**Answer:** Hidden label + spinner overlay. Label stays in the DOM with `visibility: hidden`; spinner is positioned absolutely over the button center. Button width stays stable during the pending state.
-
-**D2 — Variant scope for reference stories**
-
-Bootstrap offers 17 button variants (8 solid `.btn-{color}`, 8 outline `.btn-outline-{color}`, 1 `.btn-link`). Should the Variants reference story show:
-
-- **(a) All 17 variants** — complete coverage, larger story
-- **(b) Representative subset** — e.g., primary, secondary, danger, outline-primary, btn-link (5 variants)
-
-Which scope is preferred?
-
-**Answer:** All 17 Bootstrap variants — 8 solid `.btn-{color}`, 8 outline `.btn-outline-{color}`, 1 `.btn-link`.
 
 #### Select — Decisions needed
 
@@ -60,9 +29,7 @@ Option (a) matches the `.form-select` visual target more closely and gives imple
 
 ### batch-1/stage-4/iter-2
 
-**Outcome:** Partial. Button reached `COMPONENT-STAGE-4-COMPLETE`. Select stories were written but not approved; iteration closed early to sync learnings. Select work carries forward to iter-3.
-
-**Button:** Taxonomy and 4 reference stories (States, Pending, Variants, Sizes) approved; CSS extracted; committed. `COMPONENT-STAGE-4-COMPLETE`.
+**Outcome:** Partial. Select stories were written but not approved; iteration closed early to sync learnings. Select work carries forward to iter-3.
 
 **Select:** Taxonomy written. 4 reference stories written (TriggerStates, OpenState, ItemStates, FormIntegration). Review surfaced three CSS bugs:
 - Trigger border transparent in all states — root cause: `.btn` defaults `--bs-btn-*-border-color` to `transparent`; sub-agent patched the output `border-color` property instead of overriding the CSS variables, so Bootstrap's own state pseudo-classes re-applied the transparent value on hover/active. Fixed by setting `--bs-btn-hover-border-color` etc. on the element (P-012).
@@ -72,26 +39,6 @@ Option (a) matches the `.form-select` visual target more closely and gives imple
 **Principles added to component-agent.md:** P-012, P-013, P-014, P-015, P-016.
 
 **Files synced to integration-batch-1:** `agent/mapping-and-references-skill/component-agent.md`, `agent/logs/batch-1.md`.
-
-#### Button — Taxonomy and reference stories
-
-Taxonomy written to `agent/taxonomies/button-taxonomy.md`.
-
-**Mapping type:** 1:1 — root `<button>` maps directly to `.btn`; no composite sub-parts.
-
-**Principles used:**
-- M001 dom-first — Button renders `<button>`; maps directly to `.btn`
-- M002 sub-parts — single root element; pending spinner is an M010 content-state child, not a structural sub-part
-- M004 three-bridges — no bridge CSS required for Button's own states; all pseudo-classes fire on native `<button>` (Strategy 1 for all)
-- M007 scss-verify — compiled CSS grepped for `.btn` state selectors; token names confirmed
-- M008 data-attrs — full data-* surface enumerated from React Aria docs: `[data-hovered]`, `[data-pressed]`, `[data-focused]`, `[data-focus-visible]`, `[data-disabled]`, `[data-pending]`
-- M010 content-states — `[data-pending]` drives a spinner child (`.spinner-border-sm`); Bootstrap's canonical pending-button pattern applied
-- M015 variant-authority — Bootstrap's 17 variants (8 solid, 8 outline, 1 link) are the complete variant set; React Aria has no variant prop
-- M016 decisions-needed — D1 (pending pattern) and D2 (variant scope) were pre-resolved in batch log; no new decisions surfaced
-- P-001 faux-state-classes — `.btn.faux-hover`, `.btn.faux-focus-visible`, `.btn.faux-active` added to `presentation.scss`
-- P-003 css-classes-not-inline — all visual CSS in `presentation.scss`; story file uses class names only
-- P-004 flex-wrap — specimens in `display: flex; flex-wrap: wrap` containers
-- P-010 absolute-overlay-centering — removed `top/left/transform: translate(-50%,-50%)` from `.btn-pending-spinner`; Bootstrap's `spinner-border` `@keyframes` replaces the entire `transform` value on every frame, wiping out the translate; `position: absolute` with no inset values correctly centers the spinner inside the `inline-flex` wrapper
 
 #### Select — Taxonomy
 
@@ -115,50 +62,11 @@ Taxonomy written to `agent/taxonomies/select-taxonomy.md`.
 
 ### batch-1/stage-4/iter-3
 
-**Outcome:** Both components reached `COMPONENT-STAGE-4-COMPLETE`. Button: taxonomy + 4 reference stories + CSS extracted. Select: taxonomy + 4 reference stories + CSS extracted. Several review cycles surfaced new principles (P-008 amendment, P-017, P-018).
+**Outcome:** Select reached `COMPONENT-STAGE-4-COMPLETE`. Taxonomy + 4 reference stories + CSS extracted. Several review cycles surfaced new principles (P-008 amendment, P-017, P-018).
 
 **Principles added to component-agent.md:** P-008 amendment (labels must not appear inside component visual containers), P-017 (asymmetric spacing verification), P-018 (open-state caret flip via CSS transform).
 
 **Files synced to integration-batch-1:** `agent/mapping-and-references-skill/component-agent.md`, `agent/logs/batch-1.md`.
-
-#### Button
-
-**Taxonomy:** `agent/taxonomies/button-taxonomy.md`
-**Reference stories:** `stories/react-aria-bootstrap/reference/Button.reference.stories.tsx`
-**Presentation CSS:** `stories/react-aria-bootstrap/presentation.scss`
-
-**Stories written:**
-- `Bootstrap Reference/Button — Color Variants — Solid` (9 solid variants incl. link)
-- `Bootstrap Reference/Button — Color Variants — Outline` (8 outline variants)
-- `Bootstrap Reference/Button — Sizes` (sm / default / lg)
-- `Bootstrap Reference/Button — States` (Solid Primary + Outline Primary state matrix)
-
-**Reference CSS extracted (approved, P-011):**
-- `agent/artifacts/reference-css/button-ColorVariantsSolid.css` (86 rules)
-- `agent/artifacts/reference-css/button-ColorVariantsOutline.css` (86 rules)
-- `agent/artifacts/reference-css/button-Sizes.css` (87 rules)
-- `agent/artifacts/reference-css/button-States.css` (92 rules)
-
-**Decisions resolved in taxonomy:**
-- D1: Pending specimen uses plain Bootstrap spinner HTML (`.spinner-border-sm`) per P-007 (reference stories = visual target).
-- D2: States story covers both Solid and Outline Primary per P-009 (structurally distinct hover mechanism).
-
-**Principles used:**
-- M001 (dom-first) — Button renders `<button>`; exact match for Bootstrap's `.btn`. No element substitution.
-- M002 (sub-parts) — Single root element; pending spinner identified as state-driven child per M010.
-- M004 (three-bridges) — All Button pseudo-classes (`:hover`, `:focus-visible`, `:active`, `:disabled`) fire natively; no compound selector bridges needed.
-- M008 (data-attrs) — Full `data-*` surface enumerated from React Aria docs.
-- M010 (content-states) — Pending state drives `.spinner-border-sm` child element; scanned Bootstrap catalog; canonical spinner pattern confirmed in Bootstrap docs.
-- M015 (variant-authority) — Bootstrap's `.btn-{color}` / `.btn-outline-{color}` / `.btn-sm` / `.btn-lg` are authoritative variant set.
-- M016 (decisions-needed) — Two decisions surfaced and resolved within taxonomy (D1, D2).
-- P-001 (faux-states) — `.btn.faux-hover`, `.btn.faux-focus`, `.btn.faux-active` added to `presentation.scss`; focus source checked against compiled CSS; `--bs-btn-focus-box-shadow` token used.
-- P-002 (selector-context) — Button is single-element; no ancestor/sibling context required.
-- P-004 (flex-wrap) — Flex-wrap layout used for all specimen rows.
-- P-007 (target-appearances-only) — No unstyled baseline specimens included.
-- P-008 (labels) — All specimens labeled; States story labels variant families.
-- P-009 (state-matrix-coverage) — States story shows full state matrix for both Solid and Outline Primary.
-- P-013 (verify-before-emitting) — Analytical verification: token chain confirmed via Bootstrap compiled CSS grep; focus ring token confirmed distinct from hover.
-- P-016 (focus-not-identical-to-hover) — `.btn-primary` and `.btn-outline-primary` both define `--bs-btn-focus-shadow-rgb`; focus box-shadow produces visible ring absent from hover.
 
 #### Select
 
@@ -204,39 +112,6 @@ Taxonomy written to `agent/taxonomies/select-taxonomy.md`.
 
 ### batch-1/stage-4/iter-4
 
-**Component:** Button
-
-**Principles used:**
-- M001: dom-first — Button renders native `<button>`; Bootstrap `.btn` targets `<button>` directly. Perfect 1:1 DOM match.
-- M002: sub-parts — Button has no structural sub-parts; only content-driven pending spinner noted (M010).
-- M004: three-bridges — All primary states (hover, focus, active, disabled) use Strategy 1 (CSS pseudo-class overlap). Only `[data-pending]` requires a compound selector bridge.
-- M007: scss-verify — Compiled CSS audited; `:focus-visible` confirmed as Bootstrap's focus-ring mechanism (not `:focus`).
-- M008: data-attrs — Full `data-*` surface enumerated from `ButtonRenderProps`: `[data-hovered]`, `[data-pressed]`, `[data-focused]`, `[data-focus-visible]`, `[data-disabled]`, `[data-pending]`.
-- M010: content-states — `[data-pending]` drives spinner child; Bootstrap's `.spinner-border-sm` identified as the counterpart.
-- M015: variant-authority — Bootstrap's 8 solid + 8 outline + link + size variants are authoritative.
-- M016: decisions-needed — Two decisions surfaced (D1 variant exposure, D2 size exposure).
-- M018: elem-type-sub — No element type substitution; React Aria renders native `<button>`, matching Bootstrap's expectation exactly.
-- P-001: faux-state-classes — Added `.btn.faux-hover`, `.btn.faux-focus`, `.btn.faux-active` to `presentation.scss`; `faux-focus` uses `box-shadow` token + `outline: 0` to be visually distinct from hover (P-016).
-- P-002: selector-context — Each specimen verified to reproduce necessary ancestor/sibling context; `.btn` rules have no ancestor dependency.
-- P-003: css-classes — All visual styling in `presentation.scss`; no inline styles in story render functions.
-- P-004: flex-wrap — Specimens laid out in `display: flex; flex-wrap: wrap` `.specimen-row` container.
-- P-008: label-specimens — Every specimen labeled via `.specimen-label` above the element.
-- P-009: state-matrix-per-family — States story covers both solid (`.btn-primary`) and outline (`.btn-outline-primary`) variant families.
-- P-011: extract-reference-css — CSS extracted for all 6 stories; saved to `agent/artifacts/reference-css/button-{StoryName}.css`.
-- P-016: faux-focus-distinct — Verified `.btn.faux-focus` is visually distinct from `.btn.faux-hover` via `box-shadow: var(--bs-btn-focus-box-shadow)`.
-
-**Decisions needed:**
-
-#### D1 — Bootstrap variant exposure as prop vs. className passthrough
-**Question:** Bootstrap's `.btn-{variant}` and `.btn-outline-{variant}` modifier classes have no React Aria prop equivalent. When implementing the Bootstrap Button, should these be exposed as an explicit `variant` prop (e.g. `variant="primary"`, `variant="outline-secondary"`), left as a pure `className` passthrough (consumer writes `className="btn btn-primary"`), or some combination?
-**Answer:** Combination — expose an explicit `variant` prop for common cases; provide `className` passthrough for anything the prop does not cover.
-
-#### D2 — Size modifier exposure as prop vs. className passthrough
-**Question:** Bootstrap's `.btn-sm` and `.btn-lg` size modifiers have no React Aria prop equivalent. Should these be exposed as an explicit `size` prop (e.g. `size="sm"`, `size="lg"`), left as a `className` passthrough, or omitted from scope?
-**Answer:** Explicit typed size prop: `size="sm" | "lg"`.
-
----
-
 **Component:** Select
 
 **Principles used:**
@@ -278,219 +153,10 @@ Taxonomy written to `agent/taxonomies/select-taxonomy.md`.
 **Process notes:**
 - `Bash(node *)` and `Bash(git *)` added to `.claude/settings.json` to unblock sub-agents from CSS extraction and git operations.
 - Commit ownership moved to orchestrator: sub-agents resumed via SendMessage run in background mode where `git commit` permission prompts cannot surface. Orchestrator commits in foreground.
-- P-009 miss on Button's initial States story (outline states omitted); caught in review and corrected.
 - First Select Phase B attempt rejected; rewritten from scratch. Second attempt required two review cycles (P-009 state matrix, caret positioning).
 
 ## Stage 5
 
-### Button — batch-1/stage-5/iter-1
-
-All 6 mirror stories passed the final verification sweep on the first run (iteration 0).
-
-**Results:**
-
-| Story | Diff% | Status |
-|-------|-------|--------|
-| Variants | 0.00% | Pass |
-| OutlineVariants | 0.00% | Pass |
-| Sizes | 0.00% | Pass |
-| States | 0.00% | Pass |
-| LinkStyle | 0.00% | Pass |
-| Pending | 0.01% | Pass (animation exception) |
-
+### Select
 **Principles used:**
-- `P002 class-in-tsx` — render-prop `className` builds `react-aria-Button btn btn-{variant} [btn-sm|btn-lg]`
-- `P007 variant-replace` — all 17 Bootstrap variants (8 solid, 8 outline, 1 link) plus sm/lg sizes exposed as typed props via `variantClassMap` and `sizeClassMap`
-- `P003 scss-bridge` — `[data-pending]` bridge in `_bootstrap-bridges.scss` for `pointer-events: none`
-- `P044 faux-state-class` — `.faux-hover`, `.faux-focus`, `.faux-active` from `presentation.scss` applied via `className` prop in mirror stories
-- `P047 presentation-import` — mirror story imports `../presentation.scss` directly
-- `P013 prefer-component-cls` — no utility classes; all styling via Bootstrap component classes (`.btn`, `.btn-{variant}`, `.btn-sm`, `.btn-lg`)
-- Animation exception — Pending story 0.01% diff is spinner animation frame difference; all 4 exception conditions met
-
-### Select — batch-1/stage-5/iter-1
-
-All 3 mirror stories passed the final verification sweep.
-
-**Results:**
-
-| Story | Final Diff% | Iterations | Status |
-|-------|-------------|------------|--------|
-| TriggerStates | 0.00% | 1 | Pass |
-| DropdownMenu | 0.14% | 3 | Pass |
-| FormField | 0.00% | 3 | Pass |
-
-**Files produced:**
-- `src/react-aria-bootstrap/Select.tsx` — full `Select<T>` + `SelectItem` implementation
-- `src/scss/_bootstrap-bridges.scss` — Select bridge rules added after Button bridge
-- `src/scss/styles.scss` — added `@import 'bootstrap-bridges'`
-- `stories/react-aria-bootstrap/mirror/Select.mirror.stories.tsx` — 3 mirror stories
-- `stories/react-aria-bootstrap/presentation.scss` — `.dropdown-divider-section` class added
-
-**Principles used:**
-- `P002 class-in-tsx` — trigger className built in Select.tsx; includes `react-aria-Button` explicitly so bridge selectors still match
-- `P003 scss-bridge` — `[data-selected]`, `[data-disabled]`, `[data-focused]` → dropdown-item states; `display:block` for Label/Text; `display:block` for Popover; line-height for dropdown-header
-- `P011 cursor-pointer` — `.react-aria-ListBoxItem.dropdown-item { cursor: pointer; }` in bridges
-- `P024 caret-flip` — SVG swap via `--bs-form-select-bg-img` on `.faux-open` (presentation.scss) and `[data-open]` (bridges)
-- `P025 hardcode-show` — `.react-aria-Popover.dropdown-menu { display: block; position: unset; }` in bridges
-- `P044 faux-state-class` — `faux-hover`, `faux-focus`, `faux-open` applied via `triggerClassName` prop
-- `P046 rac-class-replace` — plain string className on Button, ListBoxItem includes `react-aria-*` explicitly
-- `P049 rac-trigger-width` — `.react-aria-Popover[data-trigger="Select"] { width: var(--trigger-width); }` in bridges
-- `P050 reboot-mismatch` — `.dropdown-header { line-height: 1.2; }` — RAC renders `<header>` (1.5 lh) vs reference `<h6>` (1.2 lh)
-
-**Issues discovered and fixed:**
-
-1. **`styles.scss` missing `@import 'bootstrap-bridges'`** — bridge CSS existed but was never loaded; all bridge selectors were dead until this import was added.
-
-2. **DropdownMenu divider** — RAC ListBox does not accept raw `<hr>` children. Workaround: empty `ListBoxSection` with `dropdown-divider-section` class (height:0; border-top) to replicate `<hr class="dropdown-divider">`.
-
-3. **DropdownMenu header line-height** — RAC `ListBoxSection + Header` renders as `<header>` (line-height 1.5 from body reboot) vs reference `<h6>` (line-height 1.2 from Bootstrap heading styles). Fixed via P050 bridge.
-
-4. **FormField conditional FieldError** — FieldError always rendered even when no error, adding invisible height. Fixed: conditional render in Select.tsx.
-
-5. **FormField Label/Text inline display** — RAC renders `<Label>` and `<Text>` as `<span>` (inline). Bootstrap `.form-label` / `.form-text` expect block-level margins. Fixed: bridge rules `.react-aria-Label.form-label { display: block; }` and `.react-aria-Text.form-text { display: block; }`.
-
-**New pattern (unlabeled):** RAC Label and Text render as inline `<span>` elements; Bootstrap class margin behavior requires `display: block`. This pattern will need a P-code in the taxonomy.
-
-### Debrief — batch-1/stage-5/iter-1
-
-**Outcome:** Successful. Both components complete. Two post-merge issues discovered during manual testing and resolved as a new principle.
-
-**Issues found in manual testing:**
-
-1. **ListBox container focus ring on mouse open** — Clicking the trigger produced a focus ring around the entire dropdown container. Root cause: RAC calls `.focus()` programmatically on the ListBox when the popover opens; browsers apply `:focus-visible` to programmatic focus regardless of input mode. Fix pattern: suppress UA outline; restore via `[data-focus-visible]`. Since keyboard users see the ring on focused items, the container ring is always wrong — `outline: none` alone suffices for the container.
-
-2. **ListBoxItem focus ring on mouse hover** — Hovering an item produced a blue outline ring. Same root cause: RAC moves DOM focus to items on hover (programmatic focus). Fix pattern: full P051 — suppress UA outline; restore via `[data-focus-visible]` so keyboard navigation retains the ring.
-
-**New principle added:** P051 `programmatic-focus-visible` — suppress the UA outline on RAC-managed elements; restore only via `[data-focus-visible]`. Both fixes intentionally not pre-applied; next iteration's sub-agent is expected to discover and apply P051 independently.
-
-### batch-1/stage-5/iter-2
-
-#### Button — Mirror Stories
-
-All 6 stories passed on the first comparison pass with 0.00% diff (Pending: 0.01% — Animation Exception applied).
-
-**Principles used:**
-- P001 compound-sel — `.react-aria-Button` retained alongside `.btn.btn-{variant}`
-- P002 class-in-tsx — Bootstrap classes applied as explicit className string (not callback pattern; RAC class included explicitly)
-- P003 scss-bridge — `[data-pending]` bridge in `_bootstrap-bridges.scss`
-- P007 variant-replace — variantClassMap covers all 17 Bootstrap button variants (8 solid, 8 outline, link); `variant` prop typed to Bootstrap's authoritative set per D1
-- P044 faux-state-class — `.faux-hover`, `.faux-focus`, `.faux-active` from `presentation.scss` passed via `className` prop for States and LinkStyle stories
-- D1 — combination: explicit `variant` prop + `className` passthrough
-- D2 — explicit `size="sm" | "lg"` prop
-
-#### Select — Mirror Stories
-
-All 3 stories pass the verification sweep within threshold 0.003:
-- TriggerStates: 0.00%
-- DropdownMenu: 0.26%
-- FormField: 0.00%
-
-**Principles used:**
-- M014 dual-counterpart — trigger uses `.btn` (behavior) + `.select-trigger` (form-select token overrides via CSS custom properties)
-- M018 div-substitution — ListBoxItem renders `<div>`, not `<a>` or `<li>`; dropdown-item class-based styles still apply
-- P001 compound-sel — `.react-aria-Button`, `.react-aria-Select`, `.react-aria-ListBoxItem` retained for bridge selectors
-- P002 class-in-tsx — all Bootstrap classes as explicit className strings
-- P003 scss-bridge — bridges for `[data-invalid]`, `[data-open]`, `[data-selected]`, `[data-disabled]` in `_bootstrap-bridges.scss`
-- P011 cursor-pointer — explicit `cursor: pointer` bridge on `.react-aria-ListBoxItem.dropdown-item`
-- P024 caret-swap — `[data-open]` swaps `--bs-form-select-bg-img` to up-pointing chevron SVG
-- P025 hardcode-show — `.react-aria-Popover.dropdown-menu { display: block }` since RAC controls mount/unmount
-- P044 faux-state-class — `triggerClassName` prop on Select for faux-hover/focus/open; `activeItem` prop for faux-active on dropdown items
-- P049 rac-trigger-width — `.react-aria-Popover.dropdown-menu { width: var(--trigger-width) }`
-- D1 — explicit `size="sm" | "lg"` prop → `.select-trigger-sm`/`.select-trigger-lg`
-- D2 — background-image SVG chevron via `--bs-form-select-bg-img` override
-
-**Bridge infrastructure fix:**
-`_bootstrap-bridges.scss` was not imported in the SCSS chain. Added `@import 'bootstrap-bridges'` to `_bootstrap-overrides.scss`. This is a one-time infrastructure fix needed for all components.
-
-**Non-obvious findings:**
-- RAC `<Label>` renders as `<span>` — needs `d-inline-block` to match Bootstrap's `label { display: inline-block }` reboot rule
-- RAC `<Text slot="description">` renders as `<span>` — needs `d-block` to match `<div.form-text>` behaviour
-- `.dropdown-header` on `<div>` gets body line-height (1.5); reference uses `<h6>` with heading line-height (1.2). Bridge rule `.dropdown-header { line-height: 1.2 }` corrects this
-- `defaultSelectedKeys` in standalone ListBox does not reliably set `[data-selected]` for static screenshot capture; use explicit `faux-active` class instead
-- `select-trigger-block` must be added to trigger when `label` is present (form-field mode requires block-level trigger)
-
-#### Debrief — batch-1/stage-5/iter-2
-
-**Observations:**
-1. Styling is nearly flawless on first glance.
-2. The Select menu does not expand when clicking the trigger — dropdown does not open in live use.
-
-**Root cause (observation 2):**
-RAC Popover renders in a DOM portal (attached to document body), NOT inside the `.react-aria-Select` wrapper. The bridge selector `.react-aria-Select .react-aria-Popover.dropdown-menu` never matched, so Bootstrap's `display:none` default on `.dropdown-menu` was never overridden. Fix: target `.react-aria-Popover.dropdown-menu` directly without an ancestor selector. Same issue applied to `.react-aria-Select .react-aria-ListBox` — changed to `.react-aria-Popover .react-aria-ListBox`.
-
-**New principle added:** P052 `portal-no-ancestor-sel` — RAC overlay elements render in portals; ancestor bridge selectors never match them.
-
-**P051 post-debrief update:** The container-centric qualification in P051 ("When a container receives focus programmatically but individual child items show their own focus rings…") was removed. It implied items are self-managing and led to P051 being applied to the ListBox container but not to ListBoxItems. Principle now reads: "Apply this to any RAC element that receives programmatic focus and where the resulting ring is visually incorrect."
-
-### batch-1/stage-5/iter-3
-
-#### Button — verification-sweep-passed
-
-**Principles used:**
-- P001 compound-sel — retained `.react-aria-Button` alongside `.btn.btn-{variant}` on all stories
-- P002 class-in-tsx — Bootstrap classes applied via explicit `className` string in `Button.tsx`
-- P003 scss-bridge — `[data-pending]` bridge added to `_bootstrap-bridges.scss` (pointer-events + cursor)
-- P007 variant-replace — `variantClassMap` covers all 8 solid variants, 8 outline variants, and `link`
-- P044 faux-state-class — `.faux-hover`, `.faux-focus`, `.faux-active` from `presentation.scss` applied in States and LinkStyle stories via `className` prop
-- D1 (Button decision) — combination approach: explicit `variant` prop + `className` passthrough
-- D2 (Button decision) — explicit typed `size="sm" | "lg"` prop mapped to `btn-sm` / `btn-lg`
-
-#### Select — verification-sweep-passed
-
-**Principles used:**
-- P002 class-in-tsx — Bootstrap classes via explicit `className` string on all sub-parts in `Select.tsx`
-- P003 scss-bridge — bridge selectors for `[data-open]` caret, `[data-invalid]` border, `[data-selected]`, `[data-disabled]`, cursor: pointer, `.dropdown-header` line-height
-- P010 form-attach — `.form-select` cannot attach to RAC `<button>`; replicate visual tokens on `.btn.select-trigger` via CSS custom property overrides
-- P011 cursor-pointer — explicit `cursor: pointer` on `.react-aria-ListBoxItem.dropdown-item` (renders as `<div>`, not `<a>`)
-- P012 match-dom — matched `.btn.dropdown-toggle` (structural) + `.form-select` token overrides (visual) for trigger (M014 dual-counterpart)
-- P024 caret-flip — background-image SVG swap for open state (CSS transform has no effect on `background-image`); dark-mode variant uses light-stroke SVG
-- P025 hardcode-show — `.show` hardcoded on Popover className; `d-block` on FieldError className
-- P036 derive-from-counterpart — trigger token values derived from `.form-select` compiled CSS; ListBoxItem state values derived from `.dropdown-item.active` / `.dropdown-item.disabled`
-- P044 faux-state-class — `.faux-hover`, `.faux-focus`, `.faux-open`, `.faux-active` from `presentation.scss` applied to specimen buttons in mirror stories
-- P047 presentation-import — all three mirror stories import `../presentation.scss`
-- P049 rac-trigger-width — `.react-aria-Popover[data-trigger="Select"].dropdown-menu { width: var(--trigger-width) }` bridge
-- P050 reboot-mismatch — `d-inline-block` on `<Label>` (RAC renders `<span>`, Bootstrap reboot sets `label { display: inline-block }`); `d-block` on `<Text slot="description">`
-- P052 portal-no-ancestor-sel — Popover bridge uses `[data-trigger="Select"]` attribute, not ancestor selector `.react-aria-Select .react-aria-Popover`
-- D1 (Select decision) — explicit `size="sm" | "lg"` prop mapped to `select-trigger-sm` / `select-trigger-lg`
-- D2 (Select decision) — `.form-select` background-image SVG chevron approach; trigger does NOT carry `.dropdown-toggle`
-
-#### Debrief
-
-**Issue identified:** P051 (programmatic-focus-visible) was not applied. Focus outlines appeared on the ListBox container on trigger click and on ListBoxItems on hover — both caused by RAC's programmatic `.focus()` calls, which browsers treat as keyboard-like and apply `:focus-visible` unconditionally.
-
-**Root cause of miss:** P051's original trigger ("any RAC element that receives programmatic focus where the resulting ring is visually incorrect") required live behavioral observation. The pixel-diff verification loop is blind to this — static screenshots never show a spurious hover focus ring. The principle had a behavioral escape hatch that made it effectively optional.
-
-**Fixes applied:**
-- P051 rewritten with doc-derivable trigger: `autoFocus` prop on container sub-elements and `shouldFocusOnHover` prop on container APIs are explicit RAC declarations of programmatic focus, readable from `mcp__react-aria__get_react_aria_page` during Preparation Phase. Phase constraint added (run before writing bridge CSS). Escape hatch removed.
-- `agent/notes/principle-templates.md` created: MECE taxonomy of principle types (Detection Rule, Selection Rule, Procedure, Epistemic Guard) with templates and diagnostic checklist. Surfaced that the initial four-type taxonomy was neither mutually exclusive nor collectively exhaustive.
-
-**Outcome:** Both components pass at 0.00% diff. P051 fix deferred to next iteration.
-
-### batch-1/stage-5/iter-4
-
-**Outcome:** Failed. Mirror stories for Select used static HTML instead of the React Aria component.
-
-**Root cause:** Iter-4 was cut after stale findings docs were deleted from the integration branch (`e56ad08 Delete stale findings`). The iter-3 agent had access to iter-2's per-story findings docs, which showed the `triggerClassName` prop and component-driven mirror story pattern. Without those docs, iter-4 derived a decomposed API (`SelectTrigger`, `SelectPopover`, `SelectListBox`, `SelectOption` as separate exports) with no `triggerClassName` prop. When writing Phase B stories, there was no way to pass faux-state classes to the trigger through the component API, so the agent fell back to plain HTML. The diff "passed" tautologically — HTML matches HTML.
-
-**Button:** Passed correctly. Mirror stories used the React Aria Button component; all 6 stories passed at 0.00–0.01%.
-
-**Select:** TSX implemented but mirror stories used static HTML. Pixel diffs passed without testing the component.
-
-### batch-1/stage-5/iter-5
-
-**Outcome:** Failed. Repeated iter-4's mirror-story regression.
-
-**Root cause:** Iter-5 inherited iter-4's findings, which documented plain HTML as intentional ("for visual surface isolation"). Phase B's instruction — "replicate reference story layout" — was ambiguous: the iter-5 agent read it as license to copy the HTML structure from the reference story directly. There was no explicit statement in `component-agent.md` that mirror stories must use the component.
-
-**Fix applied (this session):** Phase B, step 1 of `agent/react-aria-skill/component-agent.md` now begins: *"A mirror story should be visually identical to the reference story, but built with the React Aria component (`src/react-aria-bootstrap/{ComponentName}.tsx`) instead of static HTML."* Synced to `integration-batch-1`.
-
-**Button:** Passed correctly. All 6 stories at 0.00–0.01%.
-
-**Select:** TSX implementation written with correct principles; mirror stories still used static HTML. Real component work done this iteration:
-- P010 form-attach — `.form-select` cannot attach to RAC `<button>`; replicated tokens via CSS variable overrides
-- P011 cursor-pointer — `ListBoxItem` renders `<div>`; explicit `cursor: pointer` bridge added
-- P024 caret-flip — background-image SVG swap for open state via `[data-open]` bridge
-- P025 hardcode-show — `.show` hardcoded on Popover className
-- P049 rac-trigger-width — consumed `--trigger-width` on Popover
-- P051 programmatic-focus-visible — applied focus suppression to `ListBoxItem` (`shouldFocusOnHover`)
-- P052 portal-no-ancestor-sel — Popover bridge uses `[data-trigger="Select"]` attribute
+- *(e.g., `P014 data-pressed`, `P022 bs-icons`)*

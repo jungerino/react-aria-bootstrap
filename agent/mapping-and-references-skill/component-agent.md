@@ -55,8 +55,6 @@ When M001 (dom-first) finds that the semantically obvious Bootstrap counterpart 
 
 Apply visual token overrides from the semantic counterpart to the structural element. Do not assume the structural counterpart's default appearance is appropriate — its defaults are optimized for its own use case.
 
-**Example:** Select trigger renders `<button>` (structural counterpart: `.btn.dropdown-toggle`), but the visual target is `.form-select`. Use `.btn.dropdown-toggle` for class assignment and bridge strategy; apply `.form-select` token overrides for appearance.
-
 ---
 
 ## Part 2 — State Mappings and Bridge Strategy
@@ -183,6 +181,22 @@ iteration: {N}
 2. **"Design choice" notes** — Any Variants table entry explicitly noted as "design choice" is unresolved. Elevate it.
 3. **Cross-component consistency** — When a sub-part pattern (SelectionIndicator, ghost button, icon source) was already resolved for another component in the same session, check consistency. If the current component differs, flag the inconsistency as a fork.
 4. **Hardcoded numeric values in CSS deltas** — Flag as configurable candidates. Propose a CSS custom property or prop.
+
+### M019: m014-class-in-decisions — When M014 applies, record the class choice in Decisions, not only in DOM conflicts
+
+When M014 applies to a sub-part, the `## Decisions` section must contain an explicit entry naming which component class is applied to the element and why. The DOM conflicts table is analysis — it describes the mismatch. Decisions is the authoritative implementation instruction. M020 establishes that exactly one component class applies; record which one and the reasoning behind it.
+
+**Applies to:** Any sub-part where M014 applies. Even when the choice appears obvious from the counterpart analysis, it must be stated explicitly in Decisions.
+
+### M020: one-component-class — Apply exactly one Bootstrap component class to each interactive element
+
+A Bootstrap **component class** is a class that defines its own interactive state cascade — `:hover`, `:focus-visible`, `:active`, `:disabled` rules — and its own CSS variable namespace (e.g. `.btn`, `.form-select`, `.form-control`, `.nav-link`, `.dropdown-item`). Modifier and variant classes (`.btn-primary`, `.dropdown-toggle`, `.form-select-lg`) are not component classes — they supplement the cascade without owning it, and may be applied freely alongside the component class.
+
+Apply exactly one component class to each interactive element. That class defines the element's **interactive state contract**: which pseudo-class rules fire, and which CSS variable namespace resolves them. When the chosen class does not deliver every aspect of the target appearance, bridge the gaps in `_bootstrap-bridges.scss` — do not layer a second component class on top. Two component classes produce overlapping state cascades and competing CSS variable namespaces with no reliable resolution order.
+
+**Exception:** Bootstrap's own documentation occasionally combines two component classes (e.g. `.form-control.form-control-color`). Combinations the docs show explicitly are in scope; all others are not.
+
+**When M014 applies:** The dual-counterpart analysis identifies two candidate component classes. Exactly one is applied to the element — record that choice in `## Decisions` (see M019). The other counterpart informs bridge strategy and state coverage but does not contribute a class.
 
 ---
 

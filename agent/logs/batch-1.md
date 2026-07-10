@@ -6,7 +6,15 @@
 
 ## Stories
 
-*Populated by Stage 4 orchestrator after each component's reference stories are approved.*
+### Select
+
+`stories/react-aria-bootstrap/reference/Select.reference.stories.tsx`
+
+- Trigger
+- Sizes
+- Open
+- Grouped
+- Field States
 
 ## Stage 4
 

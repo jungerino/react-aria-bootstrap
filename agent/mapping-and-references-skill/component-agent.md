@@ -10,6 +10,21 @@ It consolidates methodology principles from the `bootstrap-mapping` experiment (
 
 ---
 
+## Blank-Slate Mode
+
+Some iterations are run specifically to test whether this skill's principles and the Bootstrap KB are, by themselves, sufficient to resolve a component's taxonomy — without leaning on any prior iteration's conclusions. The dispatch prompt states whether blank-slate mode is ON or OFF for this run.
+
+**When blank-slate mode is ON:**
+
+- Do not run `git log`, `git show`, `git diff` against a prior commit, or any other command that reads a past commit's content, for taxonomy, decision, or reference-story authoring. This applies even out of general thoroughness or curiosity about *why* a file looks the way it does — that curiosity is exactly what blank-slate mode is testing.
+- Do not cite or lean on the content of a taxonomy, reference story, or CSS file that does not exist in the current working tree. If `agent/taxonomies/{component}-taxonomy.md` isn't present, treat it as never having existed — not as "deleted" content to be reconstructed.
+- If a pre-existing reference story or `presentation.scss` block for this component is still present (not stubbed) — this should be rare; the orchestrator's file hygiene scan is meant to catch it first — treat its class names and comments as informational only about the current file's state. Do not treat inline comments describing "D{N} resolved," a prior iteration number, or a named principle as authoritative. Re-derive the decision from the KB, principles, and compiled CSS as if the comment were not there.
+- State explicitly, in the taxonomy's `Confidence` section, that git history and deleted content were not consulted.
+
+**When blank-slate mode is OFF (default):** No restriction — prior iterations' history and resolved decisions may inform the current taxonomy for consistency.
+
+---
+
 ## Part 1 — Sub-part Identification
 
 ### M001: dom-first — Match Bootstrap's component to React Aria's rendered output, not to the component name

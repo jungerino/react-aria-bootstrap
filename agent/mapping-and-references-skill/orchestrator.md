@@ -44,6 +44,30 @@ Crossing this boundary defeats the purpose of the hierarchy. A component sub-age
 
 ---
 
+## Pre-Dispatch: File Hygiene Scan
+
+Before emitting the delegation manifest, check every component in the batch for pre-existing Stage 4 artifacts that the branch-cutting stub step didn't address. For each `{component}`/`{ComponentName}`, check:
+
+- `agent/taxonomies/{component}-taxonomy.md`
+- `stories/react-aria-bootstrap/reference/{ComponentName}.reference.stories.tsx`
+- `agent/artifacts/reference-css/{component}-*.css`
+- `stories/react-aria-bootstrap/presentation.scss` — grep for the component's known class prefixes (e.g. `.select-trigger`) or the component name in comments
+- `agent/logs/batch-{N}.md` — existing content under the component's Stage 4/5 sections
+
+Report any hits to the user as a checklist, e.g.:
+
+```
+Pre-existing content found for Select (not addressed by the stub step):
+- stories/react-aria-bootstrap/reference/Select.reference.stories.tsx (full iteration-1 story, not stubbed)
+- stories/react-aria-bootstrap/presentation.scss (iteration-1 .select-trigger rules, not stubbed)
+
+Delete any of these before dispatch, or intentionally carry them forward?
+```
+
+Do not dispatch any sub-agent until this question is answered. This scan runs once per batch, for every component, regardless of whether blank-slate mode is on — stale artifacts create confusion (which comments/classes are authoritative?) even when git-history consultation isn't a concern.
+
+---
+
 ## Required First Step: Delegation Manifest
 
 Before dispatching any sub-agent, emit a delegation manifest listing every component and its initial status. Execution cannot begin until this manifest is emitted.
@@ -71,6 +95,8 @@ Use this template **verbatim** when launching a Tier 1 component sub-agent. Repl
 You are a Tier 1 Component Sub-Agent for the React Aria + Bootstrap taxonomy and reference stories workflow.
 
 Component: {ComponentName}
+
+Blank-slate mode: {ON|OFF} — see `component-agent.md`'s "Blank-Slate Mode" section for what this means and, if ON, what it forbids.
 
 ## Session-start files (read in this order)
 
@@ -134,8 +160,11 @@ for each component in batch (serial):
         → continue waiting
 
       TAXONOMY-COMPLETE:
+        → if blank-slate mode is ON for this component: run the compliance audit (below)
+          before resuming. If it finds a hit, surface "Blank-slate compliance concern: {evidence}"
+          to the user before resuming — do not silently accept.
         → log internally; immediately resume sub-agent via SendMessage: "Proceed to Phase B."
-          [Transparent to user — no interruption. See note below.]
+          [Transparent to user — no interruption, unless a compliance concern was surfaced above.]
         → continue waiting
 
       REFERENCE-STORY-READY-FOR-REVIEW:
@@ -164,7 +193,46 @@ when all components done:
 
 `TAXONOMY-COMPLETE` is an inter-phase checkpoint, not a user event. When you receive it, immediately resume the sub-agent via SendMessage without interrupting the user. Do not ask the user what to do next.
 
-This is the only terminal phrase in the Stage 4 loop that requires no user interaction before resuming.
+This is the only terminal phrase in the Stage 4 loop that requires no user interaction before resuming — except when the compliance audit below finds a hit.
+
+---
+
+## Blank-Slate Compliance Audit
+
+Run only when blank-slate mode is ON for the component. Before resuming a sub-agent past `TAXONOMY-COMPLETE`, verify what it actually did — don't infer compliance from its own narrative or from whether its output happens to mention something suspicious.
+
+**Primary method — scan the sub-agent's own transcript.** Every sub-agent dispatched via the Agent tool has a full JSONL transcript of every tool call it made, at:
+
+```
+~/.claude/projects/{sanitized-cwd}/{orchestrator-session-id}/subagents/agent-{agentId}.jsonl
+```
+
+- `{sanitized-cwd}` — the project's absolute path with every `/` replaced by `-`.
+- `{orchestrator-session-id}` — this orchestrator session's own ID. It is visible in the session-scoped scratchpad directory path given in your system context: `.../{sanitized-cwd}/{session-id}/scratchpad`.
+- `{agentId}` — returned in the sub-agent's response when it was dispatched (e.g. `agentId: a3f41b20344454c56`).
+
+Extract every `Bash` tool_use command from the transcript and flag any that reads git history: `git log`, `git show`, `git diff {ref}` (any commit/branch argument — not a bare working-tree diff), `git blame`, `git cat-file`, `git rev-list`, `git reflog`. `git status`, `git add`, and a bare `git diff`/`git branch --show-current` are not flags — they don't recover prior or deleted content.
+
+```bash
+python3 -c "
+import json
+path = '<derived path above>'
+with open(path) as f:
+    for line in f:
+        d = json.loads(line)
+        for block in d.get('message', {}).get('content') or []:
+            if isinstance(block, dict) and block.get('type') == 'tool_use' and block.get('name') == 'Bash':
+                cmd = block.get('input', {}).get('command', '')
+                if 'git' in cmd:
+                    print(cmd)
+"
+```
+
+If the transcript file does not exist at the expected path, this is a tool-failure condition, not a pass — report to the user that transcript-based verification was unavailable for this component rather than silently treating "nothing found" as "nothing to find."
+
+**Secondary method — artifact tells (cheap cross-check, not a substitute).** Grep the new taxonomy doc and its batch log entry for commit-hash-shaped tokens (`[0-9a-f]{7,40}`), stale iteration references ("iteration" followed by a number that isn't this run's), and citations of paths that don't exist in the working tree.
+
+A hit from either method means the sub-agent consulted git history or content it should have treated as absent. This does not automatically invalidate the taxonomy — the reasoning may still hold on its own merits — but the "resolved without needing user input" result is confounded and must be reported to the user as such, not accepted silently.
 
 ---
 

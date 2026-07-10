@@ -10,14 +10,10 @@
 
 ## Stage 4
 
-### Select
-*(Populated during Stage 4)*
+### batch-1/stage-4/iter-1
 
-**Principles used:**
-- *(e.g., `M016 decisions-needed`, `P-S001 faux-focus`)*
+*(In progress)*
 
 ## Stage 5
 
-### Select
-**Principles used:**
-- *(e.g., `P014 data-pressed`, `P022 bs-icons`)*
+*(Populated during Stage 5)*

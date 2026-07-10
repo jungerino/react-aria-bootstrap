@@ -1,0 +1,226 @@
+// ==========================================================================
+// Bootstrap Reference — presentation styles
+//
+// Reference stories are static HTML specimens depicting Bootstrap's target
+// visual appearance for each component state. Faux-state classes reproduce
+// pseudo-class styling statically so screenshots capture states that would
+// otherwise require live interaction (hover, focus, open/pressed).
+//
+// See agent/mapping-and-references-skill/component-agent.md Part 6
+// (Reference Story Construction) for the conventions applied here,
+// especially P-001 (faux-state classes) and P-012 (variable overrides for
+// dual-counterpart components).
+// ==========================================================================
+
+// --------------------------------------------------------------------
+// Generic specimen layout helpers (shared across all reference stories)
+// --------------------------------------------------------------------
+
+.spec-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  align-items: flex-start;
+}
+
+.spec-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.spec-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--bs-secondary-color);
+}
+
+.spec-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+// ==========================================================================
+// Select
+// ==========================================================================
+
+// --------------------------------------------------------------------
+// Trigger — M014 dual-counterpart.
+// Structural counterpart: .btn.dropdown-toggle (React Aria renders a
+// <button>, not a <select> — see select-taxonomy.md Decisions D2).
+// Visual counterpart: .form-select. Its computed token values are applied
+// here as CSS custom-property overrides on .btn's own variable namespace
+// (P-012), so every state rule already defined on .btn resolves to
+// .form-select-equivalent visuals automatically.
+// --------------------------------------------------------------------
+
+.select-trigger {
+  --bs-btn-color: var(--bs-body-color);
+  --bs-btn-bg: var(--bs-body-bg);
+  --bs-btn-border-color: var(--bs-border-color);
+  --bs-btn-hover-color: var(--bs-body-color);
+  --bs-btn-hover-bg: var(--bs-body-bg);
+  --bs-btn-hover-border-color: var(--bs-border-color);
+  --bs-btn-disabled-color: var(--bs-body-color);
+  --bs-btn-disabled-bg: var(--bs-secondary-bg);
+  --bs-btn-disabled-border-color: var(--bs-border-color);
+  --bs-btn-disabled-opacity: 1; // .form-select:disabled only changes background — no opacity reduction
+
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 240px;
+  text-align: start;
+
+  // Bootstrap's auto-generated caret (::after) is suppressed — React Aria
+  // renders a real icon element instead (M018 element-type substitution).
+  &::after {
+    content: none;
+  }
+}
+
+.select-trigger-value {
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  // [NO DIRECT COUNTERPART] — native <select> has no ::placeholder; closest
+  // analog is Bootstrap's standard muted-text token.
+  &.is-placeholder {
+    color: var(--bs-secondary-color);
+  }
+}
+
+.select-trigger-caret {
+  flex: 0 0 auto;
+  margin-inline-start: 0.5rem;
+  transition: transform 0.15s ease-in-out;
+}
+
+// P-018 — open-state specimens show the caret flipped via CSS transform,
+// never by swapping icon variants or toggling visibility.
+.select-trigger.faux-open .select-trigger-caret {
+  transform: rotate(180deg);
+}
+
+// Faux hover — statically reproduces .btn:hover. Same token values as
+// resting per M014 (.form-select has no hover treatment of its own).
+.select-trigger.faux-hover {
+  color: var(--bs-btn-hover-color);
+  background-color: var(--bs-btn-hover-bg);
+  border-color: var(--bs-btn-hover-border-color);
+}
+
+// Faux focus / faux open — both resolve to the same visual (Decisions D2):
+// a native <select> remains focused while its picker is open, so
+// .form-select has no separate "open" appearance beyond its focus ring.
+// #86b7fe / rgba(13, 110, 253, .25) match .form-select:focus /
+// .form-control:focus exactly; Bootstrap computes these via a compile-time
+// Sass tint-color() function and does not expose them as --bs-* custom
+// properties, so the literal values are used here (see select-taxonomy.md
+// Confidence section).
+.select-trigger.faux-focus,
+.select-trigger.faux-open {
+  border-color: #86b7fe;
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+// Invalid — literal Bootstrap class (.is-invalid), not a faux-simulated
+// pseudo-class per P-001. .form-select.is-invalid's border-color is
+// reproduced here since .is-invalid has no effect on .btn by default.
+.select-trigger.is-invalid {
+  border-color: var(--bs-form-invalid-border-color);
+}
+
+.select-trigger.is-invalid.faux-focus {
+  border-color: var(--bs-form-invalid-border-color);
+  box-shadow: 0 0 0 0.25rem rgba(var(--bs-danger-rgb), 0.25);
+}
+
+// Valid — literal Bootstrap class (.is-valid), mirrors .is-invalid above.
+.select-trigger.is-valid {
+  border-color: var(--bs-form-valid-border-color);
+}
+
+.select-trigger.is-valid.faux-focus {
+  border-color: var(--bs-form-valid-border-color);
+  box-shadow: 0 0 0 0.25rem rgba(var(--bs-success-rgb), 0.25);
+}
+
+// Validation icon (review feedback, iter-1 — see select-taxonomy.md
+// Decisions D3). Bootstrap's .form-select.is-valid/.is-invalid embed this
+// as a background-image on the select element itself via
+// --bs-form-select-bg-icon. Our trigger is .btn-based (M014), not
+// .form-select, and already carries a real chevron flex-child rather than
+// a background-image caret, so the icon is reproduced as its own small
+// flex-child element instead of layering a second background-image on
+// .select-trigger. The SVG data URIs below are copied byte-for-byte from
+// node_modules/bootstrap/dist/css/bootstrap.css
+// (.form-select.is-valid / .form-select.is-invalid) — same shapes and
+// colors Bootstrap itself renders, not an approximation. Bootstrap does
+// not vary these particular icon colors under [data-bs-theme=dark]
+// (confirmed: no such override exists in the compiled CSS), so no
+// dark-mode variant is needed here either.
+.select-trigger-icon {
+  flex: 0 0 auto;
+  width: 1rem;
+  height: 1rem;
+  margin-inline-start: 0.5rem;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+}
+
+.select-trigger-icon--valid {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23198754' d='M2.3 6.73.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1'/%3e%3c/svg%3e");
+}
+
+.select-trigger-icon--invalid {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+}
+
+// --------------------------------------------------------------------
+// Popover / menu — .dropdown-menu (see select-taxonomy.md DOM conflict
+// "Popover + ListBox": the full .dropdown-menu visual property set is
+// applied to the Popover; ListBox itself receives no Bootstrap class).
+// --------------------------------------------------------------------
+
+.select-menu {
+  // Static reference specimen only — the real component positions the
+  // Popover via its own overlay system, independent of
+  // .dropdown-menu[data-bs-popper] (see select-taxonomy.md DOM conflict
+  // "Popover positioning"). position: static keeps the open-state specimen
+  // laid out directly below its trigger for the screenshot.
+  position: static;
+  margin-top: var(--bs-dropdown-spacer, 0.125rem);
+}
+
+// Selected items (review feedback, iter-1 — see select-taxonomy.md
+// Decisions D3): no checkmark glyph. Bootstrap's own dropdown-item
+// selected/active convention is background/color fill only via .active —
+// the .dropdown-item class already provides this with no extra CSS
+// needed here. (DropdownItem's existing lucide-react <Check> icon must be
+// hidden in the Bootstrap-styled context at implementation time — see
+// select-taxonomy.md DOM conflict "Selected checkmark".)
+
+// Faux hover / focus for dropdown items — .dropdown-item:hover and
+// .dropdown-item:focus share the same token values in Bootstrap's compiled
+// CSS, but neither suppresses the UA outline (grepped
+// node_modules/bootstrap/dist/css/bootstrap.css — no box-shadow/outline:0
+// rule exists for .dropdown-item:focus). Per P-001's faux-focus-source
+// rule and P-014/P-016, faux-focus must include both the shared hover
+// tokens AND the UA focus ring so it stays visually distinct from hover.
+.dropdown-item.faux-hover {
+  color: var(--bs-dropdown-link-hover-color);
+  background-color: var(--bs-dropdown-link-hover-bg);
+}
+
+.dropdown-item.faux-focus,
+.dropdown-item.faux-focus-visible {
+  color: var(--bs-dropdown-link-hover-color);
+  background-color: var(--bs-dropdown-link-hover-bg);
+  outline: auto -webkit-focus-ring-color;
+}

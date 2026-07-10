@@ -30,7 +30,9 @@
       "Bash(grep *)",
       "Skill(update-config)",
       "Skill(update-config:*)",
-      "Bash(git fetch *)"
+      "Bash(git fetch *)",
+      "Bash(git ls-remote *)",
+      "Bash(git check-ignore *)"
     ],
     "additionalDirectories": [
       "/Users/josh/.claude/plans"

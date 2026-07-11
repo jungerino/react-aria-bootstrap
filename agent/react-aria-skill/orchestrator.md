@@ -24,6 +24,23 @@ Crossing this boundary defeats the purpose of the hierarchy. A component agent's
 
 ---
 
+## Pre-Dispatch: File Hygiene Scan
+
+Before emitting the delegation manifest, check every component in the batch for pre-existing Stage 5 artifacts that the branch-cutting stub step didn't address. For each `{component}`/`{ComponentName}`, check:
+
+- `src/react-aria-bootstrap/{ComponentName}.tsx`
+- `stories/react-aria-bootstrap/mirror/{ComponentName}.mirror.stories.tsx`
+- `src/scss/_bootstrap-bridges.scss` — grep for the component's known class prefixes (e.g. `.select-trigger`) or the component name in comments
+- `agent/artifacts/findings/{component}-findings.md` and `agent/artifacts/findings/{component}-*-findings.md`
+- `agent/artifacts/mirror-css/{component}-*.css`
+- `agent/artifacts/diffs/{component}/`
+- `.reference-images/{component}/` — pre-captured reference images from a prior pre-loop setup; check filenames match the current story list in `agent/logs/batch-{N}.md`, not a stale naming scheme
+- `agent/logs/batch-{N}.md` — existing content under the component's Stage 5 section
+
+Report any hits to the user as a checklist. Do not dispatch any sub-agent, and do not run pre-loop setup (stub creation, reference-image capture), until this question is answered. This scan runs once per batch, for every component, regardless of whether blank-slate mode is on — stale artifacts create confusion (which comments/classes/images are authoritative?) even when git-history consultation isn't a concern.
+
+---
+
 ## Required First Step: Delegation Manifest
 
 Before launching any agent, emit a delegation manifest listing every component and its initial status. Execution cannot begin until this manifest is emitted.

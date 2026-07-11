@@ -52,6 +52,8 @@ You are a Tier 1 Component Sub-Agent for the React Aria + Bootstrap styled compo
 
 Component: {ComponentName}
 
+Blank-slate mode: {ON|OFF} — see `component-agent.md`'s "Blank-Slate Mode" section for what this means and, if ON, what it forbids.
+
 ## Session-start files (read in this order)
 
 1. agent/react-aria-skill/SKILL.md

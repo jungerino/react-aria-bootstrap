@@ -12,6 +12,10 @@ title: Mapping and References Skill — Orchestrator (Tier 0)
 
 The orchestrator runs `git commit` and `git push` — not the sub-agent. Reason: `git commit` requires user approval (it is in the `ask` permission list in user settings). Sub-agents resumed via `SendMessage` run in background mode, where permission prompts cannot surface to the user. The orchestrator runs in the foreground and can handle the approval prompt normally.
 
+Before staging, confirm the `## Stories` section for this component is populated
+(see iteration-protocol.md) — this is easy to miss since it happens once per
+component, not once per commit like the other artifacts.
+
 After receiving `COMPONENT-STAGE-4-COMPLETE`, stage and commit all artifacts for that component before moving to the next:
 
 ```bash
@@ -172,6 +176,9 @@ for each component in batch (serial):
             "Open Storybook → Bootstrap Reference/{ComponentName}.
              Review the stories. Approve or provide feedback."
         → receive user response
+        → if response is "Approved": populate this component's entry under
+          `## Stories` in the batch log (component name, story file path,
+          list of approved story names) before resuming the sub-agent
         → resume sub-agent via SendMessage with user feedback or "Approved."
         → continue waiting (sub-agent may loop back to REFERENCE-STORY-READY-FOR-REVIEW)
 

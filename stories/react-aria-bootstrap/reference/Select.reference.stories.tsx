@@ -12,90 +12,82 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 /**
- * Source: https://getbootstrap.com/docs/5.3/forms/select/
- * Source: https://getbootstrap.com/docs/5.3/components/dropdowns/
- *
- * The Select trigger is a .btn styled to look like .form-select (M014 dual-counterpart).
- * .select-trigger in presentation.scss overrides .btn CSS custom properties at the variable level
- * (P-012) so all Bootstrap state rules read form-select-equivalent values automatically.
- *
- * Chevron: uses .form-select's background-image SVG approach (--bs-form-select-bg-img), positioned
- * at right 0.75rem center — NOT a .dropdown-toggle ::after border-trick caret. The trigger does
- * NOT carry the .dropdown-toggle class. Open state swaps the SVG to an up-pointing chevron via
- * --bs-form-select-bg-img override on .faux-open.
- *
- * Section 1 — Interactive states: Default, Hover, Focus, Open, Disabled, Invalid.
- * Section 2 — Size variants: Large, Default, Small (D1 resolved: explicit size prop).
- * Faux-state classes simulate pseudo-class appearances statically (P-001).
- * Focus box-shadow distinguishes focus from hover (P-014, P-016).
- * Open state shows selected value "Dog" in trigger with up-facing chevron (P-005).
+ * Trigger — closed-state specimens.
+ * Source: https://getbootstrap.com/docs/5.3/components/dropdowns/ (trigger button)
+ *         https://getbootstrap.com/docs/5.3/forms/select/ (visual counterpart — see select-taxonomy.md Decisions D2)
  */
-export const TriggerStates: Story = {
+export const Trigger: Story = {
   render: () => (
-    <div>
-      <div className="specimen-section">
-        <div className="specimen-row-header">Interactive states — .btn + .form-select appearance</div>
-        <div className="specimen-row">
-          <div className="specimen-group">
-            <div className="specimen-label">Default</div>
-            <button type="button" className="btn select-trigger">
-              Select an option
-            </button>
-          </div>
-          <div className="specimen-group">
-            <div className="specimen-label">Hover</div>
-            <button type="button" className="btn select-trigger faux-hover">
-              Select an option
-            </button>
-          </div>
-          <div className="specimen-group">
-            <div className="specimen-label">Focus</div>
-            <button type="button" className="btn select-trigger faux-focus">
-              Select an option
-            </button>
-          </div>
-          <div className="specimen-group">
-            <div className="specimen-label">Open (value selected)</div>
-            <button type="button" className="btn select-trigger faux-open">
-              Dog
-            </button>
-          </div>
-          <div className="specimen-group">
-            <div className="specimen-label">Disabled</div>
-            <button type="button" className="btn select-trigger" disabled>
-              Select an option
-            </button>
-          </div>
-          <div className="specimen-group">
-            <div className="specimen-label">Invalid</div>
-            <button type="button" className="btn select-trigger select-trigger-invalid">
-              Select an option
-            </button>
-          </div>
+    <div className="spec-row">
+      <div className="spec-item">
+        <span className="spec-label">Default (placeholder)</span>
+        <div className="dropdown">
+          <button type="button" className="btn dropdown-toggle select-trigger" aria-expanded="false">
+            <span className="select-trigger-value is-placeholder">Select an item</span>
+            <i className="bi bi-chevron-down select-trigger-caret" aria-hidden="true"></i>
+          </button>
         </div>
       </div>
 
-      <div className="specimen-section">
-        <div className="specimen-row-header">Size variants (D1: size="sm" | "lg" prop)</div>
-        <div className="specimen-row specimen-row-top">
-          <div className="specimen-group">
-            <div className="specimen-label">Large (.form-select-lg)</div>
-            <button type="button" className="btn select-trigger select-trigger-lg">
-              Select an option
-            </button>
-          </div>
-          <div className="specimen-group">
-            <div className="specimen-label">Default</div>
-            <button type="button" className="btn select-trigger">
-              Select an option
-            </button>
-          </div>
-          <div className="specimen-group">
-            <div className="specimen-label">Small (.form-select-sm)</div>
-            <button type="button" className="btn select-trigger select-trigger-sm">
-              Select an option
-            </button>
-          </div>
+      <div className="spec-item">
+        <span className="spec-label">Filled</span>
+        <div className="dropdown">
+          <button type="button" className="btn dropdown-toggle select-trigger" aria-expanded="false">
+            <span className="select-trigger-value">Kangaroo</span>
+            <i className="bi bi-chevron-down select-trigger-caret" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+
+      <div className="spec-item">
+        <span className="spec-label">Hover</span>
+        <div className="dropdown">
+          <button type="button" className="btn dropdown-toggle select-trigger faux-hover" aria-expanded="false">
+            <span className="select-trigger-value">Kangaroo</span>
+            <i className="bi bi-chevron-down select-trigger-caret" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+
+      <div className="spec-item">
+        <span className="spec-label">Focus</span>
+        <div className="dropdown">
+          <button type="button" className="btn dropdown-toggle select-trigger faux-focus" aria-expanded="false">
+            <span className="select-trigger-value">Kangaroo</span>
+            <i className="bi bi-chevron-down select-trigger-caret" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+
+      <div className="spec-item">
+        <span className="spec-label">Open / pressed</span>
+        <div className="dropdown">
+          <button type="button" className="btn dropdown-toggle select-trigger faux-open" aria-expanded="true">
+            <span className="select-trigger-value">Kangaroo</span>
+            <i className="bi bi-chevron-down select-trigger-caret" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+
+      <div className="spec-item">
+        <span className="spec-label">Disabled</span>
+        <div className="dropdown">
+          <button type="button" className="btn dropdown-toggle select-trigger" aria-expanded="false" disabled>
+            <span className="select-trigger-value">Kangaroo</span>
+            <i className="bi bi-chevron-down select-trigger-caret" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+
+      <div className="spec-item">
+        <span className="spec-label">Invalid</span>
+        <div className="dropdown">
+          <button type="button" className="btn dropdown-toggle select-trigger is-invalid" aria-expanded="false">
+            <span className="select-trigger-value is-placeholder">Select an item</span>
+            <span className="select-trigger-icon select-trigger-icon--invalid" aria-hidden="true"></span>
+            <i className="bi bi-chevron-down select-trigger-caret" aria-hidden="true"></i>
+          </button>
+          <div className="invalid-feedback">Please select an animal.</div>
         </div>
       </div>
     </div>
@@ -103,145 +95,180 @@ export const TriggerStates: Story = {
 };
 
 /**
- * Source: https://getbootstrap.com/docs/5.3/components/dropdowns/
- *
- * Dropdown menu panel (.dropdown-menu) with each .dropdown-item interactive state shown as a
- * separate specimen with an external label above it. Per P-008: labels appear above each panel,
- * not injected as text into items. Per P-006: all item states shown independently.
- *
- * Bootstrap's .dropdown-item:hover and :focus share the same CSS tokens
- * (--bs-dropdown-link-hover-color / --bs-dropdown-link-hover-bg). Bootstrap does NOT suppress
- * outline on .dropdown-item, so the UA focus ring distinguishes focus from hover visually
- * (P-014, P-015). faux-focus uses outline: auto -webkit-focus-ring-color (P-001, P-016).
- *
- * Panel shows Animals list with "Dog" as the active/selected item (P-005: matches open trigger value).
+ * Sizes — Decisions D1 (dedicated `size` prop: 'sm' | 'md' | 'lg').
+ * Source: https://getbootstrap.com/docs/5.3/forms/select/#sizing
  */
-export const DropdownMenu: Story = {
+export const Sizes: Story = {
   render: () => (
-    <div>
-      <div className="specimen-row-header">Dropdown menu (.dropdown-menu) — per-state specimens</div>
-      <div className="specimen-row specimen-row-top">
-
-        <div className="specimen-group">
-          <div className="specimen-label">Default</div>
-          <ul className="dropdown-menu dropdown-menu-static">
-            <li><h6 className="dropdown-header">Animals</h6></li>
-            <li><a className="dropdown-item" href="#">Cat</a></li>
-            <li><a className="dropdown-item" href="#">Dog</a></li>
-            <li><a className="dropdown-item" href="#">Rabbit</a></li>
-            <li><hr className="dropdown-divider" /></li>
-            <li><a className="dropdown-item" href="#">Platypus</a></li>
-          </ul>
+    <div className="spec-row">
+      <div className="spec-item">
+        <span className="spec-label">Small (btn-sm)</span>
+        <div className="dropdown">
+          <button type="button" className="btn btn-sm dropdown-toggle select-trigger" aria-expanded="false">
+            <span className="select-trigger-value">Kangaroo</span>
+            <i className="bi bi-chevron-down select-trigger-caret" aria-hidden="true"></i>
+          </button>
         </div>
+      </div>
 
-        <div className="specimen-group">
-          <div className="specimen-label">Hover</div>
-          <ul className="dropdown-menu dropdown-menu-static">
-            <li><h6 className="dropdown-header">Animals</h6></li>
-            <li><a className="dropdown-item faux-hover" href="#">Cat</a></li>
-            <li><a className="dropdown-item" href="#">Dog</a></li>
-            <li><a className="dropdown-item" href="#">Rabbit</a></li>
-            <li><hr className="dropdown-divider" /></li>
-            <li><a className="dropdown-item" href="#">Platypus</a></li>
-          </ul>
+      <div className="spec-item">
+        <span className="spec-label">Default</span>
+        <div className="dropdown">
+          <button type="button" className="btn dropdown-toggle select-trigger" aria-expanded="false">
+            <span className="select-trigger-value">Kangaroo</span>
+            <i className="bi bi-chevron-down select-trigger-caret" aria-hidden="true"></i>
+          </button>
         </div>
+      </div>
 
-        <div className="specimen-group">
-          <div className="specimen-label">Focus</div>
-          <ul className="dropdown-menu dropdown-menu-static">
-            <li><h6 className="dropdown-header">Animals</h6></li>
-            <li><a className="dropdown-item faux-focus" href="#">Cat</a></li>
-            <li><a className="dropdown-item" href="#">Dog</a></li>
-            <li><a className="dropdown-item" href="#">Rabbit</a></li>
-            <li><hr className="dropdown-divider" /></li>
-            <li><a className="dropdown-item" href="#">Platypus</a></li>
-          </ul>
+      <div className="spec-item">
+        <span className="spec-label">Large (btn-lg)</span>
+        <div className="dropdown">
+          <button type="button" className="btn btn-lg dropdown-toggle select-trigger" aria-expanded="false">
+            <span className="select-trigger-value">Kangaroo</span>
+            <i className="bi bi-chevron-down select-trigger-caret" aria-hidden="true"></i>
+          </button>
         </div>
-
-        <div className="specimen-group">
-          <div className="specimen-label">Active / Selected</div>
-          <ul className="dropdown-menu dropdown-menu-static">
-            <li><h6 className="dropdown-header">Animals</h6></li>
-            <li><a className="dropdown-item" href="#">Cat</a></li>
-            <li><a className="dropdown-item active" href="#" aria-current="true">Dog</a></li>
-            <li><a className="dropdown-item" href="#">Rabbit</a></li>
-            <li><hr className="dropdown-divider" /></li>
-            <li><a className="dropdown-item" href="#">Platypus</a></li>
-          </ul>
-        </div>
-
-        <div className="specimen-group">
-          <div className="specimen-label">Disabled</div>
-          <ul className="dropdown-menu dropdown-menu-static">
-            <li><h6 className="dropdown-header">Animals</h6></li>
-            <li><a className="dropdown-item" href="#">Cat</a></li>
-            <li><a className="dropdown-item" href="#">Dog</a></li>
-            <li><a className="dropdown-item" href="#">Rabbit</a></li>
-            <li><hr className="dropdown-divider" /></li>
-            <li><a className="dropdown-item disabled" aria-disabled="true">Platypus</a></li>
-          </ul>
-        </div>
-
       </div>
     </div>
   ),
 };
 
 /**
- * Source: https://getbootstrap.com/docs/5.3/forms/select/
- * Source: https://getbootstrap.com/docs/5.3/forms/validation/
- *
- * Full form field layout: .form-label + trigger button + .form-text + .invalid-feedback.
- * Mirrors Bootstrap's stacked form field pattern for .form-select.
- * Per P-006: includes all substantive sub-parts (Label, Description, FieldError).
- *
- * Default field: label + placeholder trigger + description text (.form-text).
- * Invalid field: label + red-border trigger + error circle bg-icon + .invalid-feedback (display: block).
- * Valid field: label + green-border trigger + checkmark bg-icon + .valid-feedback with "Dog" (P-005).
+ * Open — full assembly with the menu visible, showing per-item interactive
+ * states (P-002: reproduces the trigger + menu ancestor/sibling context).
+ * Source: https://getbootstrap.com/docs/5.3/components/dropdowns/
  */
-export const FormField: Story = {
+export const Open: Story = {
   render: () => (
-    <div className="form-field-container">
-      <div className="specimen-section">
-        <div className="specimen-row-header">Default field</div>
-        <label className="form-label" htmlFor="select-default">Pick an animal</label>
-        <button
-          id="select-default"
-          type="button"
-          className="btn select-trigger select-trigger-block"
-        >
-          Select an option
+    <div className="spec-item">
+      <span className="spec-label">Open (selected value shown in trigger — P-005)</span>
+      <div className="dropdown">
+        <button type="button" className="btn dropdown-toggle select-trigger faux-open" aria-expanded="true">
+          <span className="select-trigger-value">Kangaroo</span>
+          <i className="bi bi-chevron-down select-trigger-caret" aria-hidden="true"></i>
         </button>
-        <div className="form-text">Choose your favourite animal from the list.</div>
+        <ul className="dropdown-menu show select-menu">
+          <li>
+            <a className="dropdown-item" href="#">Koala</a>
+          </li>
+          <li>
+            <a className="dropdown-item faux-hover" href="#">Platypus (hover)</a>
+          </li>
+          <li>
+            <a className="dropdown-item faux-focus-visible" href="#">Bald Eagle (focused)</a>
+          </li>
+          <li>
+            <a className="dropdown-item active" href="#" aria-selected="true">Kangaroo (selected)</a>
+          </li>
+          <li>
+            <a className="dropdown-item disabled" href="#" aria-disabled="true">Skunk (disabled)</a>
+          </li>
+        </ul>
       </div>
+    </div>
+  ),
+};
 
-      <div className="specimen-section">
-        <div className="specimen-row-header">Invalid field</div>
-        <label className="form-label" htmlFor="select-invalid">Pick an animal</label>
-        <button
-          id="select-invalid"
-          type="button"
-          className="btn select-trigger select-trigger-block select-trigger-invalid"
-        >
-          Select an option
+/**
+ * Grouped — optional sections variant (ListBoxSection + Header), in scope
+ * per M011 since it reuses the same sub-parts in a different arrangement.
+ * Source: https://getbootstrap.com/docs/5.3/components/dropdowns/#headers
+ */
+export const Grouped: Story = {
+  render: () => (
+    <div className="spec-item">
+      <span className="spec-label">Grouped options</span>
+      <div className="dropdown">
+        <button type="button" className="btn dropdown-toggle select-trigger faux-open" aria-expanded="true">
+          <span className="select-trigger-value">Kangaroo</span>
+          <i className="bi bi-chevron-down select-trigger-caret" aria-hidden="true"></i>
         </button>
-        <div className="invalid-feedback d-block">
-          Please select a valid animal.
+        <ul className="dropdown-menu show select-menu">
+          <li><h6 className="dropdown-header">Marsupials</h6></li>
+          <li>
+            <a className="dropdown-item" href="#">Koala</a>
+          </li>
+          <li>
+            <a className="dropdown-item active" href="#" aria-selected="true">Kangaroo (selected)</a>
+          </li>
+          <li><hr className="dropdown-divider" /></li>
+          <li><h6 className="dropdown-header">Birds</h6></li>
+          <li>
+            <a className="dropdown-item" href="#">Bald Eagle</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  ),
+};
+
+/**
+ * Field states — label, description, and validation composition.
+ * Valid/Invalid specimens include Bootstrap's standard form-validation
+ * icons (green check / red circle-exclamation), matching
+ * .form-select.is-valid/.is-invalid's embedded icon exactly — not just a
+ * border-color change (see select-taxonomy.md Decisions D3).
+ * Source: https://getbootstrap.com/docs/5.3/forms/overview/ (form-label, form-text)
+ *         https://getbootstrap.com/docs/5.3/forms/validation/ (valid-feedback, invalid-feedback, validation icons)
+ */
+export const FieldStates: Story = {
+  render: () => (
+    <div className="spec-row">
+      <div className="spec-item">
+        <span className="spec-label">Default (label + description)</span>
+        <div>
+          <label className="form-label" htmlFor="select-demo-default">Favorite animal</label>
+          <div className="dropdown">
+            <button type="button" id="select-demo-default" className="btn dropdown-toggle select-trigger" aria-expanded="false">
+              <span className="select-trigger-value">Kangaroo</span>
+              <i className="bi bi-chevron-down select-trigger-caret" aria-hidden="true"></i>
+            </button>
+          </div>
+          <div className="form-text">Choose the animal you&apos;d like to adopt.</div>
         </div>
       </div>
 
-      <div className="specimen-section">
-        <div className="specimen-row-header">Valid field</div>
-        <label className="form-label" htmlFor="select-valid">Pick an animal</label>
-        <button
-          id="select-valid"
-          type="button"
-          className="btn select-trigger select-trigger-block select-trigger-valid"
-        >
-          Dog
-        </button>
-        <div className="valid-feedback d-block">
-          Looks good!
+      <div className="spec-item">
+        <span className="spec-label">Valid (label + valid-feedback + icon)</span>
+        <div>
+          <label className="form-label" htmlFor="select-demo-valid">Favorite animal</label>
+          <div className="dropdown">
+            <button type="button" id="select-demo-valid" className="btn dropdown-toggle select-trigger is-valid" aria-expanded="false">
+              <span className="select-trigger-value">Kangaroo</span>
+              <span className="select-trigger-icon select-trigger-icon--valid" aria-hidden="true"></span>
+              <i className="bi bi-chevron-down select-trigger-caret" aria-hidden="true"></i>
+            </button>
+            <div className="valid-feedback">Looks good!</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="spec-item">
+        <span className="spec-label">Invalid (label + invalid-feedback + icon)</span>
+        <div>
+          <label className="form-label" htmlFor="select-demo-invalid">Favorite animal</label>
+          <div className="dropdown">
+            <button type="button" id="select-demo-invalid" className="btn dropdown-toggle select-trigger is-invalid" aria-expanded="false">
+              <span className="select-trigger-value is-placeholder">Select an item</span>
+              <span className="select-trigger-icon select-trigger-icon--invalid" aria-hidden="true"></span>
+              <i className="bi bi-chevron-down select-trigger-caret" aria-hidden="true"></i>
+            </button>
+            <div className="invalid-feedback">Please select an animal.</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="spec-item">
+        <span className="spec-label">Disabled field</span>
+        <div>
+          <label className="form-label" htmlFor="select-demo-disabled">Favorite animal</label>
+          <div className="dropdown">
+            <button type="button" id="select-demo-disabled" className="btn dropdown-toggle select-trigger" aria-expanded="false" disabled>
+              <span className="select-trigger-value">Kangaroo</span>
+              <i className="bi bi-chevron-down select-trigger-caret" aria-hidden="true"></i>
+            </button>
+          </div>
         </div>
       </div>
     </div>

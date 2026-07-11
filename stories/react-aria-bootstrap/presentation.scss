@@ -1,265 +1,226 @@
-// ============================================================
-// Reference story shared layout utilities
-// Used across multiple components.
-// ============================================================
+// ==========================================================================
+// Bootstrap Reference — presentation styles
+//
+// Reference stories are static HTML specimens depicting Bootstrap's target
+// visual appearance for each component state. Faux-state classes reproduce
+// pseudo-class styling statically so screenshots capture states that would
+// otherwise require live interaction (hover, focus, open/pressed).
+//
+// See agent/mapping-and-references-skill/component-agent.md Part 6
+// (Reference Story Construction) for the conventions applied here,
+// especially P-001 (faux-state classes) and P-012 (variable overrides for
+// dual-counterpart components).
+// ==========================================================================
 
-// ------------------------------------------------------------
-// Layout helpers
-// ------------------------------------------------------------
+// --------------------------------------------------------------------
+// Generic specimen layout helpers (shared across all reference stories)
+// --------------------------------------------------------------------
 
-.specimen-row {
+.spec-row {
   display: flex;
   flex-wrap: wrap;
+  gap: 2rem;
+  align-items: flex-start;
+}
+
+.spec-item {
+  display: flex;
+  flex-direction: column;
   gap: 0.5rem;
-  align-items: center;
 }
 
-.specimen-label {
-  font-size: 0.75rem;
-  color: var(--bs-secondary-color);
-  margin-bottom: 0.25rem;
-}
-
-.specimen-group {
-  margin-bottom: 1rem;
-}
-
-.specimen-row-header {
-  font-size: 0.75rem;
+.spec-label {
+  font-size: 0.8125rem;
   font-weight: 600;
   color: var(--bs-secondary-color);
-  margin-bottom: 0.5rem;
 }
 
-.specimen-section {
-  margin-bottom: 1.25rem;
+.spec-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-// ------------------------------------------------------------
-// Button faux-state classes (P-001)
-// Scoped to .btn to match Bootstrap's specificity — no !important needed.
-// Source: bootstrap.css lines 2993–3032
-// ------------------------------------------------------------
+// ==========================================================================
+// Select
+// ==========================================================================
 
-// Hover: reads hover token set
-.btn.faux-hover {
-  color: var(--bs-btn-hover-color);
-  background-color: var(--bs-btn-hover-bg);
-  border-color: var(--bs-btn-hover-border-color);
-}
+// --------------------------------------------------------------------
+// Trigger — M014 dual-counterpart.
+// Structural counterpart: .btn.dropdown-toggle (React Aria renders a
+// <button>, not a <select> — see select-taxonomy.md Decisions D2).
+// Visual counterpart: .form-select. Its computed token values are applied
+// here as CSS custom-property overrides on .btn's own variable namespace
+// (P-012), so every state rule already defined on .btn resolves to
+// .form-select-equivalent visuals automatically.
+// --------------------------------------------------------------------
 
-// Focus-visible: same color tokens as hover + outline suppressed + focus box-shadow
-// Bootstrap's :focus-visible sets outline: 0 and adds box-shadow.
-// The box-shadow (focus ring) is what visually distinguishes focus from hover (P-016).
-.btn.faux-focus {
-  color: var(--bs-btn-hover-color);
-  background-color: var(--bs-btn-hover-bg);
-  border-color: var(--bs-btn-hover-border-color);
-  outline: 0;
-  box-shadow: var(--bs-btn-focus-box-shadow);
-}
-
-// Active/pressed: reads active token set
-.btn.faux-active {
-  color: var(--bs-btn-active-color);
-  background-color: var(--bs-btn-active-bg);
-  border-color: var(--bs-btn-active-border-color);
-}
-
-// ------------------------------------------------------------
-// Select trigger faux-state classes (P-001, P-012)
-//
-// The Select trigger is a .btn styled to look like .form-select (M014 dual-counterpart).
-// Per P-012, we override CSS custom properties at the element level so all
-// Bootstrap state rules (.btn:hover, .btn:focus-visible, .btn:disabled) read
-// form-select-equivalent values automatically.
-//
-// Chevron approach: .form-select uses background-image (SVG) + background-position to place
-// the chevron at the right edge. We replicate this on the .btn trigger via --bs-form-select-bg-img
-// so dark-mode theme switching works automatically (Bootstrap redefines the variable under
-// [data-bs-theme=dark]). The trigger does NOT use .dropdown-toggle — no ::after border-trick caret.
-//
-// Open state: swap --bs-form-select-bg-img to an up-pointing chevron SVG (path reflected vertically).
-//
-// Source: bootstrap.css lines 2308-2365 (.form-select), 2953-3032 (.btn states)
-// ------------------------------------------------------------
-
-// Base trigger: overrides .btn transparent defaults → .form-select appearance.
-// Applied to every trigger specimen unconditionally.
 .select-trigger {
-  // Chevron icon: hardcode the light-theme dark-stroke down chevron (same as .form-select default).
-  // We cannot rely on Bootstrap's [data-bs-theme=dark] .form-select override because our selector
-  // is .btn.select-trigger — not .form-select — so Bootstrap's dark-mode rule does not apply.
-  // Dark-mode override below handles the light-stroke variant.
-  --bs-form-select-bg-img: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
-  // Color tokens — body-color text in all states (form-select doesn't shift color on hover/active)
   --bs-btn-color: var(--bs-body-color);
-  --bs-btn-hover-color: var(--bs-body-color);
-  --bs-btn-active-color: var(--bs-body-color);
-  --bs-btn-disabled-color: var(--bs-body-color);
-  // Background tokens — body-bg default; secondary-bg when disabled (matches .form-select:disabled)
   --bs-btn-bg: var(--bs-body-bg);
-  --bs-btn-hover-bg: var(--bs-body-bg);
-  --bs-btn-active-bg: var(--bs-body-bg);
-  --bs-btn-disabled-bg: var(--bs-secondary-bg);
-  // Border tokens — border-color in all states (form-select uses a single border-color value)
   --bs-btn-border-color: var(--bs-border-color);
+  --bs-btn-hover-color: var(--bs-body-color);
+  --bs-btn-hover-bg: var(--bs-body-bg);
   --bs-btn-hover-border-color: var(--bs-border-color);
-  --bs-btn-active-border-color: var(--bs-border-color);
+  --bs-btn-disabled-color: var(--bs-body-color);
+  --bs-btn-disabled-bg: var(--bs-secondary-bg);
   --bs-btn-disabled-border-color: var(--bs-border-color);
-  // Disabled opacity: .form-select:disabled has no opacity reduction (unlike .btn:disabled = 0.65)
-  --bs-btn-disabled-opacity: 1;
-  // Sizing/shape — match .form-select layout exactly
-  padding: 0.375rem 2.25rem 0.375rem 0.75rem;
-  font-size: 1rem;
-  font-weight: 400;
-  line-height: 1.5;
-  text-align: left;
-  // SVG chevron — right-edge positioned, matching .form-select background-image pattern
-  background-image: var(--bs-form-select-bg-img), var(--bs-form-select-bg-icon, none);
-  background-repeat: no-repeat;
-  background-position: right 0.75rem center;
-  background-size: 16px 12px;
-  // Width to simulate a natural form field
-  min-width: 200px;
+  --bs-btn-disabled-opacity: 1; // .form-select:disabled only changes background — no opacity reduction
+
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 240px;
+  text-align: start;
+
+  // Bootstrap's auto-generated caret (::after) is suppressed — React Aria
+  // renders a real icon element instead (M018 element-type substitution).
+  &::after {
+    content: none;
+  }
 }
 
-// Focus: Bootstrap's .btn:focus-visible fires → sets hover tokens + box-shadow.
-// .form-select:focus uses border-color: #86b7fe and box-shadow with primary rgba.
-// We replicate this by pointing focus-ring values at form-select equivalents.
-.select-trigger.faux-focus {
-  // Override hover-border-color token so :focus-visible reads the focus border
-  --bs-btn-hover-border-color: #86b7fe;
-  // Repoint focus-box-shadow to match .form-select:focus ring
-  --bs-btn-focus-box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+.select-trigger-value {
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  // [NO DIRECT COUNTERPART] — native <select> has no ::placeholder; closest
+  // analog is Bootstrap's standard muted-text token.
+  &.is-placeholder {
+    color: var(--bs-secondary-color);
+  }
+}
+
+.select-trigger-caret {
+  flex: 0 0 auto;
+  margin-inline-start: 0.5rem;
+  transition: transform 0.15s ease-in-out;
+}
+
+// P-018 — open-state specimens show the caret flipped via CSS transform,
+// never by swapping icon variants or toggling visibility.
+.select-trigger.faux-open .select-trigger-caret {
+  transform: rotate(180deg);
+}
+
+// Faux hover — statically reproduces .btn:hover. Same token values as
+// resting per M014 (.form-select has no hover treatment of its own).
+.select-trigger.faux-hover {
+  color: var(--bs-btn-hover-color);
+  background-color: var(--bs-btn-hover-bg);
+  border-color: var(--bs-btn-hover-border-color);
+}
+
+// Faux focus / faux open — both resolve to the same visual (Decisions D2):
+// a native <select> remains focused while its picker is open, so
+// .form-select has no separate "open" appearance beyond its focus ring.
+// #86b7fe / rgba(13, 110, 253, .25) match .form-select:focus /
+// .form-control:focus exactly; Bootstrap computes these via a compile-time
+// Sass tint-color() function and does not expose them as --bs-* custom
+// properties, so the literal values are used here (see select-taxonomy.md
+// Confidence section).
+.select-trigger.faux-focus,
+.select-trigger.faux-open {
   border-color: #86b7fe;
   outline: 0;
   box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
 }
 
-// Open state: swap the chevron SVG to an up-pointing variant (path reflected: m2 11 6-6 6 6).
-// This mirrors the 180° rotation of Bootstrap's .dropdown-toggle::after on open,
-// but done via background-image swap since the chevron is an SVG, not a border-trick pseudo.
-.select-trigger.faux-open {
-  --bs-form-select-bg-img: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 11 6-6 6 6'/%3e%3c/svg%3e");
+// Invalid — literal Bootstrap class (.is-invalid), not a faux-simulated
+// pseudo-class per P-001. .form-select.is-invalid's border-color is
+// reproduced here since .is-invalid has no effect on .btn by default.
+.select-trigger.is-invalid {
+  border-color: var(--bs-form-invalid-border-color);
 }
 
-// Dark mode: update chevron stroke from dark (#343a40) to light (#dee2e6) to match
-// Bootstrap's [data-bs-theme=dark] .form-select override. Applied to both default (closed)
-// and open states to keep the chevron visible against a dark background.
-[data-bs-theme="dark"] .select-trigger {
-  --bs-form-select-bg-img: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23dee2e6' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
-}
-[data-bs-theme="dark"] .select-trigger.faux-open {
-  --bs-form-select-bg-img: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23dee2e6' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 11 6-6 6 6'/%3e%3c/svg%3e");
+.select-trigger.is-invalid.faux-focus {
+  border-color: var(--bs-form-invalid-border-color);
+  box-shadow: 0 0 0 0.25rem rgba(var(--bs-danger-rgb), 0.25);
 }
 
-// ------------------------------------------------------------
-// Dropdown item faux-state classes (P-001)
-// Scoped to .dropdown-item to match Bootstrap's specificity.
-// Source: bootstrap.css lines 3633-3660 (.dropdown-item states)
-//
-// Focus note (P-014, P-015): .dropdown-item:focus shares the same tokens as
-// :hover (--bs-dropdown-link-hover-color, --bs-dropdown-link-hover-bg).
-// Bootstrap does NOT suppress outline on .dropdown-item, so the UA focus ring
-// (outline: auto -webkit-focus-ring-color) is present and distinguishes focus
-// from hover visually (P-016).
-// ------------------------------------------------------------
+// Valid — literal Bootstrap class (.is-valid), mirrors .is-invalid above.
+.select-trigger.is-valid {
+  border-color: var(--bs-form-valid-border-color);
+}
 
-// Hover: reads dropdown hover token set
+.select-trigger.is-valid.faux-focus {
+  border-color: var(--bs-form-valid-border-color);
+  box-shadow: 0 0 0 0.25rem rgba(var(--bs-success-rgb), 0.25);
+}
+
+// Validation icon (review feedback, iter-1 — see select-taxonomy.md
+// Decisions D3). Bootstrap's .form-select.is-valid/.is-invalid embed this
+// as a background-image on the select element itself via
+// --bs-form-select-bg-icon. Our trigger is .btn-based (M014), not
+// .form-select, and already carries a real chevron flex-child rather than
+// a background-image caret, so the icon is reproduced as its own small
+// flex-child element instead of layering a second background-image on
+// .select-trigger. The SVG data URIs below are copied byte-for-byte from
+// node_modules/bootstrap/dist/css/bootstrap.css
+// (.form-select.is-valid / .form-select.is-invalid) — same shapes and
+// colors Bootstrap itself renders, not an approximation. Bootstrap does
+// not vary these particular icon colors under [data-bs-theme=dark]
+// (confirmed: no such override exists in the compiled CSS), so no
+// dark-mode variant is needed here either.
+.select-trigger-icon {
+  flex: 0 0 auto;
+  width: 1rem;
+  height: 1rem;
+  margin-inline-start: 0.5rem;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+}
+
+.select-trigger-icon--valid {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23198754' d='M2.3 6.73.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1'/%3e%3c/svg%3e");
+}
+
+.select-trigger-icon--invalid {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+}
+
+// --------------------------------------------------------------------
+// Popover / menu — .dropdown-menu (see select-taxonomy.md DOM conflict
+// "Popover + ListBox": the full .dropdown-menu visual property set is
+// applied to the Popover; ListBox itself receives no Bootstrap class).
+// --------------------------------------------------------------------
+
+.select-menu {
+  // Static reference specimen only — the real component positions the
+  // Popover via its own overlay system, independent of
+  // .dropdown-menu[data-bs-popper] (see select-taxonomy.md DOM conflict
+  // "Popover positioning"). position: static keeps the open-state specimen
+  // laid out directly below its trigger for the screenshot.
+  position: static;
+  margin-top: var(--bs-dropdown-spacer, 0.125rem);
+}
+
+// Selected items (review feedback, iter-1 — see select-taxonomy.md
+// Decisions D3): no checkmark glyph. Bootstrap's own dropdown-item
+// selected/active convention is background/color fill only via .active —
+// the .dropdown-item class already provides this with no extra CSS
+// needed here. (DropdownItem's existing lucide-react <Check> icon must be
+// hidden in the Bootstrap-styled context at implementation time — see
+// select-taxonomy.md DOM conflict "Selected checkmark".)
+
+// Faux hover / focus for dropdown items — .dropdown-item:hover and
+// .dropdown-item:focus share the same token values in Bootstrap's compiled
+// CSS, but neither suppresses the UA outline (grepped
+// node_modules/bootstrap/dist/css/bootstrap.css — no box-shadow/outline:0
+// rule exists for .dropdown-item:focus). Per P-001's faux-focus-source
+// rule and P-014/P-016, faux-focus must include both the shared hover
+// tokens AND the UA focus ring so it stays visually distinct from hover.
 .dropdown-item.faux-hover {
   color: var(--bs-dropdown-link-hover-color);
   background-color: var(--bs-dropdown-link-hover-bg);
 }
 
-// Focus: same background/color tokens as hover + UA focus ring (not suppressed by Bootstrap).
-// Per P-001 faux-focus-source rule: Bootstrap has no custom focus style beyond hover tokens,
-// so we use outline: auto -webkit-focus-ring-color for the ring (P-015, P-016).
-.dropdown-item.faux-focus {
+.dropdown-item.faux-focus,
+.dropdown-item.faux-focus-visible {
   color: var(--bs-dropdown-link-hover-color);
   background-color: var(--bs-dropdown-link-hover-bg);
   outline: auto -webkit-focus-ring-color;
-}
-
-// Active/selected: .dropdown-item.active styling
-.dropdown-item.faux-active {
-  color: var(--bs-dropdown-link-active-color);
-  background-color: var(--bs-dropdown-link-active-bg);
-  text-decoration: none;
-}
-
-// ------------------------------------------------------------
-// Select trigger size + validation modifier classes
-// Mirrors .form-select-sm, .form-select-lg, .form-select.is-invalid, .form-select.is-valid
-// Source: bootstrap.css lines 2351-2365 (sizes), 2820-2831 (valid), 2910-2922 (invalid)
-// ------------------------------------------------------------
-
-// Small trigger: matches .form-select-sm padding/font/radius
-.select-trigger.select-trigger-sm {
-  padding-top: 0.25rem;
-  padding-bottom: 0.25rem;
-  padding-left: 0.5rem;
-  font-size: 0.875rem;
-  border-radius: var(--bs-border-radius-sm);
-}
-
-// Large trigger: matches .form-select-lg padding/font/radius
-.select-trigger.select-trigger-lg {
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
-  padding-left: 1rem;
-  font-size: 1.25rem;
-  border-radius: var(--bs-border-radius-lg);
-}
-
-// Invalid trigger: matches .form-select.is-invalid — border-color + validation bg-icon.
-// P-012: override border-color variable so all state rules inherit the invalid color.
-// Bootstrap's .form-select.is-invalid adds the error circle SVG as --bs-form-select-bg-icon,
-// positions it at right 2.25rem, and widens right padding to 4.125rem to clear both icons.
-// Source: bootstrap.css lines 2910-2918
-.select-trigger.select-trigger-invalid {
-  --bs-btn-border-color: var(--bs-form-invalid-border-color);
-  --bs-btn-hover-border-color: var(--bs-form-invalid-border-color);
-  --bs-btn-active-border-color: var(--bs-form-invalid-border-color);
-  --bs-form-select-bg-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
-  padding-right: 4.125rem;
-  background-position: right 0.75rem center, center right 2.25rem;
-  background-size: 16px 12px, calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
-}
-
-// Valid trigger: matches .form-select.is-valid — border-color + validation bg-icon.
-// Bootstrap's .form-select.is-valid adds the green checkmark SVG as --bs-form-select-bg-icon.
-// Source: bootstrap.css lines 2820-2828
-.select-trigger.select-trigger-valid {
-  --bs-btn-border-color: var(--bs-form-valid-border-color);
-  --bs-btn-hover-border-color: var(--bs-form-valid-border-color);
-  --bs-btn-active-border-color: var(--bs-form-valid-border-color);
-  --bs-form-select-bg-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23198754' d='M2.3 6.73.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1'/%3e%3c/svg%3e");
-  padding-right: 4.125rem;
-  background-position: right 0.75rem center, center right 2.25rem;
-  background-size: 16px 12px, calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
-}
-
-// Block-level trigger: makes the trigger fill its container width (like display: block .form-select)
-.select-trigger-block {
-  display: block;
-  width: 100%;
-}
-
-// Static dropdown menu: overrides position:absolute/display:none for reference story display
-// (the menu is only shown when Bootstrap JS adds .show; in reference stories it's always visible)
-.dropdown-menu-static {
-  display: block;
-  position: static;
-  width: 220px;
-}
-
-// Narrow form field container for Select FormField story — constrains width to a realistic field size
-.form-field-container {
-  max-width: 320px;
-}
-
-// Top-aligned specimen row — overrides default align-items: center for mixed-height specimens
-.specimen-row.specimen-row-top {
-  align-items: flex-start;
 }

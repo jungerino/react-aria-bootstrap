@@ -224,3 +224,16 @@
   background-color: var(--bs-dropdown-link-hover-bg);
   outline: auto -webkit-focus-ring-color;
 }
+
+// Demo-only (mirror "Open"/"Grouped" stories): reproduces the reference
+// specimens' incidental full-stretch menu width. A lone .spec-item outside
+// .spec-row stretches its content to the flex container's full cross-axis
+// width (align-items: stretch default); the reference's .dropdown wrapper
+// (and, via .select-menu's position: static above, its .dropdown-menu) picks
+// this up as ordinary block-level width: auto. The live Popover instead
+// consumes --trigger-width by default (P-049, _bootstrap-bridges.scss) —
+// this class is an explicit per-story opt-out (Select's `menuClassName`
+// prop), not a general sizing convention.
+.select-menu-demo-stretch {
+  width: calc(100vw - 2rem) !important;
+}

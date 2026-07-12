@@ -14,10 +14,6 @@ This project is a stepping stone toward a **code-driven design system kept in sy
 4. **Figma component library** — Agent workflow (Figma MCP + figma-generate-design / figma-use skills) builds Figma components from the production code
 5. **Designer → code workflow** — Designers compose layouts in Figma; agent workflows assemble them from production-ready components
 
-## Current phase
-
-Bootstrap styling pass (phase 2). Working branch: `bootstrap-trials_v2`.
-
 ## Key decisions
 
 - React Aria provides accessible behavior and ARIA semantics; Bootstrap provides visual styling

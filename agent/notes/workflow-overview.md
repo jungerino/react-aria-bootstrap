@@ -5,7 +5,6 @@ title: Workflow Overview
 # End-to-End Workflow Overview
 
 A summary of the five-stage workflow for producing Bootstrap-styled React Aria components.
-Authoritative details are in `agent/notes/end-to-end-plan.md`.
 
 ---
 

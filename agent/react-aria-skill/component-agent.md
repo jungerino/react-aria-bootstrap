@@ -24,6 +24,21 @@ Load at session start (provided in your dispatch prompt):
 
 ---
 
+## Blank-Slate Mode
+
+Some iterations are run specifically to test whether this skill's principles, the taxonomy's `## Decisions` section, and the Bootstrap KB are, by themselves, sufficient to implement a component — without leaning on any prior iteration's implementation. The dispatch prompt states whether blank-slate mode is ON or OFF for this run.
+
+**When blank-slate mode is ON:**
+
+- Do not run `git log`, `git show`, `git diff` against a prior commit, or any other command that reads a past commit's content, for TSX implementation, bridge CSS, mirror stories, or findings-doc authoring. This applies even out of general thoroughness or curiosity about *why* a file looks the way it does — that curiosity is exactly what blank-slate mode is testing.
+- Do not cite or lean on the content of `src/react-aria-bootstrap/{ComponentName}.tsx`, `src/scss/_bootstrap-bridges.scss` selectors, mirror stories, or findings docs that do not exist in the current working tree. If a file isn't present, treat it as never having existed — not as "deleted" content to be reconstructed.
+- If a pre-existing bridge selector, TSX implementation, or findings doc for this component is still present (not stubbed) — this should be rare; the orchestrator's file hygiene scan is meant to catch it first — treat its class names and comments as informational only about the current file's state. Do not treat an inline comment citing a resolved iteration number or a named principle as authoritative. Re-derive the decision from the taxonomy, principles.md, Bootstrap KB, and pre-extracted reference CSS as if the comment were not there.
+- State explicitly, in the component-wide findings doc's Work Log, that git history and deleted content were not consulted.
+
+**When blank-slate mode is OFF (default):** No restriction — prior iterations' history and resolved decisions may inform the current implementation for consistency.
+
+---
+
 ## Preparation Phase
 
 Complete these steps once for the component before any implementation.

@@ -1,2 +1,232 @@
 // Bridge selectors: React Aria data-* → Bootstrap interaction states
 // Populated during iterations. Do not add unverified rules here.
+
+// ==========================================================================
+// Select
+// ==========================================================================
+//
+// See agent/taxonomies/select-taxonomy.md for the full sub-part/state
+// mapping. `.select-trigger`, `.select-trigger-value`, `.select-trigger-caret`,
+// `.select-trigger-icon(--valid|--invalid)` and their rest-state property
+// values are already defined in stories/react-aria-bootstrap/presentation.scss
+// (written for the static reference specimens) and are reused as-is here
+// since they are plain class selectors that apply equally to the live
+// component. This section adds only the rules that depend on React Aria's
+// live data-* attributes / real pseudo-classes, which the reference's
+// `.faux-*` classes cannot cover.
+
+// --------------------------------------------------------------------
+// Label / description (P-050 reboot-mismatch)
+// --------------------------------------------------------------------
+//
+// React Aria's <Label> and <Text> both render a <span> (verified via
+// rendered DOM), not the <label>/block-level element Bootstrap's reboot and
+// .form-text assume. _reboot.scss's `label { display: inline-block; }` only
+// matches real <label> tags, and .form-text sets no display of its own
+// (relies on the host element being block-ish) — on a plain <span> (inline),
+// both .form-label's margin-bottom and .form-text's margin-top are silently
+// discarded by the browser (inline elements ignore vertical margins),
+// collapsing the gap to the next element.
+.react-aria-Label.form-label {
+  display: inline-block;
+}
+
+.react-aria-Text.form-text {
+  display: block;
+}
+
+// P-050: Bootstrap's reference markup uses <h6 class="dropdown-header">,
+// which gets _reboot.scss's heading rule (`line-height: 1.2; font-weight: 500`)
+// for h1–h6/.h1–.h6. RAC's <Header> renders a plain <header> element, which
+// doesn't match that selector and falls back to the body's line-height (1.5),
+// inflating the header's height by ~4px relative to the reference.
+.react-aria-Header.dropdown-header {
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+// --------------------------------------------------------------------
+// Trigger (.select-trigger, a real <button>)
+// --------------------------------------------------------------------
+
+// P-011: non-native interactive elements need cursor:pointer — not needed
+// here, .select-trigger is a real <button> (native cursor:pointer via .btn).
+
+// D2 / DOM conflict "Trigger open-state signal": a native <select> stays
+// focused while its picker is open, so the open trigger reuses the same
+// ring as :focus-visible rather than a separate "pressed/darkened" look.
+// Ancestor-scoped per taxonomy's stated preference (equivalent in practice
+// to `.select-trigger[data-pressed]`, but avoids conflating with genuine
+// momentary-press semantics).
+.select-trigger:focus-visible,
+.react-aria-Select[data-open] .select-trigger {
+  border-color: #86b7fe;
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+// P-018 caret-flip: rotate the real caret element when genuinely open (not
+// just the reference's static .faux-open specimen — see the faux-open-scope
+// rule further below, which covers the Trigger story's closed-state mock-up).
+.react-aria-Select[data-open] .select-trigger-caret {
+  transform: rotate(180deg);
+}
+
+// DOM conflict "Trigger invalid-state signal": [data-invalid] lands only on
+// the root, never mirrored onto the trigger <button> — bridge ancestor-scoped.
+.react-aria-Select[data-invalid] .select-trigger {
+  border-color: var(--bs-form-invalid-border-color);
+}
+
+// Invalid + focus/open: border stays invalid-red, ring tints danger instead
+// of primary blue (matches .form-select.is-invalid:focus in compiled CSS).
+.react-aria-Select[data-invalid] .select-trigger:focus-visible,
+.react-aria-Select[data-invalid][data-open] .select-trigger {
+  border-color: var(--bs-form-invalid-border-color);
+  box-shadow: 0 0 0 0.25rem rgba(var(--bs-danger-rgb), 0.25);
+}
+
+// Valid (isValid prop → literal .is-valid class, see Select.tsx) + focus/open:
+// ring tints success instead of primary blue, mirroring the invalid case above.
+.select-trigger.is-valid:focus-visible,
+.react-aria-Select[data-open] .select-trigger.is-valid {
+  border-color: var(--bs-form-valid-border-color);
+  box-shadow: 0 0 0 0.25rem rgba(var(--bs-success-rgb), 0.25);
+}
+
+// [data-placeholder]: SelectValue exposes this as a data attribute on the
+// live component (the reference's static `.is-placeholder` literal class
+// does not apply here — see select-trigger-value in presentation.scss).
+.select-trigger-value[data-placeholder] {
+  color: var(--bs-secondary-color);
+}
+
+// P-049: consume RAC's --trigger-width so the menu matches trigger width,
+// which native <select> does automatically but a custom popover does not.
+// [data-trigger="Select"] is set by RAC on Popover automatically (P-052).
+.react-aria-Popover.dropdown-menu[data-trigger='Select'] {
+  width: var(--trigger-width);
+  // Matches Bootstrap's --bs-dropdown-spacer (0.125rem = 2px), the gap
+  // .dropdown-menu[data-bs-popper] normally applies via margin-top — a rule
+  // that never fires here since RAC never sets [data-bs-popper] (see
+  // select-taxonomy.md DOM conflict "Popover positioning"). Applied as a CSS
+  // margin (Popover's `offset` prop is 0, see Select.tsx): floating-ui rounds
+  // its computed anchor position down to the nearest whole pixel before this
+  // margin is even added (verified: a 81.5px trigger-bottom edge becomes an
+  // 81px inline `top`), consistently discarding the same 0.5px every time —
+  // the extra `+ 0.5px` below restores it so the final rendered position
+  // matches the reference's half-pixel-exact block-layout position exactly.
+  margin-top: calc(var(--bs-dropdown-spacer, 0.125rem) + 0.5px);
+}
+
+// --------------------------------------------------------------------
+// ListBoxItem (.dropdown-item, a <div role="option">)
+// --------------------------------------------------------------------
+
+// P-011: Bootstrap's own .dropdown-item rule sets no cursor (native <a>/
+// <button> dropdown items get pointer cursor from the browser default,
+// which a <div role="option"> does not).
+.react-aria-ListBoxItem.dropdown-item {
+  cursor: pointer;
+}
+
+// [data-hovered] / :hover — no bridge: :hover fires natively regardless of
+// element type, and .dropdown-item:hover already applies once the class is
+// present (Data-* Bridge Rules: do not bridge native pseudo-classes).
+
+// [data-pressed]: item is a <div>, not a native interactive element —
+// bridge to the same visual as Bootstrap's .dropdown-item.active/:active.
+.dropdown-item[data-pressed] {
+  color: var(--bs-dropdown-link-active-color);
+  background-color: var(--bs-dropdown-link-active-bg);
+}
+
+// [data-focus-visible]: roving/virtual focus pattern — real :focus never
+// fires on the item, so the bridge is required (mirrors
+// .dropdown-item.faux-focus-visible in presentation.scss).
+.dropdown-item[data-focus-visible] {
+  color: var(--bs-dropdown-link-hover-color);
+  background-color: var(--bs-dropdown-link-hover-bg);
+  outline: auto -webkit-focus-ring-color;
+}
+
+// A pre-selected item can also receive real keyboard focus the moment its
+// listbox opens (e.g. defaultOpen + defaultSelectedKey) — genuine, correct
+// behavior a static reference specimen never depicts in combination. The
+// solid active fill (white-on-blue) already satisfies WCAG 2.4.7's visible-
+// focus requirement on its own, so the additional ring is redundant here.
+.dropdown-item[data-selected][data-focus-visible] {
+  color: var(--bs-dropdown-link-active-color);
+  background-color: var(--bs-dropdown-link-active-bg);
+  outline: none;
+}
+
+// [data-selected]: persistent selected-state fill — no checkmark glyph per
+// Decisions D3 (this implementation renders no Check icon to begin with).
+.dropdown-item[data-selected] {
+  color: var(--bs-dropdown-link-active-color);
+  background-color: var(--bs-dropdown-link-active-bg);
+}
+
+// [data-disabled]: item is a <div>, pseudo-class won't fire.
+.dropdown-item[data-disabled] {
+  color: var(--bs-dropdown-link-disabled-color);
+  pointer-events: none;
+  background-color: transparent;
+}
+
+// --------------------------------------------------------------------
+// Grouped sections (.react-aria-ListBoxSection + Header)
+// --------------------------------------------------------------------
+
+// M011 structural-variants / DOM conflict-style fix: Bootstrap's
+// .dropdown-divider is a literal sibling <li><hr></li> between groups, which
+// ListBoxSection has no natural insertion point for. Reproduce the same
+// visual (rule + spacing) as a border on every section after the first,
+// rather than injecting a synthetic divider element.
+.react-aria-ListBoxSection + .react-aria-ListBoxSection {
+  margin-top: var(--bs-dropdown-divider-margin-y, 0.5rem);
+  padding-top: var(--bs-dropdown-divider-margin-y, 0.5rem);
+  border-top: var(--bs-border-width, 1px) solid var(--bs-dropdown-divider-bg);
+}
+
+// --------------------------------------------------------------------
+// Faux-state scopes for mirror stories (P-044) — Button's className is a
+// function of its own render state, so a faux class passed by the story
+// cannot land on the trigger directly. Reuse the same wrapper-scope pattern
+// as the reference stories' .faux-* classes.
+// --------------------------------------------------------------------
+
+.faux-hover-scope .select-trigger {
+  color: var(--bs-btn-hover-color);
+  background-color: var(--bs-btn-hover-bg);
+  border-color: var(--bs-btn-hover-border-color);
+}
+
+.faux-focus-scope .select-trigger,
+.faux-open-scope .select-trigger {
+  border-color: #86b7fe;
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.faux-open-scope .select-trigger-caret {
+  transform: rotate(180deg);
+}
+
+// Custom valid-feedback div (Select.tsx renders it conditionally, only
+// when isValid && validMessage — the plain .valid-feedback class is scoped
+// with this extra marker so the "force visible" override below does not
+// leak onto unrelated .valid-feedback usage elsewhere in the app (mirrors
+// the same reasoning as .react-aria-FieldError.invalid-feedback below).
+.select-valid-feedback.valid-feedback {
+  display: block;
+}
+
+// DOM conflict "Field error visibility": <FieldError> only mounts in the
+// DOM when invalid — there is no "hidden but present" state to toggle via
+// Bootstrap's native sibling-selector mechanism, so force it visible
+// unconditionally; existence in the DOM already implies the invalid condition.
+.react-aria-FieldError.invalid-feedback {
+  display: block;
+}

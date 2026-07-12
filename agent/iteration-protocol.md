@@ -32,6 +32,13 @@ Cut `batch-{N}/stage-{M}/iter-{P}` from `integration-batch-{N}`.
 
 If stubbing, include the stub in the same commit as other stubbed files (`chore: stub files for ...`), or as its own commit if the batch log is the only file being stubbed.
 
+**Blank-slate question (ask explicitly):** Ask the user: **"Should sub-agents be barred from consulting git history or deleted content this iteration (a blank-slate test of the skill's principles), or is reusing prior resolved context acceptable?"**
+
+- **Bar** (blank-slate test): Sub-agent dispatch prompts must set blank-slate mode ON — see the stage's skill doc (e.g. `mapping-and-references-skill/component-agent.md`'s "Blank-Slate Mode" section) for the exact boundary and the orchestrator's compliance-audit step. Enforcement is a prompt-level instruction plus an after-the-fact audit, not a `.claude/settings.json` permission block — a settings.json deny rule applies to the whole project session, including the orchestrator's own git usage, not just the sub-agent's.
+- **Allow** (default for production iterations): No restriction — sub-agents may consult prior iterations' history and resolved decisions for consistency.
+
+**File hygiene scan:** Before the stage's orchestrator dispatches any sub-agent, it scans for pre-existing artifacts belonging to the batch's components that the stub step didn't address, and surfaces them for an explicit keep/delete decision — see the stage's skill doc for the scan's file list. This exists because stub decisions made from memory at cut time miss files that don't come to mind.
+
 See the stage's skill doc for in-iteration implementation specifics.
 
 ---

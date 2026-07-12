@@ -10,6 +10,21 @@ It consolidates methodology principles from the `bootstrap-mapping` experiment (
 
 ---
 
+## Blank-Slate Mode
+
+Some iterations are run specifically to test whether this skill's principles and the Bootstrap KB are, by themselves, sufficient to resolve a component's taxonomy — without leaning on any prior iteration's conclusions. The dispatch prompt states whether blank-slate mode is ON or OFF for this run.
+
+**When blank-slate mode is ON:**
+
+- Do not run `git log`, `git show`, `git diff` against a prior commit, or any other command that reads a past commit's content, for taxonomy, decision, or reference-story authoring. This applies even out of general thoroughness or curiosity about *why* a file looks the way it does — that curiosity is exactly what blank-slate mode is testing.
+- Do not cite or lean on the content of a taxonomy, reference story, or CSS file that does not exist in the current working tree. If `agent/taxonomies/{component}-taxonomy.md` isn't present, treat it as never having existed — not as "deleted" content to be reconstructed.
+- If a pre-existing reference story or `presentation.scss` block for this component is still present (not stubbed) — this should be rare; the orchestrator's file hygiene scan is meant to catch it first — treat its class names and comments as informational only about the current file's state. Do not treat inline comments describing "D{N} resolved," a prior iteration number, or a named principle as authoritative. Re-derive the decision from the KB, principles, and compiled CSS as if the comment were not there.
+- State explicitly, in the taxonomy's `Confidence` section, that git history and deleted content were not consulted.
+
+**When blank-slate mode is OFF (default):** No restriction — prior iterations' history and resolved decisions may inform the current taxonomy for consistency.
+
+---
+
 ## Part 1 — Sub-part Identification
 
 ### M001: dom-first — Match Bootstrap's component to React Aria's rendered output, not to the component name
@@ -54,8 +69,6 @@ When M001 (dom-first) finds that the semantically obvious Bootstrap counterpart 
 - **Semantic/visual counterpart** (the name-match that lost the structural test): drives token overrides for sizing, spacing, color, border, and shape.
 
 Apply visual token overrides from the semantic counterpart to the structural element. Do not assume the structural counterpart's default appearance is appropriate — its defaults are optimized for its own use case.
-
-**Example:** Select trigger renders `<button>` (structural counterpart: `.btn.dropdown-toggle`), but the visual target is `.form-select`. Use `.btn.dropdown-toggle` for class assignment and bridge strategy; apply `.form-select` token overrides for appearance.
 
 ---
 
@@ -183,6 +196,22 @@ iteration: {N}
 2. **"Design choice" notes** — Any Variants table entry explicitly noted as "design choice" is unresolved. Elevate it.
 3. **Cross-component consistency** — When a sub-part pattern (SelectionIndicator, ghost button, icon source) was already resolved for another component in the same session, check consistency. If the current component differs, flag the inconsistency as a fork.
 4. **Hardcoded numeric values in CSS deltas** — Flag as configurable candidates. Propose a CSS custom property or prop.
+
+### M019: m014-class-in-decisions — When M014 applies, record the class choice in Decisions, not only in DOM conflicts
+
+When M014 applies to a sub-part, the `## Decisions` section must contain an explicit entry naming which component class is applied to the element and why. The DOM conflicts table is analysis — it describes the mismatch. Decisions is the authoritative implementation instruction. M020 establishes that exactly one component class applies; record which one and the reasoning behind it.
+
+**Applies to:** Any sub-part where M014 applies. Even when the choice appears obvious from the counterpart analysis, it must be stated explicitly in Decisions.
+
+### M020: one-component-class — Apply exactly one Bootstrap component class to each interactive element
+
+A Bootstrap **component class** is a class that defines its own interactive state cascade — `:hover`, `:focus-visible`, `:active`, `:disabled` rules — and its own CSS variable namespace (e.g. `.btn`, `.form-select`, `.form-control`, `.nav-link`, `.dropdown-item`). Modifier and variant classes (`.btn-primary`, `.dropdown-toggle`, `.form-select-lg`) are not component classes — they supplement the cascade without owning it, and may be applied freely alongside the component class.
+
+Apply exactly one component class to each interactive element. That class defines the element's **interactive state contract**: which pseudo-class rules fire, and which CSS variable namespace resolves them. When the chosen class does not deliver every aspect of the target appearance, bridge the gaps in `_bootstrap-bridges.scss` — do not layer a second component class on top. Two component classes produce overlapping state cascades and competing CSS variable namespaces with no reliable resolution order.
+
+**Exception:** Bootstrap's own documentation occasionally combines two component classes (e.g. `.form-control.form-control-color`). Combinations the docs show explicitly are in scope; all others are not.
+
+**When M014 applies:** The dual-counterpart analysis identifies two candidate component classes. Exactly one is applied to the element — record that choice in `## Decisions` (see M019). The other counterpart informs bridge strategy and state coverage but does not contribute a class.
 
 ---
 

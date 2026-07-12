@@ -58,6 +58,7 @@ Reference for component sub-agents. Loaded by Tier 1 (component sub-agents) only
 - [P050 reboot-mismatch](#p050-reboot-mismatch) — Element type substitution invalidates Bootstrap reboot rules
 - [P051 programmatic-focus-visible](#p051-programmatic-focus-visible) — Suppress UA outline; use `[data-focus-visible]` for keyboard-only ring
 - [P052 portal-no-ancestor-sel](#p052-portal-no-ancestor-sel) — RAC overlay elements render in portals; ancestor bridge selectors never match them
+- [P053 prefer-visual-target-class](#p053-prefer-visual-target-class) — Prefer the visual target class over structural host + overrides
 
 ### Stories Conventions (P029–P032, P044, P046–P048)
 - [P029 argtypes-control](#p029-argtypes-control) — Constrained argTypes for string union props
@@ -350,6 +351,12 @@ Three corollaries:
 1. **No parent prefix in bridge rules for portal elements.** Write `.react-aria-Popover.dropdown-menu { … }`, never `.react-aria-Select .react-aria-Popover.dropdown-menu { … }`.
 2. **Scope to a triggering component via attributes on the portal element itself.** RAC sets `[data-trigger="{ComponentName}"]` on Popover automatically — use that (see P049).
 3. **Prefer TSX `className` over bridge CSS for Bootstrap visibility classes on portal elements.** Adding `.show` directly to `className` is immune to portal positioning; a bridge rule requires getting the selector right (see P025).
+
+### P053: prefer-visual-target-class
+
+**When M014 (dual-counterpart) applies, prefer the visual target class when it reduces bridge complexity. If using the structural class instead, verify that every Bootstrap pseudo-class rule produces visible output for that exact class combination.** Bootstrap's interactive state rules read CSS variables that may only be defined when the visual target class is present; on a structural class without those definitions, the rules fire silently. Use bridge complexity as the signal: if applying the structural class requires many CSS variable overrides or supplementary focus/hover bridge rules, the visual target class is likely the better choice.
+
+If the chosen class leaves a gap, write a bridge rule — do not add the other counterpart's component class during implementation. Two component classes on the same element produce competing state cascades (see M020).
 
 ---
 

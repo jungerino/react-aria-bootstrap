@@ -21,7 +21,11 @@ Each principle declares a `**Type:**` (Triggered, Preference, Fact, Verification
 - [P002 class-in-tsx](#p002-class-in-tsx) — Two forms for writing `className` on a React Aria component
 - [P013 prefer-component-cls](#p013-prefer-component-cls) — Prefer Bootstrap component classes over utility classes
 
-### Core Principles (P003–P028, excluding P001, P002, P013 above)
+### DOM & Counterpart Matching (P036, P053)
+- [P036 derive-from-counterpart](#p036-derive-from-counterpart) — Derive bridge rules from the counterpart's actual CSS mechanism
+- [P053 prefer-visual-target-class](#p053-prefer-visual-target-class) — Verify the applied dual-counterpart class actually produces visible output
+
+### Core Principles (P003–P028, excluding P001, P002, P013, P010, P012 above/removed)
 - [P003 scss-bridge](#p003-scss-bridge) — SCSS bridge selectors in `_bootstrap-bridges.scss`
 - [P004 conflict-css](#p004-conflict-css) — Comment out conflicting project CSS
 - [P005 bundle-isolation](#p005-bundle-isolation) — Bootstrap-test stories require bundle-level isolation
@@ -29,9 +33,7 @@ Each principle declares a `**Type:**` (Triggered, Preference, Fact, Verification
 - [P007 variant-replace](#p007-variant-replace) — Bootstrap variants replace, don't extend
 - [P008 structural-sel](#p008-structural-sel) — Bootstrap structural selectors break with React Aria wrappers
 - [P009 clean-slate](#p009-clean-slate) — Comment-out is not a clean slate
-- [P010 form-attach](#p010-form-attach) — Bootstrap form patterns don't attach to custom controls
 - [P011 cursor-pointer](#p011-cursor-pointer) — Non-native interactive elements need `cursor: pointer`
-- [P012 match-dom](#p012-match-dom) — Match Bootstrap to React Aria's rendered output, not component name
 - [P014 data-pressed](#p014-data-pressed) — Bridge `[data-pressed]` to `:active` styles
 - [P015 scss-mixins](#p015-scss-mixins) — Use Bootstrap's SCSS mixins for `$enable-*`-gated properties
 - [P016 fixed-dims](#p016-fixed-dims) — Fix explicit dimensions for mounting/unmounting indicators
@@ -48,14 +50,12 @@ Each principle declares a `**Type:**` (Triggered, Preference, Fact, Verification
 - [P027 btn-non-button](#p027-btn-non-button) — `btn` on non-`<button>` interactive elements
 - [P028 btn-sm-dense](#p028-btn-sm-dense) — `btn-sm` in grid-constrained contexts
 
-### Extended Principles (P033–P043, P049–P052)
+### Extended Principles (P033–P043, P049–P052, excluding P036, P039, P053 above/removed)
 - [P033 verify-scss-vars](#p033-verify-scss-vars) — Verify Bootstrap SCSS variables before using
 - [P034 contrast-all-states](#p034-contrast-all-states) — Maintain ≥ 4.5:1 contrast through all interaction states
 - [P035 no-color-alone](#p035-no-color-alone) — Non-color attribute as primary state differentiator
-- [P036 derive-from-counterpart](#p036-derive-from-counterpart) — Derive bridge rules from counterpart's actual CSS
 - [P037 multi-select-separator](#p037-multi-select-separator) — Separator between adjacent selected items
 - [P038 prop-audit-first](#p038-prop-audit-first) — Enumerate React Aria prop surface before implementing
-- [P039 sub-element-counterpart](#p039-sub-element-counterpart) — Extend counterpart identification to sub-elements
 - [P040 container-owns-boundary](#p040-container-owns-boundary) — Boundary properties on container, not children
 - [P041 value-display-stable-dims](#p041-value-display-stable-dims) — Trigger sizes to its widest option
 - [P042 right-anchor-indicator](#p042-right-anchor-indicator) — Pin trailing indicator to right edge in flex rows
@@ -64,7 +64,6 @@ Each principle declares a `**Type:**` (Triggered, Preference, Fact, Verification
 - [P050 reboot-mismatch](#p050-reboot-mismatch) — Element type substitution invalidates Bootstrap reboot rules
 - [P051 programmatic-focus-visible](#p051-programmatic-focus-visible) — Suppress UA outline; use `[data-focus-visible]` for keyboard-only ring
 - [P052 portal-no-ancestor-sel](#p052-portal-no-ancestor-sel) — RAC overlay elements render in portals; ancestor bridge selectors never match them
-- [P053 prefer-visual-target-class](#p053-prefer-visual-target-class) — Prefer the visual target class over structural host + overrides
 
 ### Stories Conventions (P029–P032, P044, P046–P048)
 - [P029 argtypes-control](#p029-argtypes-control) — Constrained argTypes for string union props
@@ -113,6 +112,25 @@ Each principle declares a `**Type:**` (Triggered, Preference, Fact, Verification
 
 ---
 
+## DOM & Counterpart Matching
+
+### P036: derive-from-counterpart
+
+**Type:** Triggered
+**Trigger:** Writing a bridge rule for an element that has a direct Bootstrap counterpart (e.g. `.form-check-input` for Checkbox, `.form-control` for Input) — including elements where the counterpart's class can't be directly applied because React Aria hides the native element it targets.
+**Action:** Inspect Bootstrap's compiled CSS or source SCSS for the counterpart's rule at each state, and copy the same CSS property/mechanism it uses — not just a value that looks visually similar.
+**Rationale:** Reaching for a different CSS mechanism than Bootstrap's own (e.g. `outline` instead of `box-shadow` for a focus ring) can look right at a glance but diverges from Bootstrap's actual behavior at the edges — border-radius interaction, shadow layering, dark-mode token swaps. Starting from the counterpart's real compiled CSS, rather than approximating from general Bootstrap knowledge, guards against this even when the counterpart's class itself can't be applied to the element directly.
+**Example:** A focus ring should be written as `box-shadow: ...` (matching `.btn:focus-visible`'s real property), not `outline: ...`.
+
+### P053: prefer-visual-target-class
+
+**Type:** Verification
+**Trigger:** After applying a component class chosen for a dual-counterpart element (per the taxonomy's `## Decisions` section).
+**Check:** Confirm every Bootstrap pseudo-class rule for the applied class actually produces visible output for that exact class combination. Bootstrap's interactive-state rules sometimes read CSS variables that are only defined when the *other* counterpart's class is present — on the chosen class alone, those rules can fire without any visible effect.
+**On-failure:** Do not add the other counterpart's component class to close the gap — two component classes on one element produce competing interactive-state cascades with no reliable resolution order. Bridge the specific missing property in `_bootstrap-bridges.scss` instead.
+
+---
+
 ## Core Principles
 
 ### P003: scss-bridge
@@ -149,21 +167,9 @@ Each principle declares a `**Type:**` (Triggered, Preference, Fact, Verification
 
 **Comment-out is not a clean slate — assert your own baseline:** Commenting out a project CSS file removes it from that component's import, but the same file may still load via another path (e.g., the original non-bootstrap story imports the original component, which imports its CSS). Any selectors in that file that match your Bootstrap-styled elements will still apply. Do not assume comment-out leaves a blank slate. For every structural property (margin, padding, display, sizing) that Bootstrap's classes expect to control, explicitly set it in the bridge or via Bootstrap utility classes — even if the value is just a reset to zero.
 
-### P010: form-attach
-
-**Bootstrap form patterns don't attach to React Aria custom controls:** Bootstrap's form classes (`.form-check-input`, `.form-select`, etc.) target native inputs directly. React Aria's custom controls (Checkbox, Radio, Switch, Slider, Select) hide the native input and expose a custom visual element instead — so Bootstrap's patterns simply don't attach. When you encounter this mismatch, replicate Bootstrap's *visual outcome* on the custom element using bridge selectors and Bootstrap CSS variables. Do not try to force Bootstrap's class structure onto React Aria's markup.
-
 ### P011: cursor-pointer
 
 **Interactive non-anchor, non-button elements need `cursor: pointer` added explicitly:** Bootstrap interactive components built on `<a>` elements get pointer cursor for free. React Aria replaces many of these with `<div>` or `<span>` elements that carry no native cursor behavior. Any interactive React Aria element that would produce a pointer cursor in the equivalent Bootstrap component must have `cursor: pointer` added in the bridge.
-
-### P012: match-dom
-
-**Match Bootstrap's component to React Aria's rendered output, not to the component name:** When choosing which Bootstrap pattern to apply, look at what React Aria actually renders in the DOM — not at naming similarity. React Aria's `Select`, for example, hides the native `<select>` and renders a custom `<button>` + popover + listbox. Bootstrap's `.form-select` targets the native element and doesn't attach; Bootstrap's dropdown (`.btn` + `.dropdown-menu`) matches the rendered structure. Always inspect the rendered output first.
-
-### P013: prefer-component-cls
-
-**Prefer Bootstrap component classes and targeted CSS selectors over utility classes:** Utility classes (e.g. `d-flex`, `flex-column`, `w-100`) encode layout decisions in markup rather than in the component's stylesheet. Bootstrap component classes (`form-label`, `dropdown-menu`, `list-group-item`) carry semantic meaning and give the design system a coherent surface to work with and override. When a structural fix is needed, write it in the bridge CSS targeting the component's own selector — not by adding utility classes to the JSX. Reserve utility classes for genuinely one-off cases where no component class exists and a bridge rule would be disproportionate.
 
 ### P014: data-pressed
 
@@ -266,10 +272,6 @@ Background-image swaps cannot be transitioned — the caret snaps. This matches 
 
 **Use a non-color visual attribute as the primary state differentiator:** Do not use a color change alone to convey a state — provide a secondary non-color cue (border, background fill, shape, weight). Two constraints apply simultaneously: (1) WCAG 1.4.1 prohibits relying on color as the sole visual means of conveying information; (2) Bootstrap's semantic color palette has established conventions (primary blue = interactive/link, danger red = error) — repurposing these colors for unrelated states creates visual confusion even where contrast is sufficient. Use a border or background fill as the primary indicator; color accent is additive, not primary.
 
-### P036: derive-from-counterpart
-
-**When a Bootstrap counterpart exists, derive bridge rules from its actual applied CSS:** When a React Aria component has a direct Bootstrap counterpart (e.g. `.form-check-input` for Checkbox, `.form-control` for Input), inspect Bootstrap's compiled CSS or source SCSS for each state and copy the property/variable pattern from it — do not construct bridge rules from variable names alone. Starting from Bootstrap's own rules gives the correct CSS property (e.g. `box-shadow` not `outline` for focus rings), the correct variables, and guards against misleading variable names. This applies even when P010 prevents direct class attachment — the counterpart's CSS is still the reference.
-
 ### P037: multi-select-separator
 
 **Add a visible separator between adjacent selected items in multi-selection components:** When a component supports multiple simultaneous selection and the selected-state style fills the item background, adjacent selected items share the same filled background with no visual break — making them read as a single merged selection rather than discrete selected items. Add a visible separator between adjacent selected items: a border, outline stroke, or gap. This is a visual correctness requirement regardless of whether the underlying Bootstrap component offers multi-selection behavior — the separator need must be identified from the React Aria prop surface (`selectionMode="multiple"` or equivalent) and applied in the bridge.
@@ -277,10 +279,6 @@ Background-image swaps cannot be transitioned — the caret snaps. This matches 
 ### P038: prop-audit-first
 
 **Before implementing any component, enumerate its React Aria prop surface from the documentation:** Read the React Aria documentation for the component and list all props before writing any code. Flag any prop with layout, orientation, selection-mode, or variant semantics — these require bridge rules and stories. Do not rely on recall; the documentation is the authoritative prop surface. This mirrors P007 (which requires reading Bootstrap docs before finalizing variants): both the React Aria prop surface and the Bootstrap variant set must be read, not remembered.
-
-### P039: sub-element-counterpart
-
-**Extend counterpart identification to every named sub-element:** P012 and P036 establish counterpart identification at the top-level component. Apply the same discipline to every named sub-element in the React Aria component (headers, labels, separators, dividers, footers, action areas). Each sub-element that serves a specific structural or semantic role has a Bootstrap counterpart within the matched Bootstrap pattern — find it and derive the sub-element's styling from its actual CSS. Do not invent styles for sub-elements in isolation. Example: a non-interactive section label within a list → `.dropdown-header` within `.dropdown-menu`, which provides muted color, reduced font-size, padding, and no border — differentiation through typography and color alone.
 
 ### P040: container-owns-boundary
 
@@ -378,12 +376,6 @@ Three corollaries:
 1. **No parent prefix in bridge rules for portal elements.** Write `.react-aria-Popover.dropdown-menu { … }`, never `.react-aria-Select .react-aria-Popover.dropdown-menu { … }`.
 2. **Scope to a triggering component via attributes on the portal element itself.** RAC sets `[data-trigger="{ComponentName}"]` on Popover automatically — use that (see P049).
 3. **Prefer TSX `className` over bridge CSS for Bootstrap visibility classes on portal elements.** Adding `.show` directly to `className` is immune to portal positioning; a bridge rule requires getting the selector right (see P025).
-
-### P053: prefer-visual-target-class
-
-**When M014 (dual-counterpart) applies, prefer the visual target class when it reduces bridge complexity. If using the structural class instead, verify that every Bootstrap pseudo-class rule produces visible output for that exact class combination.** Bootstrap's interactive state rules read CSS variables that may only be defined when the visual target class is present; on a structural class without those definitions, the rules fire silently. Use bridge complexity as the signal: if applying the structural class requires many CSS variable overrides or supplementary focus/hover bridge rules, the visual target class is likely the better choice.
-
-If the chosen class leaves a gap, write a bridge rule — do not add the other counterpart's component class during implementation. Two component classes on the same element produce competing state cascades (see M020).
 
 ---
 

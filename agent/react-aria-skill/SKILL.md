@@ -71,6 +71,13 @@ Corrections to mistakes an agent will predictably make without being told. Loade
 **Correct-approach:** Destructure `{ defaultClassName }` from the callback argument: `({ defaultClassName }) => \`${defaultClassName ?? ''} btn\`.trim()`.
 **Symptom:** The rendered `class` attribute literally contains the text `[object Object]`.
 
+### G020: form-class-no-attach
+
+**Tempting-but-wrong:** Assume a Bootstrap form class (`.form-check-input`, `.form-select`, etc.) will style a React Aria custom control (Checkbox, Radio, Switch, Slider, Select) just by applying it, since the names correspond.
+**Why-it-fails:** Bootstrap's form classes target native `<input>`/`<select>` elements directly. React Aria's custom controls hide the native input and render a custom visual element instead — the class has nothing native to attach to.
+**Correct-approach:** Replicate Bootstrap's visual outcome on the custom visual element using bridge selectors and Bootstrap CSS variables — don't try to force Bootstrap's class structure onto React Aria's markup.
+**Symptom:** Applying the Bootstrap form class produces no visible styling change at all.
+
 ---
 
 ## Workflow

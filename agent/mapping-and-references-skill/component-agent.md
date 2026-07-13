@@ -65,10 +65,10 @@ When React Aria renders a different HTML element type than the Bootstrap counter
 
 When M001 (dom-first) finds that the semantically obvious Bootstrap counterpart targets a different element type than React Aria renders, treat the two counterparts as serving separate concerns:
 
-- **Structural counterpart** (the DOM-first match): drives class assignments, state bridges, and ARIA wiring.
-- **Semantic/visual counterpart** (the name-match that lost the structural test): drives token overrides for sizing, spacing, color, border, and shape.
+- **Structural counterpart** (the DOM-first match): the default candidate for class assignment, state bridges, and ARIA wiring.
+- **Semantic/visual counterpart** (the name-match that lost the structural test): the default source for token overrides — sizing, spacing, color, border, and shape.
 
-Apply visual token overrides from the semantic counterpart to the structural element. Do not assume the structural counterpart's default appearance is appropriate — its defaults are optimized for its own use case.
+**Choosing the class:** default to the structural counterpart's class. Prefer the semantic/visual counterpart's class instead when applying the structural class would require extensive CSS-variable overrides or supplementary bridge rules to reproduce the target appearance — use bridge complexity as the deciding signal. Apply visual token overrides from whichever counterpart is *not* chosen as the class. Do not assume the structural counterpart's default appearance is appropriate — its defaults are optimized for its own use case. Record the choice and reasoning in `## Decisions` (see M019).
 
 ---
 

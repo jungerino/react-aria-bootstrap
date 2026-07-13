@@ -87,6 +87,7 @@ Never assume component properties without verification through these tools.
 
 ### Knowledge Files
 - [React Aria Skill](./agent/react-aria-skill/SKILL.md) — Entry point for the React Aria + Bootstrap styling experiment; load at session start when running a styling experiment, then follow its session-start loading instructions
+- [Principle Types](./agent/notes/principle-types.md) — Quick reference for the `**Type:**` field on each `principles.md` entry (Triggered, Preference, Fact, Verification, Procedural) plus the related Gotcha type in `SKILL.md`
 - [Bootstrap KB Skill](./agent/bootstrap-kb-skill.md) — Skill for generating or regenerating the Bootstrap knowledge base; use when KB is missing, outdated, or a new component needs to be added
 - [Mapping and References Skill](./agent/mapping-and-references-skill/SKILL.md) — Entry point for Stage 4 (taxonomy + reference stories); load at session start, then follow its session-start loading instructions
 - [Storybook Setup](./agent/set-up-storybook.md) — One-time checklist for setting up the end-to-end workflow Storybook config

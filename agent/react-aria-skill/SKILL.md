@@ -78,6 +78,16 @@ Corrections to mistakes an agent will predictably make without being told. Loade
 **Correct-approach:** Replicate Bootstrap's visual outcome on the custom visual element using bridge selectors and Bootstrap CSS variables — don't try to force Bootstrap's class structure onto React Aria's markup.
 **Symptom:** Applying the Bootstrap form class produces no visible styling change at all.
 
+### G030: structural-selector-breakage
+
+**Tempting-but-wrong:** Assume Bootstrap's structural selectors — sibling-position pseudo-classes (`:first-child`, `:last-child`), adjacent-sibling combinators (`+`, `~`), and `inherit` — will match and propagate through React Aria's rendered DOM the same way they do in Bootstrap's native markup.
+**Why-it-fails:** React Aria inserts intermediate elements (wrappers, headers, hidden inputs, icons) that change what's actually adjacent or positioned first/last — and each mechanism breaks differently:
+- **Sibling-position pseudo-classes:** `:first-child`/`:last-child` on a list item fail to match when a header is the actual first child.
+- **Adjacent-sibling combinators:** Bootstrap's `.btn-check + .btn` pattern requires the label to be the *immediate* next sibling of the input — if React Aria wraps either element or inserts something between them, `+` never matches at all, even though nothing about first/last position changed.
+- **`inherit`:** a value set to `inherit` (e.g. border-radius) picks up whatever the nearest actual parent now is — an inserted section wrapper, not the outer container you intended.
+**Correct-approach:** Don't rely on structural selectors firing correctly through React Aria's element tree. For boundary/radius effects, use explicit Bootstrap token values (e.g. `var(--bs-list-group-border-radius)`) in a targeted bridge selector. For sibling-driven state styling, bridge the actual `[data-*]` state attribute directly onto the visual element instead of depending on adjacency.
+**Symptom:** A boundary/corner-radius effect lands on the wrong element or nowhere at all; or a state-driven style that depends on a `+`/`~` sibling match (e.g. a checked-state visual) never appears, with no console error to indicate why.
+
 ---
 
 ## Workflow

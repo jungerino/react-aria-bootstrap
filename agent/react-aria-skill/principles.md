@@ -25,13 +25,15 @@ Each principle declares a `**Type:**` (Triggered, Preference, Fact, Verification
 - [P036 derive-from-counterpart](#p036-derive-from-counterpart) — Derive bridge rules from the counterpart's actual CSS mechanism
 - [P053 prefer-visual-target-class](#p053-prefer-visual-target-class) — Verify the applied dual-counterpart class actually produces visible output
 
-### Core Principles (P003–P028, excluding P001, P002, P013, P010, P012 above/removed)
+### Boundary Ownership (P040)
+- [P040 container-owns-boundary](#p040-container-owns-boundary) — Boundary properties belong on the container, not children
+
+### Core Principles (not yet reviewed — membership below is current; see tracker for status)
 - [P003 scss-bridge](#p003-scss-bridge) — SCSS bridge selectors in `_bootstrap-bridges.scss`
 - [P004 conflict-css](#p004-conflict-css) — Comment out conflicting project CSS
 - [P005 bundle-isolation](#p005-bundle-isolation) — Bootstrap-test stories require bundle-level isolation
 - [P006 modifier-audit](#p006-modifier-audit) — Audit Bootstrap modifier classes before implementing variants
 - [P007 variant-replace](#p007-variant-replace) — Bootstrap variants replace, don't extend
-- [P008 structural-sel](#p008-structural-sel) — Bootstrap structural selectors break with React Aria wrappers
 - [P009 clean-slate](#p009-clean-slate) — Comment-out is not a clean slate
 - [P011 cursor-pointer](#p011-cursor-pointer) — Non-native interactive elements need `cursor: pointer`
 - [P014 data-pressed](#p014-data-pressed) — Bridge `[data-pressed]` to `:active` styles
@@ -50,13 +52,12 @@ Each principle declares a `**Type:**` (Triggered, Preference, Fact, Verification
 - [P027 btn-non-button](#p027-btn-non-button) — `btn` on non-`<button>` interactive elements
 - [P028 btn-sm-dense](#p028-btn-sm-dense) — `btn-sm` in grid-constrained contexts
 
-### Extended Principles (P033–P043, P049–P052, excluding P036, P039, P053 above/removed)
+### Extended Principles (not yet reviewed — membership below is current; see tracker for status)
 - [P033 verify-scss-vars](#p033-verify-scss-vars) — Verify Bootstrap SCSS variables before using
 - [P034 contrast-all-states](#p034-contrast-all-states) — Maintain ≥ 4.5:1 contrast through all interaction states
 - [P035 no-color-alone](#p035-no-color-alone) — Non-color attribute as primary state differentiator
 - [P037 multi-select-separator](#p037-multi-select-separator) — Separator between adjacent selected items
 - [P038 prop-audit-first](#p038-prop-audit-first) — Enumerate React Aria prop surface before implementing
-- [P040 container-owns-boundary](#p040-container-owns-boundary) — Boundary properties on container, not children
 - [P041 value-display-stable-dims](#p041-value-display-stable-dims) — Trigger sizes to its widest option
 - [P042 right-anchor-indicator](#p042-right-anchor-indicator) — Pin trailing indicator to right edge in flex rows
 - [P043 visual-metaphor-completeness](#p043-visual-metaphor-completeness) — Verify full Bootstrap visual metaphor
@@ -65,7 +66,7 @@ Each principle declares a `**Type:**` (Triggered, Preference, Fact, Verification
 - [P051 programmatic-focus-visible](#p051-programmatic-focus-visible) — Suppress UA outline; use `[data-focus-visible]` for keyboard-only ring
 - [P052 portal-no-ancestor-sel](#p052-portal-no-ancestor-sel) — RAC overlay elements render in portals; ancestor bridge selectors never match them
 
-### Stories Conventions (P029–P032, P044, P046–P048)
+### Stories Conventions (not yet reviewed — membership below is current; see tracker for status)
 - [P029 argtypes-control](#p029-argtypes-control) — Constrained argTypes for string union props
 - [P030 layout-variants-story](#p030-layout-variants-story) — Layout Variants story
 - [P031 state-stories](#p031-state-stories) — State stories (Disabled, Invalid, WithDescription)
@@ -131,6 +132,17 @@ Each principle declares a `**Type:**` (Triggered, Preference, Fact, Verification
 
 ---
 
+## Boundary Ownership
+
+### P040: container-owns-boundary
+
+**Type:** Triggered
+**Trigger:** An element needs an outer visual boundary (border, border-radius, or both) representing the group's outer edge — e.g. rounding only the top of the first item and the bottom of the last.
+**Action:** Apply the boundary property directly to the outer container element, not to individual child items via `:first-child`/`:last-child`/sibling selectors.
+**Rationale:** Which child is visually first or last is unreliable across several common situations — an inserted wrapper/header, overflow scrolling clipping the true first/last item from view, or a nested group changing sibling order. The container's position is always reliable. Item-level borders then serve only as internal row separators; the container's visual frame is self-contained.
+
+---
+
 ## Core Principles
 
 ### P003: scss-bridge
@@ -158,10 +170,6 @@ Each principle declares a `**Type:**` (Triggered, Preference, Fact, Verification
 ### P007: variant-replace
 
 **Bootstrap variants are the authoritative set — replace, don't extend:** When Bootstrap defines variant classes for a component (e.g. `btn-primary`, `btn-success`), its full set is the authoritative prop type. Replace the component library's inherited `variant` type with Bootstrap's variant names (without prefix: `'primary' | 'secondary' | 'success'` etc.), build a `variantClassMap` mapping each to its full Bootstrap class, and remove any variant names with no Bootstrap equivalent (e.g. `quiet`, `ghost`, `cta`). Do not carry forward component-library-specific variants unless intentionally extending Bootstrap — the prop contract should reflect what Bootstrap actually provides. Any component with a `variant` prop must have a Variants story showing all supported values side by side. **Before finalizing the variant set, read the Bootstrap documentation page for that component and identify all meaningful variant classes from it — do not rely on recall.**
-
-### P008: structural-sel
-
-**Bootstrap structural selectors break when React Aria inserts wrappers or headers:** Bootstrap uses structural CSS selectors (`:first-child`, `:last-child`, adjacent-sibling `+`) and `inherit` to propagate styles through a predictable parent → child path. React Aria components with sections, groups, or headers insert intermediate elements that sever these paths. `:first-child` on a list item fails when a header is the actual first child; `inherit` on border-radius picks up from the section wrapper rather than the outer container. The fix pattern: use explicit Bootstrap token values (e.g. `var(--bs-list-group-border-radius)`) in targeted bridge selectors rather than relying on Bootstrap's structural selectors firing correctly through React Aria's element tree.
 
 ### P009: clean-slate
 
@@ -279,10 +287,6 @@ Background-image swaps cannot be transitioned — the caret snaps. This matches 
 ### P038: prop-audit-first
 
 **Before implementing any component, enumerate its React Aria prop surface from the documentation:** Read the React Aria documentation for the component and list all props before writing any code. Flag any prop with layout, orientation, selection-mode, or variant semantics — these require bridge rules and stories. Do not rely on recall; the documentation is the authoritative prop surface. This mirrors P007 (which requires reading Bootstrap docs before finalizing variants): both the React Aria prop surface and the Bootstrap variant set must be read, not remembered.
-
-### P040: container-owns-boundary
-
-**Put boundary properties on the container, not on its children:** Bootstrap derives many outer-boundary effects (top/bottom border, border-radius) from structural child selectors (`:first-child`, `:last-child`, adjacent-sibling). P008 established that these selectors break when React Aria inserts wrapper elements. The same failure occurs in any situation where children are not in their expected structural positions: overflow scrolling (scroll removes first/last items from view), section wrappers, or nested groups. The fix is always the same: apply the boundary property — border, border-radius, or both — directly to the outer container element. Item-level borders then serve as internal row separators only; the container's visual frame is self-contained.
 
 ### P041: value-display-stable-dims
 

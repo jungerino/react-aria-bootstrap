@@ -12,6 +12,8 @@ Working document for the multi-session consolidation of `agent/react-aria-skill/
 
 **Format convention, added during Cluster 1 review (2026-07-13):** every `principles.md` entry now leads with a `**Type:**` field (Triggered, Preference, Fact, Verification, or Procedural) for human scanability — see `agent/notes/principle-types.md` for the full reference. Retrofitted onto Cluster 1's P001/P002/P013; apply going forward for every remaining cluster. Gotcha entries in `SKILL.md` don't get a `Type:` field — the section heading already establishes it.
 
+**TOC convention, changed after Cluster 3 (2026-07-13):** the legacy `Core Principles`, `Extended Principles`, and `Stories Conventions` TOC headers no longer carry a specific ID-range + "excluding ..." parenthetical. That approach (used through Clusters 1–3) required updating a growing exclusion list on every cluster that pulled a member out of one of these sections — extra synchronized bookkeeping on top of the tracker, and exactly the kind of thing that produced the one real bug so far (a leftover duplicate P013 entry, caught and fixed during Cluster 2). The bullet lists directly under each header were always the accurate source of truth regardless; the parenthetical was redundant with them. Headers now just say "(not yet reviewed — membership below is current; see tracker for status)." Stage E's full TOC rebuild replaces these placeholder headers entirely once every cluster is done.
+
 **Known pre-existing issues carried into this review:**
 - ~~P053 cites "M014"/"M020"...~~ **Resolved in Cluster 2 (2026-07-13).** P053 rewritten to drop the M014/M020 labels entirely (now a self-contained Verification principle); the decision-making heuristic that used to live in P053 was migrated to Stage 4's `M014` itself (see Cluster 2 decision log below) rather than left duplicated or dangling.
 - TOC omits P053 entirely (body has it, TOC doesn't). **Resolved as part of Cluster 2's TOC edit** — P053 now has a proper TOC entry under "DOM & Counterpart Matching."
@@ -29,7 +31,7 @@ Working document for the multi-session consolidation of `agent/react-aria-skill/
 |---|---------|--------------------|--------|
 | 1 | Selector & specificity mechanics | P001, P002, P013 | **Done** |
 | 2 | DOM/counterpart matching | P012 (deleted), P036, P039 (deleted), P010 (→ Gotcha G020), P053 | **Done** |
-| 3 | Structural selector breakage & boundary ownership | P008, P040 | Not started |
+| 3 | Structural selector breakage & boundary ownership | P008 (→ Gotcha G030), P040 | **Done** |
 | 4 | Interaction-state bridging | P003, P014, P044, P046, Data-* Bridge Rules (unnumbered) | Not started |
 | 5 | Prop surface / variant coverage | P006, P007, P038 | Not started |
 | 6 | CSS baseline hygiene | P004, P009, P020, P050 | Not started |
@@ -69,8 +71,8 @@ Each row: my one-line restatement of trigger + mechanism + rationale, current ou
 ### Cluster 3 — Structural selector breakage & boundary ownership
 | ID | Slug | Restatement | Cross-refs out | Initial hypothesis | Resolution |
 |----|------|--------------|-----------------|---------------------|------------|
-| P008 | structural-sel | Bootstrap's structural selectors (`:first-child`, adjacent-sibling, `inherit`) break when React Aria inserts wrapper/header elements — use explicit token values in targeted bridge selectors instead. | — | Keep (Conditional); Gotcha candidate | — |
-| P040 | container-owns-boundary | Boundary properties (border, border-radius) belong on the container, not children, because structural child-selectors (per P008) are unreliable. | P008 | Keep, adjacent to P008 | — |
+| P008 | structural-sel | Bootstrap's structural selectors (`:first-child`, adjacent-sibling, `inherit`) break when React Aria inserts wrapper/header elements — use explicit token values in targeted bridge selectors instead. | — | Keep (Conditional); Gotcha candidate | **Moved to Gotcha `G030`.** Confirmed Stage 4 has no dedicated M-numbered methodology resolving structural-selector breakage (unlike M014/M018) — the real taxonomy only flags it as a DOM-conflict category, doesn't resolve the fix technique — so this is genuinely Tier-1, unlike P012/P039. Broadened during review: the original text only explained the `:first-child`/`inherit` failure mechanisms even though it named adjacent-sibling combinators (`+`) too; added a third bullet with a concrete `.btn-check + .btn` example for that distinct failure mode (user caught this gap). |
+| P040 | container-owns-boundary | Boundary properties (border, border-radius) belong on the container, not children, because structural child-selectors (per P008) are unreliable. | P008 | Keep, adjacent to P008 | **Kept**, rewritten as **Triggered**, in a new "Boundary Ownership" section. Made fully self-contained (dropped the "P008 established..." pointer, since P008 left `principles.md` for `SKILL.md`) — and came out *broadened*, not just trimmed: the rewrite makes explicit that overflow-scroll clipping and nested-group reordering are separate root causes from wrapper insertion, all fixed the same way. |
 
 ### Cluster 4 — Interaction-state bridging
 | ID | Slug | Restatement | Cross-refs out | Initial hypothesis | Resolution |
@@ -188,12 +190,17 @@ Each row: my one-line restatement of trigger + mechanism + rationale, current ou
 - **P010 (form-attach)** → split out | New **Gotcha `G020`**, added to `SKILL.md` | — | Confirmed placement in Cluster 2 (not Cluster 3 — my original reasoning was a citation-grouping artifact in `component-agent.md`, not real conceptual similarity).
 - **Side finding:** `agent/mapping-and-references-skill/component-agent.md` has its own internal, hyphenated `P-XXX` numbering scheme, unrelated to `principles.md`'s `PXXX` — see corrected "Known pre-existing issues" note above.
 
+### Cluster 3 — Structural selector breakage & boundary ownership (done 2026-07-13)
+- **P008 (structural-sel)** → split out | New **Gotcha `G030`**, added to `SKILL.md` | — | Stage-4 check confirmed this is genuinely Tier-1 (no dedicated M-number resolves it, unlike Cluster 2's redundant members). Broadened during review at the user's prompting: original text named adjacent-sibling combinators (`+`) but only ever explained the `:first-child`/`inherit` failure mechanisms — added a third, distinct explanation with a concrete `.btn-check + .btn` example, since sibling-adjacency breakage is mechanically different from sibling-position or inheritance breakage.
+- **P040 (container-owns-boundary)** → ID unchanged | Kept, rewritten as **Triggered**, in new "Boundary Ownership" section | Dropped the "P008 established..." pointer (self-contained now) | Came out broadened, not just trimmed — made explicit that overflow-scroll clipping and nested-group reordering are separate root causes from wrapper insertion, all fixed the same way (boundary on container, never children).
+
 ---
 
 ## Gotcha Candidates for SKILL.md (running list — confirmed during Stage B, not final until Stage C)
 
 - **G010 — className-callback-interpolation** (from P002) — confirmed and already written into `SKILL.md`.
 - **G020 — form-class-no-attach** (from P010) — confirmed and already written into `SKILL.md`.
+- **G030 — structural-selector-breakage** (from P008) — confirmed and already written into `SKILL.md`.
 
 ## Deterministic-Rule Candidates (running list — confirmed during Stage B, finalized Stage D)
 

@@ -10,11 +10,15 @@ Working document for the multi-session consolidation of `agent/react-aria-skill/
 
 **Numbering scheme:** surviving principles renumbered sequentially by 10 in final cluster order (P010, P020, …) once all clusters are reviewed (Stage E). Gotchas moved to `SKILL.md` get separate `G010, G020, …` numbering. Old IDs are kept in this tracker as a permanent cross-reference even after renumbering.
 
+**Format convention, added during Cluster 1 review (2026-07-13):** every `principles.md` entry now leads with a `**Type:**` field (Triggered, Preference, Fact, Verification, or Procedural) for human scanability — see `agent/notes/principle-types.md` for the full reference. Retrofitted onto Cluster 1's P001/P002/P013; apply going forward for every remaining cluster. Gotcha entries in `SKILL.md` don't get a `Type:` field — the section heading already establishes it.
+
 **Known pre-existing issues carried into this review:**
 - P053 cites "M014"/"M020" — defined only in `agent/mapping-and-references-skill/component-agent.md`, which Tier 1 react-aria-skill agents never load. Must be resolved (inline or reposition) in Cluster 2.
 - TOC omits P053 entirely (body has it, TOC doesn't).
 - P045 is a numbering gap with **no git history** — confirmed absent even in the first commit that added `principles.md` (`6cf571d`, 2026-06-03). No record of what it was; treat as unrecoverable, not a merge target.
 - Taxonomy files (when they exist) have historically cited P-numbers with a hyphen (`P-012`) while `principles.md` uses no hyphen (`P012`) — pick one format during Stage E and note it, though this doesn't block per-principle review.
+- **Renumbering deferred to Stage E, decided in Cluster 1 review (2026-07-12):** `component-agent.md` cites several P-numbers inline (confirmed: P002, P007, P011, P013) but is out of scope for content edits this pass. Old P-numbers stay stable through Stage B (content is rewritten/reorganized/merged/moved, but IDs don't change) so those citations don't go stale mid-process. Stage E does the sequential-by-10 renumbering **and** a mechanical find-and-replace of just the numeric citations in `component-agent.md` and `final-stories-agent.md` — a small, contained fix, not the broader duplication reconciliation that's out of scope for this pass.
+- **P002 omission fixed:** P002 (`class-in-tsx`) was missing from the Stage A cluster inventory below (it was always present in `principles.md`'s own TOC/body — this was an oversight in the tracker's inventory, not a gap in the source doc). Added to Cluster 1.
 
 ---
 
@@ -22,7 +26,7 @@ Working document for the multi-session consolidation of `agent/react-aria-skill/
 
 | # | Cluster | Members (old IDs) | Status |
 |---|---------|--------------------|--------|
-| 1 | Selector & specificity mechanics | P001, P013 | Not started |
+| 1 | Selector & specificity mechanics | P001, P002, P013 | **Done** |
 | 2 | DOM/counterpart matching | P012, P036, P039, P010, P053 | Not started |
 | 3 | Structural selector breakage & boundary ownership | P008, P040 | Not started |
 | 4 | Interaction-state bridging | P003, P014, P044, P046, Data-* Bridge Rules (unnumbered) | Not started |
@@ -168,11 +172,17 @@ Each row: my one-line restatement of trigger + mechanism + rationale, current ou
 
 *(Populated cluster-by-cluster during Stage B live review. Format per entry: Old ID(s) → New ID | Action | Template | Cross-refs resolved | Notes)*
 
+### Cluster 1 — Selector & specificity mechanics (done 2026-07-12)
+- **P001 (compound-sel)** → ID unchanged for now (renumbered in Stage E) | Kept, standalone, rewritten as **Conditional** | No cross-refs (mentions P002 as the mechanism to satisfy it, adjacent in same section) | Moved into new "Selector & Specificity Mechanics" section.
+- **P002 (class-in-tsx)** → ID unchanged | Kept **standalone** (not merged into P001 — user determined it's the broader general mechanism for writing `className` at all, not specific to P001's compound-selector rationale) | Rewritten as **Conditional**; interpolation trap split out | Cross-ref to P046 (plain-string branch) kept as pointer — P046 not yet reviewed (Cluster 4), relationship flagged for that review.
+- **P013 (prefer-component-cls)** → ID unchanged | Kept, rewritten as **Preference/Trade-off** | No cross-refs | Moved into same new section, adjacent to P001/P002.
+- **G010 (className-callback-interpolation)** → split out of P002 | New **Gotcha**, added to `SKILL.md` | — | First entry in SKILL.md's new Gotchas section.
+
 ---
 
 ## Gotcha Candidates for SKILL.md (running list — confirmed during Stage B, not final until Stage C)
 
-*(empty — populated as clusters are reviewed)*
+- **G010 — className-callback-interpolation** (from P002) — confirmed and already written into `SKILL.md`.
 
 ## Deterministic-Rule Candidates (running list — confirmed during Stage B, finalized Stage D)
 

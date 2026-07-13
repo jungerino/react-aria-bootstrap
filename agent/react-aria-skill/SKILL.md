@@ -60,6 +60,19 @@ Each tier loads only the files listed for it. Loading files outside your tier is
 
 ---
 
+## Gotchas
+
+Corrections to mistakes an agent will predictably make without being told. Loaded by every tier — most entries are CSS/TSX-specific and only actionable by Tier 1, but they're cheap to read and orchestrator-tier agents (0, 1a) benefit from recognizing the symptom if a sub-agent's output looks wrong in one of these ways.
+
+### G010: className-callback-interpolation
+
+**Tempting-but-wrong:** Interpolating the render-prop `className` callback argument directly as if it were the existing class string: `(className) => \`${className} btn\``.
+**Why-it-fails:** The callback argument is the whole `RenderProps` object, not a string — this produces `[object Object] btn`.
+**Correct-approach:** Destructure `{ defaultClassName }` from the callback argument: `({ defaultClassName }) => \`${defaultClassName ?? ''} btn\`.trim()`.
+**Symptom:** The rendered `class` attribute literally contains the text `[object Object]`.
+
+---
+
 ## Workflow
 
 For the full branch lifecycle — iteration setup, component work, debrief, and merge — see `agent/iteration-protocol.md`.

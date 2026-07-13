@@ -8,13 +8,20 @@ Reference for component sub-agents. Loaded by Tier 1 (component sub-agents) only
 
 **Goal:** Replace project CSS with Bootstrap. Bootstrap becomes the source of truth for all or most styling of the React Aria test components.
 
+Each principle declares a `**Type:**` (Triggered, Preference, Fact, Verification, or Procedural) — see `agent/notes/principle-types.md` for field definitions and examples.
+
 ---
 
 ## Table of Contents
 
-### Core Principles (P001–P028)
-- [P001 compound-sel](#p001-compound-sel) — Retain `.react-aria-*` alongside Bootstrap classes
-- [P002 class-in-tsx](#p002-class-in-tsx) — Bootstrap className via render-prop callback
+> **Reorganization in progress.** Principles are being reviewed cluster-by-cluster and moved into thematic sections below; see `agent/notes/principles-consolidation-tracker.md` for status. IDs stay stable until the final renumbering pass — don't assume section order reflects ID order yet.
+
+### Selector & Specificity Mechanics (P001, P002, P013)
+- [P001 compound-sel](#p001-compound-sel) — Preserve the RAC class for specificity when Bootstrap-styling an element
+- [P002 class-in-tsx](#p002-class-in-tsx) — Two forms for writing `className` on a React Aria component
+- [P013 prefer-component-cls](#p013-prefer-component-cls) — Prefer Bootstrap component classes over utility classes
+
+### Core Principles (P003–P028, excluding P001, P002, P013 above)
 - [P003 scss-bridge](#p003-scss-bridge) — SCSS bridge selectors in `_bootstrap-bridges.scss`
 - [P004 conflict-css](#p004-conflict-css) — Comment out conflicting project CSS
 - [P005 bundle-isolation](#p005-bundle-isolation) — Bootstrap-test stories require bundle-level isolation
@@ -25,7 +32,6 @@ Reference for component sub-agents. Loaded by Tier 1 (component sub-agents) only
 - [P010 form-attach](#p010-form-attach) — Bootstrap form patterns don't attach to custom controls
 - [P011 cursor-pointer](#p011-cursor-pointer) — Non-native interactive elements need `cursor: pointer`
 - [P012 match-dom](#p012-match-dom) — Match Bootstrap to React Aria's rendered output, not component name
-- [P013 prefer-component-cls](#p013-prefer-component-cls) — Prefer Bootstrap component classes over utilities
 - [P014 data-pressed](#p014-data-pressed) — Bridge `[data-pressed]` to `:active` styles
 - [P015 scss-mixins](#p015-scss-mixins) — Use Bootstrap's SCSS mixins for `$enable-*`-gated properties
 - [P016 fixed-dims](#p016-fixed-dims) — Fix explicit dimensions for mounting/unmounting indicators
@@ -72,21 +78,42 @@ Reference for component sub-agents. Loaded by Tier 1 (component sub-agents) only
 
 ---
 
-## Core Principles
+## Selector & Specificity Mechanics
 
 ### P001: compound-sel
 
-**Compound selectors:** Retain the `.react-aria-*` class on every element alongside Bootstrap classes for specificity and non-conflicting React Aria CSS. Example: `.react-aria-Button.btn.btn-primary`.
+**Type:** Triggered
+**Trigger:** Adding Bootstrap classes to a React Aria element that needs to win specificity battles against Bootstrap's own rules, or stay addressable by `_bootstrap-bridges.scss` selectors.
+**Action:** Keep the RAC default class (e.g. `.react-aria-Button`) in the `className` string alongside the Bootstrap classes, using P002's callback form.
+**Rationale:** A compound selector like `.react-aria-Button.btn.btn-primary` is specific enough to beat Bootstrap's own rules without `!important`, and keeps the element targetable by data-attribute bridge selectors like `.react-aria-Button[data-pressed]`.
+**Example:** `.react-aria-Button.btn.btn-primary`
 
 ### P002: class-in-tsx
 
-**Bootstrap className in TSX:** Style components by adding Bootstrap classes to the `className` attribute. The render-prop callback receives `RenderProps & { defaultClassName: string }` — use `defaultClassName` to preserve the RAC base class:
-```tsx
-<Button className={({ defaultClassName }) => `${defaultClassName ?? ''} btn btn-primary`.trim()}>
-  Click me
-</Button>
-```
-Do not interpolate the callback argument directly (e.g. `(className) => \`${className} btn\``) — `className` is the whole RenderProps object and produces `[object Object] btn`. As an alternative, a plain string that includes the RAC class explicitly also works and is simpler (see P046).
+**Type:** Triggered
+**Trigger:** Writing the `className` prop on any React Aria component.
+**Action:** Two valid forms exist:
+1. **Callback form** — receives `RenderProps & { defaultClassName: string }`; destructure `defaultClassName` to append Bootstrap classes without discarding the RAC default class:
+   ```tsx
+   <Button className={({ defaultClassName }) => `${defaultClassName ?? ''} btn btn-primary`.trim()}>
+     Click me
+   </Button>
+   ```
+2. **Plain string** — replaces the RAC default class entirely (see P046); use this when the RAC class is deliberately not wanted.
+
+**Rationale:** These are the only two ways React Aria accepts `className`. Picking the wrong one for the situation silently produces the wrong class list — see G010 for the specific interpolation trap.
+
+### P013: prefer-component-cls
+
+**Type:** Preference
+**Preferred:** Bootstrap component classes (`form-label`, `dropdown-menu`, `list-group-item`) and targeted bridge CSS.
+**Over:** Utility classes (`d-flex`, `flex-column`, `w-100`) added directly in JSX.
+**Rationale:** Component classes carry semantic meaning and give the design system one coherent surface to override; utility classes encode layout decisions in markup instead of the stylesheet.
+**Exception:** Genuinely one-off cases where no component class exists and a bridge rule would be disproportionate.
+
+---
+
+## Core Principles
 
 ### P003: scss-bridge
 

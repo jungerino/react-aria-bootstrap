@@ -21,6 +21,9 @@ Each principle declares a `**Type:**` (Triggered, Preference, Fact, Verification
 - [P002 class-in-tsx](#p002-class-in-tsx) — Two forms for writing `className` on a React Aria component
 - [P013 prefer-component-cls](#p013-prefer-component-cls) — Prefer Bootstrap component classes over utility classes
 
+### Interaction-State Bridging (P003; P014, P044 pending)
+- [P003 scss-bridge](#p003-scss-bridge) — Bridge every data-* attribute to Bootstrap's corresponding style, uniformly
+
 ### DOM & Counterpart Matching (P036, P053)
 - [P036 derive-from-counterpart](#p036-derive-from-counterpart) — Derive bridge rules from the counterpart's actual CSS mechanism
 - [P053 prefer-visual-target-class](#p053-prefer-visual-target-class) — Verify the applied dual-counterpart class actually produces visible output
@@ -29,7 +32,6 @@ Each principle declares a `**Type:**` (Triggered, Preference, Fact, Verification
 - [P040 container-owns-boundary](#p040-container-owns-boundary) — Boundary properties belong on the container, not children
 
 ### Core Principles (not yet reviewed — membership below is current; see tracker for status)
-- [P003 scss-bridge](#p003-scss-bridge) — SCSS bridge selectors in `_bootstrap-bridges.scss`
 - [P004 conflict-css](#p004-conflict-css) — Comment out conflicting project CSS
 - [P005 bundle-isolation](#p005-bundle-isolation) — Bootstrap-test stories require bundle-level isolation
 - [P006 modifier-audit](#p006-modifier-audit) — Audit Bootstrap modifier classes before implementing variants
@@ -112,6 +114,24 @@ Each principle declares a `**Type:**` (Triggered, Preference, Fact, Verification
 
 ---
 
+## Interaction-State Bridging
+
+### P003: scss-bridge
+
+**Type:** Triggered
+**Trigger:** Styling any React Aria interactive state (hover, press, focus, selected, invalid, disabled, etc.).
+**Action:** Bridge the `data-*` attribute to Bootstrap's corresponding style in `_bootstrap-bridges.scss`, uniformly — regardless of whether a native CSS pseudo-class might also produce the same result on a given element.
+**Rationale:** Bootstrap is authoritative for interaction states.
+**Example:**
+```scss
+// Example: bridge data-hovered to Bootstrap's :hover styles
+.react-aria-Button[data-hovered] {
+  // paste Bootstrap's .btn:hover rules here
+}
+```
+
+---
+
 ## DOM & Counterpart Matching
 
 ### P036: derive-from-counterpart
@@ -119,7 +139,7 @@ Each principle declares a `**Type:**` (Triggered, Preference, Fact, Verification
 **Type:** Triggered
 **Trigger:** Writing a bridge rule for an element that has a direct Bootstrap counterpart (e.g. `.form-check-input` for Checkbox, `.form-control` for Input) — including elements where the counterpart's class can't be directly applied because React Aria hides the native element it targets.
 **Action:** Inspect Bootstrap's compiled CSS or source SCSS for the counterpart's rule at each state, and copy the same CSS property/mechanism it uses — not just a value that looks visually similar.
-**Rationale:** Reaching for a different CSS mechanism than Bootstrap's own (e.g. `outline` instead of `box-shadow` for a focus ring) can look right at a glance but diverges from Bootstrap's actual behavior at the edges — border-radius interaction, shadow layering, dark-mode token swaps. Starting from the counterpart's real compiled CSS, rather than approximating from general Bootstrap knowledge, guards against this even when the counterpart's class itself can't be applied to the element directly.
+**Rationale:** A different CSS mechanism than Bootstrap's own (e.g. `outline` instead of `box-shadow` for a focus ring) diverges from Bootstrap's actual behavior at the edges — border-radius interaction, shadow layering, dark-mode token swaps. This applies even when the counterpart's class itself can't be applied to the element directly.
 **Example:** A focus ring should be written as `box-shadow: ...` (matching `.btn:focus-visible`'s real property), not `outline: ...`.
 
 ### P053: prefer-visual-target-class
@@ -143,16 +163,6 @@ Each principle declares a `**Type:**` (Triggered, Preference, Fact, Verification
 ---
 
 ## Core Principles
-
-### P003: scss-bridge
-
-**SCSS bridge selectors (`src/scss/_bootstrap-bridges.scss`):** Map React Aria `data-*` attributes to Bootstrap's interaction styles. Bootstrap is authoritative for interaction states.
-```scss
-// Example: bridge data-hovered to Bootstrap's :hover styles
-.react-aria-Button[data-hovered] {
-  // paste Bootstrap's .btn:hover rules here
-}
-```
 
 ### P004: conflict-css
 
@@ -411,19 +421,6 @@ Three corollaries:
 ### P048: no-inline-style
 
 **Do not use inline `style=` attributes except in the following rare story-harness cases:** (1) `minHeight` on a story container that must reserve vertical space for a floating overlay (popover, dropdown, tooltip, modal) that would otherwise clip outside the iframe; (2) `position: static` (or an equivalent position override) on an element that is normally floated or absolutely positioned, used to place it in document flow for a static specimen display. These exceptions apply only in story files — never in component TSX or bridge CSS. Any use of an inline style must be accompanied by an inline comment explaining why the exception applies, and must be declared in the iteration review notes with the same explanation. Do not use inline styles to paper over a missing CSS implementation, to hard-code a measured pixel value, or to work around a sizing problem that P041 or a bridge selector should solve.
-
----
-
-## Data-* Bridge Rules
-
-Bridge every React Aria `data-*` attribute to its corresponding Bootstrap styles in `_bootstrap-bridges.scss`.
-
-```scss
-// Example: bridge data-hovered to Bootstrap's :hover styles
-.react-aria-Button[data-hovered] {
-  // paste Bootstrap's .btn:hover rules here
-}
-```
 
 ---
 

@@ -47,7 +47,7 @@ When no Bootstrap component class matches: (1) flag with `[NO DIRECT COUNTERPART
 
 When a React Aria state drives the presence of a child element (spinner, badge, icon, indicator) rather than a visual change on existing elements, do not default to `[NO DIRECT COUNTERPART]` without first scanning Bootstrap's full component catalog for an embeddable component that fulfills that display role.
 
-M004 (three-bridges) covers CSS-level bridges — pseudo-class, compound selector, override layer. It does not cover states where the response is a new DOM element rendered as a child.
+M004 (bridge-selector) covers CSS-level bridges — compound selector, CSS-variable override. It does not cover states where the response is a new DOM element rendered as a child.
 
 **Key Bootstrap embeddable components for state-driven content:**
 - **Loading/pending** → `.spinner-border.spinner-border-sm` or `.spinner-grow.spinner-grow-sm`; both inherit color from `currentColor`; Bootstrap's own docs show `.spinner-border-sm` inside a disabled `.btn` as the canonical pending button pattern

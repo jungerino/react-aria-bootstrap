@@ -48,7 +48,7 @@ Complete these steps once for the component before any implementation.
 2. Call `mcp__react-aria__get_react_aria_page` for the component. Cross-check: every `data-*` attribute in the docs must appear in the taxonomy's state mappings.
 3. Load Bootstrap KB: `components.md` entry for the matched Bootstrap component → `states.md` → `patterns.md` if a DOM conflict entry exists.
 4. Read all pre-extracted reference CSS files: `agent/artifacts/reference-css/{component}-{StoryName}.css` (one per story in scope). These contain only the Bootstrap rules that applied to the rendered reference story DOM — they are the primary CSS specification for what to replicate. Read them now, not during Phase C.
-5. Review all principles. Flag any with structural or sizing implications (P008, P010, P016, P040, P041, P042) — address during TSX/bridge implementation, not at diff time.
+5. Review all principles and gotchas. Flag any with structural or sizing implications (G030, G020, P016, P040, P041, P042) — address during TSX/bridge implementation, not at diff time.
 6. Load all pre-captured reference images: `.reference-images/{component}/{story}.png` — one per story in scope. These were captured by the orchestrator during pre-loop setup using `scripts/reference-images.mjs`. Read them once here. **Do NOT re-read reference images during Phase C or the Final Verification Sweep** — reference images are static and don't change during implementation; re-reading wastes context.
 
 ---

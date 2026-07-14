@@ -92,7 +92,7 @@ Not every case combines a Bootstrap class into the selector — some rely on the
 }
 ```
 
-When the applied class is a Bootstrap-native component class, override the CSS custom properties its own rules read — not the output properties directly:
+When the applied class is a Bootstrap-native component class, check whether it defines a native pseudo-class rule for the state you're bridging (grep compiled CSS). If it does, that rule can fire alongside your bridge selector and contest it — override the CSS custom properties it reads, not the output properties directly:
 ```scss
 // Wrong — output property; defeated by Bootstrap's own .btn:hover re-applying the variable
 .select-trigger { border-color: var(--bs-border-color); }
@@ -107,22 +107,13 @@ When the applied class is a Bootstrap-native component class, override the CSS c
 ```
 Grep the compiled CSS for the applied class's state rules and override the complete variable set — a partial override leaves some states falling through to the wrong default.
 
+If it doesn't — e.g. a class-based selector React Aria never adds (`.active`, `.is-invalid`, `.show`), or a native pseudo-class that fires on a hidden input rather than the visible element (M012) — a plain compound-selector bridge (above) is sufficient; there's no contest risk.
+
 All bridge rules go in `src/scss/_bootstrap-bridges.scss` — the per-component `.css` files under `src/` are pre-Bootstrap styling, not a bridge destination.
 
-### M007: scss-verify and pseudo-class selector audit
+### M007: compiled-css-authoritative — Compiled CSS is authoritative for the selector surface
 
-**Token verification:** Do not infer `--bs-*` token names by pattern. Before recording any token, confirm it exists in `_root.scss` or the component's own SCSS file. Names can be misleading (e.g. `--bs-input-focus-color` is the *text* color when focused, not the focus ring color).
-
-**Compiled CSS is authoritative for the selector surface.** Bootstrap uses `@each` loops and mixin interpolation to generate selectors (e.g. `.was-validated .form-control:invalid`) that do not appear as literal strings in the SCSS source. Always grep the compiled CSS at `node_modules/bootstrap/dist/css/bootstrap.css` for a component's primary class before finalising state mappings.
-
-**Pseudo-class selector audit:** For each Bootstrap pseudo-class selector that applies to the component (`:hover`, `:focus`, `:focus-visible`, `:disabled`, `:checked`, `:invalid`, `:valid`, etc.), explicitly document whether the selector fires (ACTIVE) or is inert (INERT) in a React Aria context. Do not silently omit inert selectors — a reader cannot tell whether an omitted selector was considered and dismissed or simply missed.
-
-**INERT heuristic:** After four mapping iterations across seven components, two classes of selectors consistently produce INERT classifications and can be pre-classified without individual inspection:
-
-1. **Class-based state selectors** — `.active`, `.disabled`, `.show`, `.is-valid`, `.is-invalid`, `.open` — React Aria never adds these classes; they are always INERT. The compound selector bridge (M004) is required.
-2. **Native-element pseudo-classes on custom controls** — `:checked`, `:disabled`, `:indeterminate` — fire on the native `<input>`, not on React Aria's custom visual element. Always INERT when the sub-part is a custom visual element (M012).
-
-The per-selector audit remains necessary for `:hover`, `:focus-visible`, and `:focus` — these fire normally on most React Aria elements and must be individually assessed.
+Bootstrap uses `@each` loops and mixin interpolation to generate selectors (e.g. `.was-validated .form-control:invalid`) that do not appear as literal strings in the SCSS source. Always grep the compiled CSS at `node_modules/bootstrap/dist/css/bootstrap.css` for a component's primary class before finalising state mappings — source SCSS alone can miss selectors that only exist after compilation.
 
 ### M012: custom-controls — React Aria's hidden-input pattern is the preferred styling surface
 
@@ -193,7 +184,7 @@ iteration: {N}
 
 ### State mappings
 [Per sub-part: table of data-* attribute | sub-part | Bootstrap equivalent | bridge strategy]
-[Pseudo-class audit per sub-part: ACTIVE/INERT classification for each pseudo-class]
+[Where the bridge strategy is a CSS variable override (M004), note which native pseudo-class rule it's neutralizing]
 
 ### DOM conflicts
 [Table: Sub-part | Conflict type (CRITICAL/MAJOR/MINOR) | Bootstrap expects | React Aria renders | Resolution]

@@ -138,7 +138,7 @@ Each principle declares a `**Type:**` (Triggered, Preference, Fact, Verification
 
 **Type:** Triggered
 **Trigger:** Writing a bridge rule for an element that has a direct Bootstrap counterpart (e.g. `.form-check-input` for Checkbox, `.form-control` for Input) — including elements where the counterpart's class can't be directly applied because React Aria hides the native element it targets.
-**Action:** Inspect Bootstrap's compiled CSS or source SCSS for the counterpart's rule at each state, and copy the same CSS property/mechanism it uses — not just a value that looks visually similar.
+**Action:** Inspect the pre-extracted reference CSS (`agent/artifacts/reference-css/{component}-{StoryName}.css`) for the counterpart's rule at each state, and copy the same CSS property/mechanism it uses — not just a value that looks visually similar. If the needed rule isn't in the extracted CSS, follow the Extracted CSS Gap Protocol rather than grepping `bootstrap.css` directly.
 **Rationale:** A different CSS mechanism than Bootstrap's own (e.g. `outline` instead of `box-shadow` for a focus ring) diverges from Bootstrap's actual behavior at the edges — border-radius interaction, shadow layering, dark-mode token swaps. This applies even when the counterpart's class itself can't be applied to the element directly.
 **Example:** A focus ring should be written as `box-shadow: ...` (matching `.btn:focus-visible`'s real property), not `outline: ...`.
 

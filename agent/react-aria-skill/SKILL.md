@@ -88,6 +88,13 @@ Corrections to mistakes an agent will predictably make without being told. Loade
 **Correct-approach:** Don't rely on structural selectors firing correctly through React Aria's element tree. For boundary/radius effects, use explicit Bootstrap token values (e.g. `var(--bs-list-group-border-radius)`) in a targeted bridge selector. For sibling-driven state styling, bridge the actual `[data-*]` state attribute directly onto the visual element instead of depending on adjacency.
 **Symptom:** A boundary/corner-radius effect lands on the wrong element or nowhere at all; or a state-driven style that depends on a `+`/`~` sibling match (e.g. a checked-state visual) never appears, with no console error to indicate why.
 
+### G040: plain-string-drops-rac-class
+
+**Tempting-but-wrong:** Set `className` to a plain string containing only the target Bootstrap class (e.g. `className="form-select"`), since it looks simpler than the callback form or a fully-spelled literal.
+**Why-it-fails:** A plain string *replaces* React Aria's default `.react-aria-{Component}` class entirely — it doesn't add to it. The default class is only used as a fallback when `className` is `undefined`. Any bridge selector written against `.react-aria-{Component}` (the usual pattern) will never match this element.
+**Correct-approach:** Either use the callback form (P002) to preserve the default class dynamically, or explicitly include it in the literal string: `className="react-aria-Button form-select"`. If the RAC class genuinely isn't needed as a selector (e.g. scoping via `data-trigger` instead), write every bridge rule for that element against the class that's actually present — never assume `.react-aria-{Component}` by habit.
+**Symptom:** A bridge rule that should apply to this element (correct selector, correct property values) never takes effect, with no error — because the element's actual class list doesn't include what the selector expects.
+
 ---
 
 ## Workflow

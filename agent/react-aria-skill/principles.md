@@ -72,7 +72,6 @@ Each principle declares a `**Type:**` (Triggered, Preference, Fact, Verification
 - [P031 state-stories](#p031-state-stories) — State stories (Disabled, Invalid, WithDescription)
 - [P032 title-case-labels](#p032-title-case-labels) — Title-cased Variants story labels
 - [P044 faux-state-class](#p044-faux-state-class) — Simulate interactive states with `.faux-*` CSS
-- [P046 rac-class-replace](#p046-rac-class-replace) — RAC replaces `className` entirely with a string
 - [P047 presentation-import](#p047-presentation-import) — Mirror stories must import `presentation.scss`
 - [P048 no-inline-style](#p048-no-inline-style) — No inline `style=` attributes
 
@@ -99,9 +98,9 @@ Each principle declares a `**Type:**` (Triggered, Preference, Fact, Verification
      Click me
    </Button>
    ```
-2. **Plain string** — replaces the RAC default class entirely (see P046); use this when the RAC class is deliberately not wanted.
+2. **Plain string** — a static alternative to the callback form; explicitly include the RAC default class as literal text so it isn't dropped: `className="react-aria-Button btn btn-primary"`.
 
-**Rationale:** These are the only two ways React Aria accepts `className`. Picking the wrong one for the situation silently produces the wrong class list — see G010 for the specific interpolation trap.
+**Rationale:** These are the only two ways React Aria accepts `className`. A plain string that omits the RAC class (e.g. `className="form-select"`) silently drops it — see G040 for that failure mode, and G010 for the interpolation trap in the callback form.
 
 ### P013: prefer-component-cls
 
@@ -405,10 +404,6 @@ Three corollaries:
 
 **Simulate non-declarative interactive states in mirror stories using `.faux-*` CSS:** Reference stories simulate interactive states (focus, hover, pressed) using `.faux-*` CSS classes on native HTML elements (e.g. `.faux-focus` on `<select>`). Mirror stories must match this coverage — do not omit an interactive state specimen just because the state cannot be triggered via React Aria props. The pattern: (1) add a `.faux-[state]` bridge rule in `_bootstrap-bridges.scss` (P003) applying the same property values Bootstrap uses for the equivalent native pseudo-class; if the RAC component replaces `className` entirely (preventing the faux class from landing on the component root), wrap the component in a `.faux-[state]-scope` div and scope the bridge rule to that wrapper; (2) wrap the component in the story with that div (or pass `className="faux-[state]"` where the class lands on a stable outer element). This is symmetric with how reference stories fake state on native elements and requires no changes to the component's core API.
 
-### P046: rac-class-replace
-
-**RAC replaces `className` entirely when a string is provided — do not assume the default RAC class co-exists:** When a React Aria component receives a plain string `className` (e.g. `className="form-select"`), it renders with only that string as the element's class — the default `.react-aria-{Component}` class is dropped entirely. The default class is only used as a fallback when `className` is `undefined`. Bridge selectors must be written against the provided class, not the default RAC class. Any bridge that relies on `.react-aria-Button` on a trigger that was given `className="form-select"` will never match. Use the RAC component root's own attributes (e.g. `data-trigger="Select"`, `.react-aria-Select`) as the scope anchor instead.
-
 ### P047: presentation-import
 
 **Mirror stories must explicitly import `presentation.scss`:** The pixel diff script navigates to each story in isolation — it does not share a bundle with other stories. `presentation.scss` loads as a side-effect of other story imports during a normal Storybook session, but that import chain is not present when the script renders a mirror story alone. Any mirror story that depends on styles from `presentation.scss` must import it directly: `import '../presentation.scss'` (relative to the mirror story at `stories/react-aria-bootstrap/mirror/`). Omitting this causes visual diffs against the reference that are pure import failures, not styling gaps.
@@ -421,16 +416,14 @@ Three corollaries:
 
 ## Data-* Bridge Rules
 
-Bridge a `data-*` attribute in `_bootstrap-bridges.scss` **only when**:
-1. No native CSS pseudo-class equivalent exists (e.g., `[data-selected]`, `[data-invalid]`, `[data-indeterminate]`)
-2. The element is non-native (e.g., `<div>`, `<td>`) so pseudo-classes don't fire
-3. React Aria uses `aria-disabled` + `[data-disabled]` without native `disabled` (element must stay focusable)
+Bridge every React Aria `data-*` attribute to its corresponding Bootstrap styles in `_bootstrap-bridges.scss`.
 
-**Do not bridge** native pseudo-classes that fire automatically:
-- `:hover` on native elements — use `:hover` directly
-- `:focus-visible` on native elements — use `:focus-visible` directly
-- `:active` on native elements — use `:active` directly
-- `:disabled` on native `<input>` elements
+```scss
+// Example: bridge data-hovered to Bootstrap's :hover styles
+.react-aria-Button[data-hovered] {
+  // paste Bootstrap's .btn:hover rules here
+}
+```
 
 ---
 

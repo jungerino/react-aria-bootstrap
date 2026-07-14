@@ -78,13 +78,36 @@ When M001 (dom-first) finds that the semantically obvious Bootstrap counterpart 
 
 For each component, call `mcp__react-aria__get_react_aria_page` and enumerate every `data-*` attribute listed in the documentation before filling the state mappings. Do not rely on recall. Map every attribute — missing a state is a mapping gap.
 
-### M004: three-bridges — Three bridge strategies for state mapping
+### M004: bridge-selector — How to write a data-* bridge selector
 
-For each React Aria `data-*` attribute, choose one of three strategies:
+Bridge a `data-*` attribute with a compound selector combining the RAC class, the applicable Bootstrap class where one is combined into the selector (exact counterpart or M006's closest-analog resolution), and the `[data-*]` attribute:
+```scss
+.react-aria-Button.btn[data-hovered] { /* Bootstrap's real .btn:hover output values */ }
+```
+Not every case combines a Bootstrap class into the selector — some rely on the RAC class and data attribute alone, using values borrowed from a comparable Bootstrap element:
+```scss
+.react-aria-ListBoxItem[data-selected] {
+  color: var(--bs-dropdown-link-active-color);
+  background-color: var(--bs-dropdown-link-active-bg);
+}
+```
 
-1. **CSS pseudo-class overlap** — React Aria's `[data-focused]` is redundant with `:focus-visible`; Bootstrap's `:hover` maps to `[data-hovered]`. Record as "no bridge needed — CSS pseudo-class overlap."
-2. **Compound selector** — React Aria never adds `.active`/`.show`, so reproduce Bootstrap's state styling via `[data-selected]` in a compound selector (e.g. `.react-aria-ListBoxItem[data-selected]` → `.list-group-item.active` visual).
-3. **`_bootstrap-bridges.scss`** — Global bridge layer at `src/scss/_bootstrap-bridges.scss`; use for rules shared across multiple components.
+When the applied class is a Bootstrap-native component class, override the CSS custom properties its own rules read — not the output properties directly:
+```scss
+// Wrong — output property; defeated by Bootstrap's own .btn:hover re-applying the variable
+.select-trigger { border-color: var(--bs-border-color); }
+
+// Correct — variable override; every rule that reads it (Bootstrap's, faux-state, real pseudo-classes) resolves consistently
+.select-trigger {
+  --bs-btn-border-color: var(--bs-border-color);
+  --bs-btn-hover-border-color: var(--bs-border-color);
+  --bs-btn-active-border-color: var(--bs-border-color);
+  --bs-btn-disabled-border-color: var(--bs-border-color);
+}
+```
+Grep the compiled CSS for the applied class's state rules and override the complete variable set — a partial override leaves some states falling through to the wrong default.
+
+All bridge rules go in `src/scss/_bootstrap-bridges.scss` — the per-component `.css` files under `src/` are pre-Bootstrap styling, not a bridge destination.
 
 ### M007: scss-verify and pseudo-class selector audit
 
@@ -321,41 +344,6 @@ If `presentation.scss` does not yet have faux-state classes for the component be
 - **Bootstrap defines a custom focus style** (e.g. `box-shadow` on `.btn:focus-visible`): replicate those Bootstrap tokens in the faux class.
 - **No custom focus style in Bootstrap's CSS**: Bootstrap leaves `outline` unsuppressed and the UA stylesheet owns the ring. Use `outline: auto -webkit-focus-ring-color` — do not substitute Bootstrap tokens (`--bs-focus-ring-color`, `--bs-primary`, etc.), which produce the wrong color and will not match.
 
-### P-012: For dual-counterpart components, override CSS variables at the element level — not the output property
-
-When a dual-counterpart component (M014) requires Bootstrap's state rules to produce a different visual than the structural counterpart's defaults, override the CSS custom properties on the element class — not the output properties (`border-color`, `background-color`, etc.) directly.
-
-Bootstrap's component state rules (`.btn:hover`, `.btn:first-child:active`, etc.) set output properties by reading CSS custom properties (e.g. `border-color: var(--bs-btn-hover-border-color)`). Those variables default to `transparent` on an unstyled `.btn`. Overriding the output property in a class rule is fragile because:
-
-- Bootstrap's own state pseudo-classes (`.btn:hover`) fire when the user's cursor is over a faux-state specimen and will re-apply the variable — even if your class rule has higher specificity.
-- CSS cascade battles (specificity + source order) are load-order-sensitive and hard to reason about across separate SCSS files.
-
-Overriding the variable on the element means every rule that reads it — Bootstrap's state rules, faux-state class rules, real pseudo-classes — all resolve to the correct value automatically.
-
-```scss
-// Wrong — output property override; defeated by Bootstrap's .btn:hover
-.select-trigger {
-  border-color: var(--bs-border-color);
-}
-
-// Also wrong — still an output property; specificity battles are fragile
-.btn.select-trigger.faux-hover {
-  border-color: var(--bs-border-color);
-}
-
-// Correct — variable override at element level; propagates through all state rules
-.select-trigger {
-  --bs-btn-border-color: var(--bs-border-color);
-  --bs-btn-hover-border-color: var(--bs-border-color);
-  --bs-btn-active-border-color: var(--bs-border-color);
-  --bs-btn-disabled-border-color: var(--bs-border-color);
-}
-```
-
-**Identify the complete variable set.** Grep the compiled CSS for the structural counterpart's state rules and enumerate every CSS custom property they read. Override the complete set — partial overrides leave some states falling through to wrong defaults.
-
-**Applies to:** any component using M014 where the visual counterpart's defaults differ from the structural counterpart's (e.g. Select trigger: `.btn.dropdown-toggle` has transparent borders; `.form-select` has visible ones).
-
 ### P-014: Bootstrap's `:focus` sharing tokens with `:hover` does not mean focus is visually identical to hover
 
 When Bootstrap's `:focus` rule on a component reads the same CSS custom properties as `:hover`, the two states are still visually distinct. Bootstrap does not suppress `outline` on many components, so the UA focus ring is still active and visible when the element has real keyboard focus.
@@ -450,7 +438,7 @@ Before emitting the terminal phrase, step through every specimen in Storybook an
 - Disabled
 - Any additional states shown in that story (open, selected, invalid, etc.)
 
-Pay particular attention to hover and active: these are the states most likely to silently fall through to structural counterpart defaults when CSS custom properties have not been fully overridden (see P-012). If any specimen is wrong, fix the CSS before emitting the terminal phrase — do not surface a known-broken story for user review.
+Pay particular attention to hover and active: these are the states most likely to silently fall through to structural counterpart defaults when CSS custom properties have not been fully overridden (see M004). If any specimen is wrong, fix the CSS before emitting the terminal phrase — do not surface a known-broken story for user review.
 
 ### P-016: A faux-focus specimen that is visually indistinguishable from faux-hover is wrong
 

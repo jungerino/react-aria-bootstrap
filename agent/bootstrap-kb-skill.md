@@ -168,20 +168,30 @@ Button, Button Group, Form Control / Text Input, Form Select, Form Check (checkb
 
 **Sources:**
 - Bootstrap docs via WebFetch for compound components where DOM structure isn't clear from SCSS alone (dropdowns, select, navs-tabs, checks-radios, input-group)
+- Component SCSS files directly for compound components whose structure *is* clear from source but whose selectors are still ancestor/sibling-dependent (modal, btn-check toggle). Needing a WebFetch lookup is not the test for Section 2 inclusion below — selector dependency is.
 
 **Frontmatter template:**
 ```markdown
 ---
 what: Bootstrap compound-component structural reference
-contains: How Bootstrap structures compound components (assumed DOM chains); which Bootstrap components have a flat, single-element structure versus a compound one.
+contains: A selector-pattern taxonomy; how Bootstrap structures compound components (assumed DOM chains); which Bootstrap components have a flat, single-element structure versus a compound one.
 when-to-load: When mapping any compound React Aria component to Bootstrap, to see Bootstrap's expected DOM chain before comparing it against React Aria's actual rendered markup.
 related: components.md for per-component DOM structure and JS mutations; states.md for state selectors
 ---
 ```
 
-**Section 1: Bootstrap Compound Component Patterns** — For each compound component, document Bootstrap's assumed DOM chain (e.g. `.input-group > .input-group-text | .form-control | .btn`).
+**Section 1: Selector Pattern Taxonomy** (write this first, before any per-component entry) — a short table classifying the kinds of structural CSS-selector relationships Bootstrap's component CSS relies on, so Section 2 entries can name a pattern instead of re-deriving it each time. Minimum rows: direct descendant (`.parent > .child`), nested descendant (`.ancestor .descendant`), adjacent sibling (`+`), general sibling (`~`), pseudo-class stacked with class (e.g. `:not(.collapsed)`), class stacked with class (e.g. `.btn.active`), attribute selector (e.g. `[data-bs-popper]`). One real example per row, pulled from a component documented in Section 2, plus one sentence on what the pattern structurally requires (e.g. general sibling requires a specific DOM *order*, not just co-location in the subtree).
 
-**Section 2: Bootstrap Components With Minimal DOM Structure** — `.badge`, `.alert`, `.table`, `.progress`/`.progress-bar`, `.breadcrumb`/`.breadcrumb-item`: components whose Bootstrap class attaches to a single element or a shallow, optional structure, in contrast to Section 1's compound chains.
+**Section 2: Bootstrap Compound Component Patterns** — For each compound component, document Bootstrap's assumed DOM chain (e.g. `.input-group > .input-group-text | .form-control | .btn`), and name which Section 1 taxonomy row its load-bearing selector belongs to.
+
+*Inclusion criterion:* a component belongs here if any of its CSS selectors depend on a specific ancestor/descendant/sibling *relationship* — not merely on a class being present somewhere in the subtree. This means the minimum list is Input Group, Dropdown, Nav/Tabs, Accordion, Form Select, Form Check, **plus two components that are easy to skip because their DOM is already obvious from SCSS or from a components.md snippet — obviousness is not the same as flatness:**
+
+- **Modal** — canonical example of a load-bearing *nesting depth*. Document the full `.modal > .modal-dialog > .modal-content` chain and state explicitly that collapsing a level (e.g. applying `.modal-content`'s styles directly to `.modal-dialog`) breaks the intended layout. This is a depth dependency, distinct from the flat sibling dependencies elsewhere in this section — call that distinction out.
+- **`.btn-check` toggle pattern** — canonical example of an *adjacent-sibling* dependency. Document `<input class="btn-check"> + <label class="btn">` and state explicitly that `.btn-check:checked + .btn` will not fire unless the input immediately precedes the label as a sibling — moving the input elsewhere in the DOM (e.g. nesting it inside the label) silently breaks the selector with no error.
+
+Use Modal as the template for how deep to go: don't stop at "here's the DOM tree" — state which specific relationship in that tree the CSS depends on, and what observably breaks if it's violated. Apply that same standard to every other Section 2 entry, not just these two.
+
+**Section 3: Bootstrap Components With Minimal DOM Structure** — `.badge`, `.alert`, `.table`, `.progress`/`.progress-bar`, `.breadcrumb`/`.breadcrumb-item`: components whose Bootstrap class attaches to a single element or a shallow, optional structure, in contrast to Section 2's compound chains.
 
 ---
 
@@ -240,5 +250,7 @@ Before reporting the KB as complete:
 - [ ] components.md has approximately 31 component entries (`grep -c "^## " agent/bootstrap-kb/components.md`)
 - [ ] tokens.md has 80+ token entries (`grep -c "| \`--bs-" agent/bootstrap-kb/tokens.md`)
 - [ ] states.md has 13+ state sections (`grep -c "^## " agent/bootstrap-kb/states.md`)
+- [ ] patterns.md opens with a Selector Pattern Taxonomy table (7 pattern types minimum) before any per-component entry
+- [ ] patterns.md's compound-component section includes Modal and the `.btn-check` toggle pattern, each stating the specific relationship its CSS depends on and what breaks if it's violated — not just the DOM tree
 - [ ] README.md completion table is filled in with actual dates
 - [ ] README.md is the last file written in this session

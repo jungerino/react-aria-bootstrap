@@ -191,6 +191,8 @@ related: components.md for per-component DOM structure and JS mutations; states.
 
 Use Modal as the template for how deep to go: don't stop at "here's the DOM tree" — state which specific relationship in that tree the CSS depends on, and what observably breaks if it's violated. Apply that same standard to every other Section 2 entry, not just these two.
 
+**Verifying "what breaks" claims:** before asserting a consequence, locate the exact selector responsible in source or compiled CSS and read what it declares. A component's visible behavior is often produced by more than one selector on the same class — some ancestor-qualified, some not. Do not attribute an effect (a color change, an icon rotation, a border-radius) to the relational selector under discussion without confirming that selector, and not some other unqualified rule targeting the same class, is what actually declares it. Grep the compiled CSS for the full property list matching the class before writing the claim.
+
 **Section 3: Bootstrap Components With Minimal DOM Structure** — `.badge`, `.alert`, `.table`, `.progress`/`.progress-bar`, `.breadcrumb`/`.breadcrumb-item`: components whose Bootstrap class attaches to a single element or a shallow, optional structure, in contrast to Section 2's compound chains.
 
 ---
@@ -252,5 +254,6 @@ Before reporting the KB as complete:
 - [ ] states.md has 13+ state sections (`grep -c "^## " agent/bootstrap-kb/states.md`)
 - [ ] patterns.md opens with a Selector Pattern Taxonomy table (7 pattern types minimum) before any per-component entry
 - [ ] patterns.md's compound-component section includes Modal and the `.btn-check` toggle pattern, each stating the specific relationship its CSS depends on and what breaks if it's violated — not just the DOM tree
+- [ ] Every "what breaks" claim in patterns.md Section 2 was checked against the actual selector's declared properties (grep the compiled CSS), not inferred from what the component visually appears to do
 - [ ] README.md completion table is filled in with actual dates
 - [ ] README.md is the last file written in this session

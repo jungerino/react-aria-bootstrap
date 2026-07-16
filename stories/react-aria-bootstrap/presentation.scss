@@ -2,3 +2,155 @@
 // Reference story shared layout utilities
 // Used across multiple components.
 // ============================================================
+
+.reference-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+
+.reference-specimen {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.reference-specimen-label {
+  font-size: 0.8125rem;
+  color: var(--bs-secondary-color);
+}
+
+// ============================================================
+// Select
+// ============================================================
+
+.select-demo {
+  width: 16rem;
+}
+
+// Trigger — styled with the real Bootstrap `.form-select` class.
+// `.form-select` defines no `:hover` rule, so no `.faux-hover` is needed
+// (resting and hover are the same output — verified against compiled CSS).
+//
+// DOM conflict #2: React Aria renders a real chevron icon where Bootstrap
+// expects a `background-image` layer. Both `--bs-form-select-bg-img` (the
+// chevron) and `--bs-form-select-bg-icon` (the validation icon Bootstrap
+// layers in automatically for `.is-valid`/`.is-invalid`) are suppressed so
+// neither background-image collides with the real icon. `padding-inline-end`
+// is corrected from `.form-select`'s default 2.25rem (reserved for its own
+// bg-image chevron, per P-017) down to match the start padding, since a real
+// flex-positioned icon needs no such reservation.
+.select-trigger {
+  --bs-form-select-bg-img: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+  padding-inline-end: 0.75rem;
+  text-align: start;
+}
+
+// `.form-select.is-invalid:not([multiple]):not([size])` (compiled CSS) sets
+// `--bs-form-select-bg-icon` to its own red-circle SVG *and* reserves
+// `padding-right: 4.125rem` for it, at specificity (0,4,0) — two classes
+// plus two `:not([attr])` pseudo-classes. A first attempt at
+// `.form-select.select-trigger.is-invalid` (0,3,0) lost to it (verified by
+// screenshot: the icon and the extra padding both persisted). This selector
+// matches the same attribute-less case explicitly to exceed it at (0,5,0).
+.form-select.select-trigger.is-invalid:not([multiple]):not([size]) {
+  --bs-form-select-bg-icon: none;
+  padding-right: 0.75rem;
+}
+
+.select-value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.select-value.is-placeholder {
+  // [NO DIRECT COUNTERPART]: Bootstrap defines no placeholder-shown
+  // treatment for `.form-select` — closest visual pattern is the standard
+  // muted-text token. Named `.is-placeholder`, not `.placeholder` — Bootstrap
+  // already ships a `.placeholder` utility class (loading skeletons,
+  // `background-color: currentcolor`) that collides with this state and
+  // silently painted a solid box over the text when tried.
+  color: var(--bs-secondary-color);
+}
+
+// Popover/ListBox split (DOM conflict #3): Bootstrap fuses the floating
+// panel and the item-list into one `.dropdown-menu` element. React Aria
+// splits this into two nested elements, so `.dropdown-menu`'s token set is
+// divided between them — box tokens (bg/border/radius/shadow/min-width) stay
+// on the outer, positioned element; flow tokens (padding, list-style,
+// overflow) move to the inner scrollable element.
+.select-popover.dropdown-menu {
+  position: static; // static reference story — no real popover positioning engine
+  padding: 0;
+}
+
+.select-popover .dropdown-listbox {
+  display: block;
+  padding: var(--bs-dropdown-padding-y) var(--bs-dropdown-padding-x);
+  list-style: none;
+  margin: 0;
+}
+
+.select-multi-item {
+  display: flex;
+  align-items: center;
+}
+
+.form-select.faux-focus,
+.form-select.faux-focus-visible {
+  // `.form-select:focus` (compiled CSS): border-color + box-shadow, outline
+  // explicitly zeroed by Bootstrap itself — no UA outline persists, so no
+  // separate outline is added here (P-001 faux-focus-source rule).
+  border-color: #86b7fe;
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.form-select.faux-pressed {
+  // Resolved decision (D-pressed-state): `.form-select` itself defines no
+  // pressed/`:active` treatment (native selects have none). Borrows a subtle
+  // tint from Dropdown's own "subtle surface" token — the same
+  // `--bs-tertiary-bg` value Dropdown Item's hover/active tint is built from
+  // (`--bs-dropdown-link-hover-bg: var(--bs-tertiary-bg)`) — rather than
+  // `.btn`'s variant-specific `--bs-btn-active-bg`, which `.form-select`
+  // shares no token namespace with.
+  background-color: var(--bs-tertiary-bg);
+}
+
+// Chevron — substitutes for `.form-select`'s own `--bs-form-select-bg-img`
+// background-image layer (DOM conflict #2). Rotates on open per P-018;
+// a background-image could never support this.
+.select-chevron {
+  transition: transform 0.15s ease-in-out;
+}
+.select-chevron.faux-open {
+  transform: rotate(180deg);
+}
+
+// Dropdown item — `.dropdown-item:hover, .dropdown-item:focus` share one
+// Bootstrap rule, but `.dropdown-item` never suppresses the UA outline, so
+// focus remains visually distinct from hover via the browser's default
+// focus ring (P-014 / P-001 faux-focus-source rule: no custom Bootstrap
+// focus style found for `.dropdown-item` → use the UA ring, not Bootstrap
+// tokens).
+.dropdown-item.faux-hover {
+  color: var(--bs-dropdown-link-hover-color);
+  background-color: var(--bs-dropdown-link-hover-bg);
+}
+.dropdown-item.faux-focus,
+.dropdown-item.faux-focus-visible {
+  color: var(--bs-dropdown-link-hover-color);
+  background-color: var(--bs-dropdown-link-hover-bg);
+  outline: auto -webkit-focus-ring-color;
+}
+// "Pressed" and "selected" render identically on `.dropdown-item` in
+// Bootstrap (`.dropdown-item.active, .dropdown-item:active` is one combined
+// rule) — both specimens reuse the real `.active` class rather than a faux
+// class (per D-selected-indicator: color/bg only, no icon).

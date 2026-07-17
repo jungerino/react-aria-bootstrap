@@ -103,6 +103,22 @@
   align-items: center;
 }
 
+// Mirror-story faux-state scoping (P-044): the real Select component's trigger
+// Button doesn't expose a className passthrough for arbitrary extra classes, so
+// static specimens for states that can't be declaratively triggered (focus-visible,
+// pressed) wrap the whole component in a `.faux-[state]-scope` div instead. Values
+// re-key the exact same declarations as `.form-select.faux-focus-visible` /
+// `.form-select.faux-pressed` below, just off the wrapper instead of a class on
+// the button itself.
+.faux-focus-visible-scope .react-aria-Button.form-select {
+  border-color: #86b7fe;
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+.faux-pressed-scope .react-aria-Button.form-select {
+  background-color: var(--bs-tertiary-bg);
+}
+
 .form-select.faux-focus,
 .form-select.faux-focus-visible {
   // `.form-select:focus` (compiled CSS): border-color + box-shadow, outline

@@ -104,7 +104,20 @@
 
 ### Select
 **Principles used:**
-- *(e.g., `P014 data-pressed`, `P022 bs-icons`)*
+- `P001 compound-sel`
+- `P002 class-in-tsx`
+- `P003 scss-bridge`
+- `P013 prefer-component-cls`
+- `P014 data-pressed`
+- `P015 scss-mixins`
+- `P024 caret-flip`
+- `P025 hardcode-show`
+- `P036 derive-from-counterpart`
+- `P044 faux-state-class`
+- `P047 presentation-import`
+- `P049 rac-trigger-width`
+- `P050 reboot-mismatch`
+- `P052 portal-no-ancestor-sel`
 
 ### Button
 **Principles used:**

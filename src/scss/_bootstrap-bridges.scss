@@ -1,2 +1,160 @@
 // Bridge selectors: React Aria data-* → Bootstrap interaction states
 // Populated during iterations. Do not add unverified rules here.
+
+// ============================================================
+// Select
+// ============================================================
+
+// Trigger button — styled with the real `.form-select` class (D-form-select-class).
+// Values below are copied verbatim from Bootstrap's own compiled
+// `.form-select:focus` / `.form-select:disabled` rules (P-036). This project's
+// `$enable-shadows` is false, so the focus box-shadow must stay a raw `box-shadow:`
+// declaration, not `@include box-shadow(...)` — that mixin emits nothing at all
+// when the flag is off (verified against `mixins/_box-shadow.scss`); Bootstrap's
+// own `_form-select.scss` explicitly bypasses the mixin in this same branch, for
+// the same reason.
+.react-aria-Button.form-select[data-focused],
+.react-aria-Button.form-select[data-focus-visible] {
+  border-color: #86b7fe;
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+// `.form-select` defines no native pressed/`:active` treatment (native `<select>`
+// has none) — resolved D-pressed-state: borrows the same subtle tint Dropdown
+// Item's hover/active state is built from (`--bs-tertiary-bg`), an enhancement
+// beyond stock Bootstrap. Bridged via `[data-pressed]` (not `:active`) so
+// keyboard-triggered presses are visually covered too (P-014).
+.react-aria-Button.form-select[data-pressed] {
+  background-color: var(--bs-tertiary-bg);
+}
+
+// `.form-select:disabled` (compiled CSS) emits only `background-color` —
+// `$form-select-disabled-color` / `$form-select-disabled-border-color` both
+// resolve to `null` in Bootstrap's own variables (verified in `_variables.scss`),
+// so there is no color/border-color override to copy.
+.react-aria-Button.form-select[data-disabled] {
+  background-color: var(--bs-secondary-bg);
+}
+
+// `data-invalid` lives on the Select root (SelectRenderProps), not the trigger
+// button — informs the trigger via a descendant selector (the Button is not
+// portaled, so the ancestor relationship holds). No `.is-invalid` class is applied
+// to the button: that would trigger Bootstrap's automatic validation-icon
+// background layer, which would then need suppressing on top of the chevron
+// suppression already required by DOM conflict #2 — copying just the border/
+// box-shadow values directly is simpler and avoids that collision entirely.
+.react-aria-Select[data-invalid] .react-aria-Button.form-select {
+  border-color: var(--bs-form-invalid-border-color);
+}
+.react-aria-Select[data-invalid] .react-aria-Button.form-select[data-focused],
+.react-aria-Select[data-invalid] .react-aria-Button.form-select[data-focus-visible] {
+  border-color: var(--bs-form-invalid-border-color);
+  box-shadow: 0 0 0 0.25rem rgba(var(--bs-danger-rgb), 0.25);
+}
+
+// Chevron — substitutes for `.form-select`'s own `--bs-form-select-bg-img`
+// background-image layer (DOM conflict #2; the layer itself is suppressed via
+// `.select-trigger` in presentation.scss). `data-open` lives on the Select root;
+// the chevron is a descendant of the non-portaled trigger button, so the ancestor
+// selector holds. Base `transition` comes from `.select-chevron` in
+// presentation.scss — only the rotated end-state is added here (P-018).
+.react-aria-Select[data-open] .select-chevron {
+  transform: rotate(180deg);
+}
+
+// SelectValue — Bootstrap defines no placeholder-shown treatment for `.form-select`
+// (verified in states.md, which scopes `:placeholder-shown` to Form Control/
+// Floating Labels only) — closest visual pattern is the standard muted-text token.
+.react-aria-SelectValue[data-placeholder] {
+  color: var(--bs-secondary-color);
+}
+
+// Popover — consumes RAC's `--trigger-width` custom property (set inline by
+// Select on this same element) so the dropdown matches the trigger's width, the
+// way a native `<select>` does automatically and a custom popover does not (P-049).
+// A light fade covers `data-entering`/`data-exiting`, the closest analog to
+// Bootstrap's own `.fade`/`.show` enter/exit-transition concept.
+.dropdown-menu[data-trigger='Select'] {
+  width: var(--trigger-width);
+  transition: opacity 0.15s linear;
+}
+.dropdown-menu[data-trigger='Select'][data-entering],
+.dropdown-menu[data-trigger='Select'][data-exiting] {
+  opacity: 0;
+}
+
+// FieldError unmounts entirely when the field is not invalid (verified directly in
+// `react-aria-components/dist/private/FieldError.mjs`) rather than toggling via
+// Bootstrap's native sibling selector (`.is-invalid ~ .invalid-feedback`) — since
+// mere presence in the DOM already means "show it," `display` must be forced open
+// here instead of relying on that mechanism (DOM conflict: FieldError display
+// mechanism). Only this one property is overridden; `.invalid-feedback`'s own
+// color/typography token values apply unconditionally regardless of the sibling
+// selector and need no bridge.
+.react-aria-FieldError.invalid-feedback {
+  display: block;
+}
+
+// ListBoxItem — styled with the real `.dropdown-item` class. Values below are
+// copied verbatim from Bootstrap's compiled `.dropdown-item:hover,:focus` /
+// `.dropdown-item.active,:active` / `.dropdown-item.disabled,:disabled` rules.
+.react-aria-ListBoxItem.dropdown-item[data-hovered],
+.react-aria-ListBoxItem.dropdown-item[data-focused],
+.react-aria-ListBoxItem.dropdown-item[data-focus-visible] {
+  color: var(--bs-dropdown-link-hover-color);
+  background-color: var(--bs-dropdown-link-hover-bg);
+}
+
+.react-aria-ListBoxItem.dropdown-item[data-pressed] {
+  color: var(--bs-dropdown-link-active-color);
+  background-color: var(--bs-dropdown-link-active-bg);
+}
+
+// `data-selected` maps to `.dropdown-item.active` for single-select only.
+// Multi-select's checkbox already carries the selected indicator
+// (D-multi-select-scope) — applying the same full-bleed active fill on top of it
+// would clash with the checkbox recipe, and the reference story's MultiSelect
+// specimen confirms selected rows keep the plain background (the checkbox is the
+// only indicator there).
+.react-aria-ListBoxItem.dropdown-item[data-selected]:not([data-selection-mode='multiple']) {
+  color: var(--bs-dropdown-link-active-color);
+  background-color: var(--bs-dropdown-link-active-bg);
+  text-decoration: none;
+}
+
+.react-aria-ListBoxItem.dropdown-item[data-disabled] {
+  color: var(--bs-dropdown-link-disabled-color);
+  pointer-events: none;
+  background-color: transparent;
+}
+
+// Multi-select items suppress the native focus outline. RAC auto-focuses an item
+// (the first selected key, when `defaultOpen`/`isOpen` is set without an explicit
+// `.open(focusStrategy)` call — verified in `useSelect.mjs`, `autoFocus:
+// state.focusStrategy || true`) whenever the popover opens — including
+// programmatically, with no preceding user gesture. For single-select this lands
+// on the item that already carries the `.active` blue fill, so the browser's
+// default ring visually disappears into it; multi-select items never get that
+// fill (D-multi-select-scope's checkbox is the indicator instead), so the same
+// ring shows up as a stray, unexplained box the reference story's MultiSelect
+// specimen doesn't depict. The `[data-focused]`/`[data-focus-visible]` background
+// tint bridge above still applies, so focus isn't visually silent — only the
+// browser's own outline is removed, scoped to multi-select only (single-select's
+// dedicated "Focused" specimen in OpenItemStates still relies on that outline).
+.react-aria-ListBoxItem.dropdown-item[data-selection-mode='multiple'] {
+  outline: none;
+}
+
+// Section header — RAC's `<Header>` renders a `<header>` element, not `<h6>`
+// (verified in `private/Header.mjs`), so Bootstrap's h6 reboot rule
+// (`margin-top`/`font-weight`/`line-height`, see `_reboot.scss`) never matches
+// (P-050). `.dropdown-header` itself already sets font-size/color/margin-bottom/
+// display, covering everything else — only font-weight and line-height are
+// genuinely missing (margin-top is header's own default of 0 anyway, so no gap
+// there). Bare class selector: this fix is correct for any `.dropdown-header`
+// wherever it appears, not just within Select.
+.dropdown-header {
+  font-weight: 500;
+  line-height: 1.2;
+}

@@ -1,100 +1,149 @@
 ---
-what: Master index for the Bootstrap 5.3.8 knowledge base used during bootstrap-mapping experiment iterations
-contains: Overview of the KB's purpose, a file-by-file directory with load guidance, a cross-reference map, and completion status.
-when-to-load: At the start of any iteration session before mapping work begins — establishes which files to load for a given task.
+what: Bootstrap Knowledge Base master index and retrieval guide
+contains: Component index; utility category index; token category index; cross-reference hints; retrieval rules.
+when-to-load: ALWAYS load this file first. It is the entry point for all KB lookups.
+related: All other files in agent/bootstrap-kb/
 ---
 
-# Bootstrap Knowledge Base — Master Index
+# Bootstrap 5.3.8 Knowledge Base
 
-This knowledge base documents Bootstrap 5.3.8 at the level of detail needed to produce accurate mappings between React Aria Components and Bootstrap's visual system. It is agent-oriented: each file has a `when-to-load` frontmatter field that tells you exactly when to load it.
+This knowledge base documents **Bootstrap's own CSS, DOM, and JS behavior only** — no React Aria bridging strategy, resolution, or "no bridge needed" conclusion is recorded anywhere in these five files. That judgment belongs to Stage 4 (`agent/mapping-and-references-skill/`), made per-component with its own source verification.
 
-**Branch**: `bootstrap-mapping`  
-**Bootstrap version**: 5.3.8 (source at `src/scss/vendor/bootstrap-5.3.8/`)  
-**Total KB size**: ~2,430 lines across 5 files
-
----
-
-## File Directory
-
-### [tokens.md](./tokens.md)
-**What**: All Bootstrap CSS custom properties (`--bs-*`) generated at runtime, grouped by concern.  
-**Contains**: 10 token groups — color/theme, text/background emphasis, body, border, border-radius, box-shadow, focus ring, typography, form, component-level tokens. Plus dark-mode overrides.  
-**Load when**: Writing CSS that references Bootstrap tokens; choosing which `--bs-*` variable to override for a component; auditing what a component's visual appearance is driven by.
-
-### [utilities.md](./utilities.md)
-**What**: All Bootstrap utility class names, values, and responsive variants.  
-**Contains**: 21 utility groups — display, flexbox, spacing (margin/padding/gap), sizing, typography, color/background, border, shadow, opacity, overflow, position, visibility, float, vertical-align, object-fit, user-select, pointer-events, visually-hidden, stack helpers, z-index, focus ring. Responsive breakpoint behavior noted per group.  
-**Load when**: Building the "Bootstrap utilities" column of any mapping table; deciding how to apply layout, spacing, or display constraints to a React Aria wrapper element.
-
-### [states.md](./states.md)
-**What**: How Bootstrap encodes and styles interactive states; bridge strategies for mapping React Aria `data-*` attributes to Bootstrap state selectors.  
-**Contains**: State catalog table (13 states × mechanism/selector/token columns), detailed notes per state, JS mutation class catalog (8 classes), and three bridge strategies: (1) native CSS pseudo-class overlap, (2) compound selector bridge in component CSS, (3) `_bootstrap-bridges.scss` global layer.  
-**Load when**: Writing bridge CSS rules; deciding how to handle a state that Bootstrap triggers via JS class toggle but React Aria signals via `data-*` attribute.
-
-### [components.md](./components.md)
-**What**: Bootstrap's expected DOM structure and CSS for every component likely to be mapped.  
-**Contains**: 31 components — each entry has: primary class, modifier classes, JS-toggled state classes, expected HTML DOM snippet, sub-element class list, state selectors, and cross-references to token groups.  
-**Load when**: Starting a new component mapping to understand what Bootstrap's DOM shape, classes, and state selectors require. This is the first file to load for any new component.
-
-### [patterns.md](./patterns.md)
-**What**: Compound component patterns, DOM conflict register, JS state mutation conflicts, and composable patterns.  
-**Contains**: Four sections — (1) Bootstrap compound component selector patterns with DOM shape for each, (2) DOM conflict register (8 conflicts, rated CRITICAL/MAJOR/MINOR) between React Aria's rendered DOM and Bootstrap's expected HTML, (3) JS state mutation conflicts table comparing Bootstrap `.show`/`.active`/`.collapsed`/`.is-invalid` classes with React Aria `data-*` equivalents, (4) Bootstrap patterns that compose cleanly with React Aria (utilities, single-element components, native-input fields, Button, Link).  
-**Load when**: Assessing feasibility for a new component before writing any CSS; choosing a bridge strategy; understanding why a particular Bootstrap pattern does or does not apply.
+Generated from two sources, cross-checked for every entry (the "Two-source rule"):
+- **SCSS source:** `src/scss/vendor/bootstrap-5.3.8/` — token names, variable defaults, source structure
+- **Compiled CSS:** `node_modules/bootstrap/dist/css/bootstrap.css` — the complete, authoritative selector surface, including mixin-generated selectors that never appear as literal strings in SCSS
 
 ---
 
-## Cross-Reference Map
+## Retrieval Rules
 
-Use this to find information across files when the concern spans multiple KB files.
+```
+"What --bs-* token controls X?"                        → tokens.md
+"What utility class does Y?"                            → utilities.md
+"What state selector does Bootstrap use for Z?"          → states.md
+"What DOM structure does Bootstrap's Accordion expect?"  → components.md#accordion
+"What DOM chain does Bootstrap's dropdown/Select pattern expect?" → patterns.md
+"What modifier classes does .btn have?"                  → components.md#button
+```
 
-| Question | Primary file | Secondary file |
-|---|---|---|
-| What CSS vars does `.btn` use? | tokens.md (§ Component-Level) | components.md (Button entry) |
-| How does Bootstrap show `:hover` styling on a button? | states.md (hover row) | components.md (Button state selectors) |
-| What class applies `.dropdown-menu`? | components.md (Dropdown) | states.md (`.show` JS mutations) |
-| Can I use `.gap-3` on a React Aria wrapper? | utilities.md (§ Flexbox > Gap) | patterns.md (§ 4.1 Utility classes) |
-| How do I handle checkbox styling? | patterns.md (§ 2.1 DOM Conflict) | tokens.md (§ 9 Form Tokens) |
-| What bridge strategy handles `.active` on tabs? | states.md (§ Bridge Strategies) | patterns.md (§ 3.2 Conflict table) |
-| Which Bootstrap tokens scope to `:root`? | tokens.md (§ 1 Color/Theme) | — |
-| What does `.form-control:focus` set? | states.md (focus-visible row) | tokens.md (§ 8 Focus Ring) |
-| How does Bootstrap reveal a modal? | components.md (Modal) | patterns.md (§ 3.2 `.show`) |
-| What is the floating label DOM constraint? | patterns.md (§ 2.3 Floating Labels) | components.md (Floating Labels) |
-| Which components compose without conflict? | patterns.md (§ 4 Compose Well) | components.md (relevant entries) |
-| What breakpoints does Bootstrap support? | utilities.md (intro paragraph) | — |
-
----
-
-## How to Use This KB in an Iteration
-
-A typical mapping iteration proceeds as follows:
-
-1. **Load `components.md`** — identify the Bootstrap DOM shape for the target component.
-2. **Load `patterns.md`** — check the DOM conflict register and JS mutation conflict table for the component.
-3. **Load `states.md`** — determine bridge strategy for each interactive state.
-4. **Load `tokens.md`** — identify which `--bs-*` variables drive the visual properties you need to match.
-5. **Load `utilities.md`** — only if applying utility classes to wrappers or resolving a layout concern.
-
-Not all files are needed for every iteration. Simple utility-class work needs only `utilities.md`. Complex component work (Checkbox, Select, Modal) needs all five.
+Additional rules specific to this KB's content:
+```
+"Does component X expose a --bs-X-* custom property namespace?"     → tokens.md §10 (check before assuming — Form Control/Range/Input Group/Floating Labels/Labels/Form Text do NOT; Form Select/Form Check only partially do)
+"Is this selector a literal SCSS string or a mixin-generated compound?" → states.md (Valid/Invalid sections document the compiled-CSS-only compound selectors explicitly)
+"Is this Bootstrap component compound (multi-level DOM) or flat/minimal?" → patterns.md §1 vs §2
+```
 
 ---
 
-## Completion Status
+## Bootstrap Component Index
 
-| File | Status | Lines | Committed |
-|---|---|---|---|
-| tokens.md | Complete (compiled CSS audit: 2026-05-08) | 782 | Yes |
-| utilities.md | Complete (compiled CSS audit: 2026-05-08) | 503 | Yes |
-| states.md | Complete (compiled CSS audit: 2026-05-08) | 276 | Yes |
-| components.md | Complete (compiled CSS audit: 2026-05-08) | 799 | Yes |
-| patterns.md | Complete (compiled CSS audit: 2026-05-08) | 589 | Yes |
-| README.md | Complete | — | Yes |
+Alphabetical. "See also" notes cross-component relationships (shared token namespace, structural composition, or easily-confused naming).
+
+- **Accordion** (`components.md#accordion`) — see also: Card (visually similar, no shared classes), patterns.md compound chain
+- **Alert** (`components.md#alert`) — see also: Close Button (dismiss trigger), Badge (shares 8-theme-color variant concept)
+- **Badge** (`components.md#badge`) — see also: Button (nesting position correction), Alert
+- **Breadcrumb** (`components.md#breadcrumb`) — see also: patterns.md §2 (minimal structure)
+- **Button** (`components.md#button`) — see also: Close Button (separate `--bs-btn-close-*` namespace despite shared `btn-` prefix — do not conflate), Button Group, Dropdown (`.dropdown-toggle` modifier)
+- **Button Group** (`components.md#button-group`) — see also: Button, Dropdown (split-button pattern)
+- **Card** (`components.md#card`) — see also: List Group (`.card > .list-group` border inheritance), Nav/Tabs (`.card-header-tabs`/`.card-header-pills`)
+- **Close Button** (`components.md#close-button`) — see also: Button (naming collision on `--bs-btn-close-*` vs `--bs-btn-*`), Modal/Offcanvas/Toast/Alert (all use it as dismiss trigger)
+- **Dropdown** (`components.md#dropdown`) — see also: Button (`.dropdown-toggle`), Button Group, Nav/Tabs (`.nav-item.show`), Navbar (`position:static` override), patterns.md compound chain
+- **Floating Labels** (`components.md#floating-labels`) — see also: Form Control, Form Select, Input Group, states.md Placeholder shown
+- **Form Check (checkbox/radio)** (`components.md#form-check-checkboxradio`) — see also: Form Switch (same structure, modifier only), Button (`.btn-check` proxy pattern), states.md Checked/Indeterminate
+- **Form Control / Text Input** (`components.md#form-control--text-input`) — see also: tokens.md's "no `--bs-input-*` namespace" note (important — do not assume this token family exists)
+- **Form Label** (`components.md#form-label`) — see also: Form Check Label (separate, scoped class — not interchangeable)
+- **Form Range** (`components.md#form-range`) — standalone, no cross-references within scope
+- **Form Select** (`components.md#form-select`) — see also: patterns.md (flat structure — looks like a compound dropdown but is not one), Input Group
+- **Form Switch** (`components.md#form-switch`) — see also: Form Check (parent component)
+- **Form Text** (`components.md#form-text`) — see also: Form Control (`aria-describedby` pairing, author-managed)
+- **Input Group** (`components.md#input-group`) — see also: Form Control, Form Select, Button, Floating Labels, patterns.md compound chain
+- **List Group** (`components.md#list-group`) — see also: Card, Dropdown/Nav (structurally similar, separate tokens)
+- **Modal** (`components.md#modal`) — see also: Offcanvas (shares backdrop/`--bs-backdrop-*` namespace), Close Button
+- **Nav / Tabs** (`components.md#nav--tabs`) — see also: Navbar (`.navbar-nav` variant), Dropdown, Pagination (structurally similar), Card, patterns.md compound chain
+- **Navbar** (`components.md#navbar`) — see also: Nav/Tabs, Dropdown, Offcanvas (neutralized at `.navbar-expand-*` breakpoint)
+- **Offcanvas** (`components.md#offcanvas`) — see also: Modal (shares backdrop mechanics), Navbar
+- **Pagination** (`components.md#pagination`) — see also: Nav/Tabs, List Group (shared active/disabled/hover pattern)
+- **Popover** (`components.md#popover`) — see also: Tooltip (near-identical, JS-inserted-element pattern)
+- **Progress** (`components.md#progress`) — see also: patterns.md §2 (minimal structure)
+- **Separator/Divider** (`components.md#separatordivider`) — three distinct mechanisms (`<hr>`, `.dropdown-divider`, `.vr`); see also: Dropdown
+- **Spinner** (`components.md#spinner`) — see also: utilities.md §18 (`.visually-hidden` status text convention)
+- **Table** (`components.md#table`) — see also: Card (common child), patterns.md §2 (minimal structure), tokens.md §10 (`-type`/`-state` CSS-var precedence chain)
+- **Toast** (`components.md#toast`) — see also: Close Button, Alert (similar dismiss-notification concept, different visibility mechanics)
+- **Tooltip** (`components.md#tooltip`) — see also: Popover
+
+31 components total (see `components.md` "Component count" for the authoritative list).
 
 ---
 
-## Scope and Limitations
+## Utility Category Index
 
-- **Bootstrap version**: 5.3.8 only. Class names and token structures differ in earlier versions.
-- **React Aria version**: Documentation was fetched at session time. Component DOM and `data-*` attributes should be verified against the installed version before writing production CSS.
-- **Completeness**: The KB documents what Bootstrap CSS and DOM structure *require*. It does not prescribe specific bridge CSS implementations — those are written and verified during mapping iterations.
-- **Source of truth — tokens**: Always prefer reading Bootstrap SCSS source in `src/scss/vendor/bootstrap-5.3.8/` for token names and values. The KB is a navigation and planning aid, not a substitute for the source.
-- **Source of truth — selectors**: Always prefer reading the compiled CSS at `node_modules/bootstrap/dist/css/bootstrap.css` for the complete selector surface. Bootstrap uses `@each` loops and mixin interpolation to generate selectors (e.g. `.was-validated .form-control:invalid`) that do not appear as literal strings in the SCSS source. Grep the compiled CSS for a component's primary class to confirm what selectors actually exist before writing state mappings.
+One line per category (19 total, `utilities.md`):
+
+1. Display (`.d-*`) — responsive, single-property
+2. Flexbox (`.flex-*`, `.justify-content-*`, `.align-items-*`, `.align-content-*`, `.align-self-*`, `.gap-*`, `.order-*`) — responsive, single-property
+3. Spacing (`.m-*`, `.p-*` + directional) — responsive, single/multi-property mix
+4. Sizing (`.w-*`, `.h-*`, `.mw-100`, `.mh-100`, viewport variants) — not responsive, single-property
+5. Typography (`.text-*` align/wrap/transform, `.fs-*`, `.fw-*`, `.fst-*`, `.lh-*`) — mostly not responsive (only `text-align` is)
+6. Color / Background (`.text-*`, `.bg-*`, `.bg-opacity-*`) — not responsive, single-property + CSS-var opacity hooks
+7. Border (`.border`, directional, color, width, `.rounded-*`) — not responsive, single/multi-property mix
+8. Shadow (`.shadow`, `.shadow-sm`, `.shadow-lg`, `.shadow-none`) — not responsive, single-property
+9. Opacity (`.opacity-*`) — not responsive, single-property
+10. Overflow (`.overflow-*`, x/y variants) — not responsive, single-property
+11. Position (`.position-*`, `.top-*`, `.bottom-*`, `.start-*`, `.end-*`, `.translate-middle-*`) — not responsive; related non-map helpers `.fixed-top`/`.sticky-top` etc.
+12. Visibility (`.visible`, `.invisible`) — not responsive, single-property
+13. Float (`.float-*`) — responsive, single-property
+14. Vertical align (`.align-*`) — not responsive, single-property
+15. Object fit (`.object-fit-*`) — responsive, single-property
+16. User select (`.user-select-*`) — not responsive, single-property
+17. Pointer events (`.pe-*`) — not responsive, single-property (naming collision with `padding-end`'s `.pe-*` prefix, see utilities.md §17)
+18. Screen reader (`.visually-hidden`, `.visually-hidden-focusable`) — not responsive, multi-property, not part of the `$utilities` map
+19. Stack helpers (`.hstack`, `.vstack` + `.vr`, `.ratio`, `.text-truncate`, `.clearfix`, `.stretched-link`, `.icon-link`, colored-links) — not responsive, multi-property, hand-written helpers
+
+---
+
+## CSS Token Category Index
+
+One line per category with approximate token count (`tokens.md`):
+
+1. Color — Palette base (`--bs-blue`…`--bs-cyan`, grays, black/white + rgb) — 23 tokens
+2. Color — Theme (`--bs-primary`…`--bs-dark` + rgb) — 16 tokens
+3. Color — Semantic (`--bs-body-*`, `--bs-emphasis-*`, `--bs-link-*`, etc.) — 23 tokens
+4. Color — Text/Border emphasis (`-text-emphasis`/`-bg-subtle`/`-border-subtle` × 8 theme colors) — 24 tokens
+5. Typography (`--bs-font-*`, `--bs-body-font-*`, `--bs-body-line-height`) — 6 tokens
+6. Border (`--bs-border-*`, all `--bs-border-radius-*`) — 11 tokens
+7. Shadow (`--bs-box-shadow*`) — 4 tokens
+8. Focus ring (`--bs-focus-ring-*`) — 3 tokens (+ 3 unset consumer-only hooks)
+9. Form validation (`--bs-form-valid-*`, `--bs-form-invalid-*`) — 4 tokens
+10. Component-level tokens (per-component `--bs-{component}-*` namespaces, Button through Grid gutters) — 310 tokens across 23 component namespaces, including two notable **absences**: Form Control has no `--bs-input-*` namespace at all, and Carousel is out-of-scope but was found to have only 3 stray tokens
+
+**Grand total: 424 documented tokens** (413 literal `` | `--bs- `` table rows in `tokens.md`, some namespace-summary rows cover multiple tokens by pattern). Well above the 80+ minimum.
+
+---
+
+## Cross-Reference Hints
+
+Key relationships between components that share token space or structural patterns — check these before assuming two similarly-named things are the same:
+
+- **`--bs-btn-*` vs `--bs-btn-close-*`** — Button and Close Button are fully separate token namespaces despite the shared `btn` prefix (Close Button's class is `.btn-close`, not a Button modifier). See tokens.md §10.
+- **Form components mostly don't use the `--bs-{component}-*` CSS custom property pattern** — unlike Button/Card/Dropdown/Modal/etc., Form Control, Form Range, Input Group, Floating Labels, Form Label, and Form Text compile their SCSS `$input-*`/`$form-*` variables directly into static CSS with **no runtime override hook**. Only Form Select (`--bs-form-select-bg-img`/`-bg-icon`) and Form Check (`--bs-form-check-bg`/`-bg-image`, and Form Switch's single `--bs-form-switch-bg`) expose narrow, image-only custom properties. Verify before assuming a `--bs-input-padding-x`-style token exists — it doesn't.
+- **`.nav` supplies `--bs-nav-link-*` tokens that `.navbar-nav` overrides** — Navbar doesn't invent new link-color tokens, it re-points `--bs-nav-link-color` etc. at `--bs-navbar-*` tokens on the `.navbar-nav` selector. See tokens.md Nav and Navbar entries.
+- **`.collapse`/`.collapsing`/`.show` triad is shared infrastructure** (`_transitions.scss`), consumed by Accordion, Navbar-collapse, and the generic Collapse component — not reimplemented per-component. See states.md Collapsed/Expanded-Open sections.
+- **`--bs-backdrop-*` namespace is shared** between Modal (`.modal-backdrop`) and Offcanvas (`.offcanvas-backdrop`) — one token family, two consuming components. See tokens.md §10.
+- **Popover and Tooltip are both JS-inserted, not authored** — the visible `.popover`/`.tooltip` element does not exist in static markup; only the trigger element with `data-bs-toggle` does. See components.md and patterns.md.
+- **Form Select LOOKS like a compound dropdown-menu pattern but structurally is NOT one** — it's a flat native `<select>` with `background-image` layers, no `.dropdown-menu`-equivalent element. Contrast directly with the true compound Dropdown component. See patterns.md §1.
+- **`.is-valid`/`.is-invalid`/`.was-validated` compound selectors are mixin-generated** — they exist as literal text only in compiled CSS, never as literal strings in `forms/_validation.scss` (which just loops a mixin call). This is the canonical example of the "Two-source rule" / Generation Principle #1 in the skill file. See states.md Valid/Invalid sections for the full verified selector list with compiled-CSS line numbers.
+- **`.pe-*` is a naming collision** between the `pointer-events` utility (`.pe-none`, `.pe-auto`) and the `padding-end` spacing utility (`.pe-0`…`.pe-5`) — no literal class-name overlap in practice (value keys don't intersect), but grepping `.pe-` in the compiled CSS returns both concerns. See utilities.md §17.
+
+---
+
+## KB Completion Status
+
+| File | Status | Last updated |
+|------|--------|-------------|
+| tokens.md | Complete | 2026-07-15 |
+| utilities.md | Complete | 2026-07-15 |
+| states.md | Complete | 2026-07-15 |
+| components.md | Complete | 2026-07-15 |
+| patterns.md | Complete | 2026-07-15 |
+
+All five files generated in a single initial-generation session from Bootstrap 5.3.8 (SCSS source `src/scss/vendor/bootstrap-5.3.8/` + compiled `node_modules/bootstrap/dist/css/bootstrap.css`). This README was written last, after all five other files existed, per the skill's file-ordering rule.

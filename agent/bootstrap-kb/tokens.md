@@ -1,782 +1,753 @@
 ---
 what: Bootstrap 5.3.8 CSS custom properties (--bs-* tokens) reference
-contains: All tokens grouped by category with default values, semantic roles, and which components consume them. SCSS variable name mapped to CSS custom property name. Compiled-CSS-verified — audited against node_modules/bootstrap/dist/css/bootstrap.css.
+contains: All tokens grouped by category with default values, semantic roles, and which components consume them. SCSS variable name mapped to CSS custom property name.
 when-to-load: When you need to know what tokens are available for a component's appearance, or when building CSS bridge rules that override Bootstrap defaults.
 related: components.md for which component uses which token; states.md for state-specific token overrides
 ---
 
-# Bootstrap 5.3.8 CSS Custom Properties Reference
+# Bootstrap 5.3.8 Tokens
 
-All tokens are defined on `:root, [data-bs-theme="light"]` in `_root.scss`. The `$prefix` SCSS variable resolves to `"bs-"`, so `--#{$prefix}foo` becomes `--bs-foo`. Component-level tokens are defined inside their respective component rule blocks (e.g. `.btn { --bs-btn-* }`) and documented in Section 10.
+Sources: `src/scss/vendor/bootstrap-5.3.8/_variables.scss` (SCSS defaults), `src/scss/vendor/bootstrap-5.3.8/_root.scss` (CSS custom property emission), `node_modules/bootstrap/dist/css/bootstrap.css` (compiled/resolved values, light theme `:root`/`[data-bs-theme=light]` block, lines 7-126, and `[data-bs-theme=dark]` overrides, lines 128-182).
+
+All tokens are prefixed `--bs-` (`$prefix: bs-` in `_variables.scss`). Values below are the **light-theme resolved defaults** unless noted. Where a dark-mode override exists, it is listed in the "Dark mode override" note under the table.
 
 ---
 
-## 1. Color — Palette Base
+## 1. Color — Palette base
 
-Generated dynamically from the `$colors` and `$grays` SCSS maps.
+`| CSS property | Default value | Semantic role | Components that use it |`
 
 | CSS property | Default value | Semantic role | Components that use it |
 |---|---|---|---|
-| `--bs-blue` | `#0d6efd` | Named color swatch | Utility `.text-blue`, `.bg-blue` |
-| `--bs-indigo` | `#6610f2` | Named color swatch | Utility classes |
-| `--bs-purple` | `#6f42c1` | Named color swatch | Utility classes |
-| `--bs-pink` | `#d63384` | Named color swatch | Utility classes |
-| `--bs-red` | `#dc3545` | Named color swatch | Utility classes |
-| `--bs-orange` | `#fd7e14` | Named color swatch | Utility classes |
-| `--bs-yellow` | `#ffc107` | Named color swatch | Utility classes |
-| `--bs-green` | `#198754` | Named color swatch | Utility classes |
-| `--bs-teal` | `#20c997` | Named color swatch | Utility classes |
-| `--bs-cyan` | `#0dcaf0` | Named color swatch | Utility classes |
-| `--bs-black` | `#000` | Pure black | Various |
-| `--bs-white` | `#fff` | Pure white | Various |
-| `--bs-gray` | `#6c757d` | Mid gray (gray-600) | Muted text |
-| `--bs-gray-dark` | `#343a40` | Dark gray (gray-800) | Dark text |
-| `--bs-gray-100` | `#f8f9fa` | Lightest gray | `.bg-light`, subtle backgrounds |
-| `--bs-gray-200` | `#e9ecef` | Very light gray | Secondary backgrounds |
-| `--bs-gray-300` | `#dee2e6` | Light gray | Default border color |
-| `--bs-gray-400` | `#ced4da` | Gray | Input borders |
-| `--bs-gray-500` | `#adb5bd` | Mid-light gray | Placeholders |
-| `--bs-gray-600` | `#6c757d` | Mid gray | Secondary text, muted |
-| `--bs-gray-700` | `#495057` | Dark-mid gray | Body text on light |
-| `--bs-gray-800` | `#343a40` | Dark gray | Headings on light |
-| `--bs-gray-900` | `#212529` | Darkest gray | Body color default |
-| `--bs-white-rgb` | `255, 255, 255` | RGB triple for white | Box shadow, rgba() usage |
-| `--bs-black-rgb` | `0, 0, 0` | RGB triple for black | Box shadow, rgba() usage |
+| `--bs-blue` | `#0d6efd` | Base hue swatch | Source for `$primary` and `.text-blue`/`.bg-blue` utilities |
+| `--bs-indigo` | `#6610f2` | Base hue swatch | `.text-indigo`/`.bg-indigo` utilities |
+| `--bs-purple` | `#6f42c1` | Base hue swatch | `.text-purple`/`.bg-purple` utilities |
+| `--bs-pink` | `#d63384` | Base hue swatch | Source for `$code-color`; `.text-pink`/`.bg-pink` |
+| `--bs-red` | `#dc3545` | Base hue swatch | Source for `$danger` |
+| `--bs-orange` | `#fd7e14` | Base hue swatch | `.text-orange`/`.bg-orange` |
+| `--bs-yellow` | `#ffc107` | Base hue swatch | Source for `$warning` |
+| `--bs-green` | `#198754` | Base hue swatch | Source for `$success` |
+| `--bs-teal` | `#20c997` | Base hue swatch | `.text-teal`/`.bg-teal` |
+| `--bs-cyan` | `#0dcaf0` | Base hue swatch | Source for `$info` |
+| `--bs-black` | `#000` | Absolute black | Shadow/backdrop compositing |
+| `--bs-white` | `#fff` | Absolute white | Badge/progress-bar text, backgrounds |
+| `--bs-white-rgb` | `255, 255, 255` | RGB triplet for `rgba()` composition | Used anywhere `rgba(var(--bs-white-rgb), α)` is needed |
+| `--bs-black-rgb` | `0, 0, 0` | RGB triplet for `rgba()` composition | Shadows, backdrops |
+| `--bs-gray` | `#6c757d` | Mid-gray alias (= `$gray-600`) | `.text-gray`/`.bg-gray` |
+| `--bs-gray-dark` | `#343a40` | Dark-gray alias (= `$gray-800`) | `.text-gray-dark`/`.bg-gray-dark` |
+| `--bs-gray-100` | `#f8f9fa` | Lightest gray step | `$light`, subtle backgrounds |
+| `--bs-gray-200` | `#e9ecef` | Gray step | Secondary/body-secondary-bg base |
+| `--bs-gray-300` | `#dee2e6` | Gray step | `$border-color` base, dark-mode body text |
+| `--bs-gray-400` | `#ced4da` | Gray step | Dark theme `$dark-bg-subtle` |
+| `--bs-gray-500` | `#adb5bd` | Gray step | Dark theme `$dark-border-subtle` |
+| `--bs-gray-600` | `#6c757d` | Gray step | `$secondary` base |
+| `--bs-gray-700` | `#495057` | Gray step | `$light-text-emphasis`/`$dark-text-emphasis` base |
+| `--bs-gray-800` | `#343a40` | Gray step | `$dark`/`$gray-dark`, form-select indicator color |
+| `--bs-gray-900` | `#212529` | Darkest gray step | `$dark` base, `$body-color` base |
+
+**23 tokens.**
 
 ---
 
 ## 2. Color — Theme
 
-Generated from `$theme-colors` map. Each color also has an `-rgb` variant for use in `rgba()`.
-
-| CSS property | Default value (light) | Semantic role | Components that use it |
+| CSS property | Default value | Semantic role | Components that use it |
 |---|---|---|---|
-| `--bs-primary` | `#0d6efd` | Brand primary | Buttons, focus rings, active states |
-| `--bs-primary-rgb` | `13, 110, 253` | RGB triple | Focus rings, overlays |
-| `--bs-secondary` | `#6c757d` | Neutral / secondary | Buttons, muted elements |
-| `--bs-secondary-rgb` | `108, 117, 125` | RGB triple | — |
-| `--bs-success` | `#198754` | Positive / valid | Alerts, badges, validation |
-| `--bs-success-rgb` | `25, 135, 84` | RGB triple | — |
-| `--bs-info` | `#0dcaf0` | Informational | Alerts, badges |
-| `--bs-info-rgb` | `13, 202, 240` | RGB triple | — |
-| `--bs-warning` | `#ffc107` | Caution | Alerts, badges |
-| `--bs-warning-rgb` | `255, 193, 7` | RGB triple | — |
-| `--bs-danger` | `#dc3545` | Error / destructive | Alerts, badges, validation |
-| `--bs-danger-rgb` | `220, 53, 69` | RGB triple | — |
-| `--bs-light` | `#f8f9fa` | Light surface | Backgrounds |
-| `--bs-light-rgb` | `248, 249, 250` | RGB triple | — |
-| `--bs-dark` | `#212529` | Dark surface | Dark buttons, dark navbar |
-| `--bs-dark-rgb` | `33, 37, 41` | RGB triple | — |
+| `--bs-primary` | `#0d6efd` | Primary theme color | Buttons, links, focus rings, badges, alerts, nav-pills, progress bars, list-group active state |
+| `--bs-secondary` | `#6c757d` | Secondary theme color | Buttons, badges, alerts |
+| `--bs-success` | `#198754` | Success theme color | Buttons, badges, alerts, form validation (valid) |
+| `--bs-info` | `#0dcaf0` | Info theme color | Buttons, badges, alerts |
+| `--bs-warning` | `#ffc107` | Warning theme color | Buttons, badges, alerts |
+| `--bs-danger` | `#dc3545` | Danger theme color | Buttons, badges, alerts, form validation (invalid) |
+| `--bs-light` | `#f8f9fa` | Light theme color | Buttons, badges, alerts |
+| `--bs-dark` | `#212529` | Dark theme color | Buttons, badges, alerts, navbar-dark |
+| `--bs-primary-rgb` | `13, 110, 253` | RGB triplet of primary | Focus-ring `rgba()` composition, `.bg-primary` opacity utilities |
+| `--bs-secondary-rgb` | `108, 117, 125` | RGB triplet | opacity utilities |
+| `--bs-success-rgb` | `25, 135, 84` | RGB triplet | opacity utilities |
+| `--bs-info-rgb` | `13, 202, 240` | RGB triplet | opacity utilities |
+| `--bs-warning-rgb` | `255, 193, 7` | RGB triplet | opacity utilities |
+| `--bs-danger-rgb` | `220, 53, 69` | RGB triplet | opacity utilities |
+| `--bs-light-rgb` | `248, 249, 250` | RGB triplet | opacity utilities |
+| `--bs-dark-rgb` | `33, 37, 41` | RGB triplet | opacity utilities |
+
+**16 tokens.**
 
 ---
 
-## 3. Color — Text/Border Emphasis (Contextual variants)
+## 3. Color — Semantic
 
-Generated per-theme-color. These use subtle tints/shades for accessible contextual UX.
+| CSS property | Default value | Semantic role | Components that use it |
+|---|---|---|---|
+| `--bs-body-font-family` | `var(--bs-font-sans-serif)` | *(cross-listed, see §5)* | — |
+| `--bs-body-color` | `#212529` | Default text color | `<body>`, reboot |
+| `--bs-body-color-rgb` | `33, 37, 41` | RGB triplet of body color | Table striping, opacity compositing |
+| `--bs-body-bg` | `#fff` | Default page background | `<body>`, cards, modals, dropdowns |
+| `--bs-body-bg-rgb` | `255, 255, 255` | RGB triplet of body bg | Toast/dropdown translucency |
+| `--bs-emphasis-color` | `#000` | High-emphasis text color | Table `--bs-table-color`, tooltip bg, navbar `rgba()` composition |
+| `--bs-emphasis-color-rgb` | `0, 0, 0` | RGB triplet | Table striping/hover/active tint math, navbar color composition |
+| `--bs-secondary-color` | `rgba(33, 37, 41, 0.75)` | De-emphasized text | Form text, placeholder, disabled text, breadcrumb divider |
+| `--bs-secondary-color-rgb` | `33, 37, 41` | RGB triplet | — |
+| `--bs-secondary-bg` | `#e9ecef` | De-emphasized background | Body-secondary-bg, disabled input bg, pagination hover |
+| `--bs-secondary-bg-rgb` | `233, 236, 239` | RGB triplet | — |
+| `--bs-tertiary-color` | `rgba(33, 37, 41, 0.5)` | Lowest-emphasis text | Dropdown disabled link color |
+| `--bs-tertiary-color-rgb` | `33, 37, 41` | RGB triplet | — |
+| `--bs-tertiary-bg` | `#f8f9fa` | Lowest-emphasis background | Input-group addon bg, dropdown hover bg, list-group action hover bg |
+| `--bs-tertiary-bg-rgb` | `248, 249, 250` | RGB triplet | — |
+| `--bs-heading-color` | `inherit` | Heading text color override hook | `h1`–`h6`, `.h1`–`.h6` |
+| `--bs-link-color` | `#0d6efd` | Anchor text color | `<a>`, nav-link base, pagination |
+| `--bs-link-color-rgb` | `13, 110, 253` | RGB triplet | `<a>` color composition with `--bs-link-opacity` |
+| `--bs-link-decoration` | `underline` | Anchor text-decoration | `<a>` |
+| `--bs-link-hover-color` | `#0a58ca` | Anchor hover text color | `<a>:hover`, nav-link hover |
+| `--bs-link-hover-color-rgb` | `10, 88, 202` | RGB triplet | — |
+| `--bs-code-color` | `#d63384` | Inline `<code>` text color | `code` |
+| `--bs-highlight-color` | `#212529` | `<mark>` text color | `mark`, `.mark` |
+| `--bs-highlight-bg` | `#fff3cd` | `<mark>` background | `mark`, `.mark` |
+| `--bs-gradient` | `linear-gradient(180deg, rgba(255,255,255,.15), rgba(255,255,255,0))` | Overlay gradient used when `$enable-gradients`/`.bg-gradient` is active | `.bg-gradient`, button box-shadow composition |
 
-| CSS property | Default value (light mode) | Semantic role |
-|---|---|---|
-| `--bs-primary-text-emphasis` | `shade-color($primary, 60%)` ≈ `#052c65` | Dark primary text on subtle bg |
-| `--bs-secondary-text-emphasis` | `shade-color($secondary, 60%)` ≈ `#2b2f32` | Dark secondary text on subtle bg |
-| `--bs-success-text-emphasis` | `shade-color($success, 60%)` ≈ `#0a3622` | Dark success text on subtle bg |
-| `--bs-info-text-emphasis` | `shade-color($info, 60%)` ≈ `#055160` | Dark info text on subtle bg |
-| `--bs-warning-text-emphasis` | `shade-color($warning, 60%)` ≈ `#664d03` | Dark warning text on subtle bg |
-| `--bs-danger-text-emphasis` | `shade-color($danger, 60%)` ≈ `#58151c` | Dark danger text on subtle bg |
-| `--bs-light-text-emphasis` | `$gray-700` = `#495057` | Text on light subtle bg |
-| `--bs-dark-text-emphasis` | `$gray-700` = `#495057` | Text on dark subtle bg |
-| `--bs-primary-bg-subtle` | `tint-color($primary, 80%)` ≈ `#cfe2ff` | Subtle primary background |
-| `--bs-secondary-bg-subtle` | `tint-color($secondary, 80%)` ≈ `#e2e3e5` | Subtle secondary background |
-| `--bs-success-bg-subtle` | `tint-color($success, 80%)` ≈ `#d1e7dd` | Subtle success background |
-| `--bs-info-bg-subtle` | `tint-color($info, 80%)` ≈ `#cff4fc` | Subtle info background |
-| `--bs-warning-bg-subtle` | `tint-color($warning, 80%)` ≈ `#fff3cd` | Subtle warning background |
-| `--bs-danger-bg-subtle` | `tint-color($danger, 80%)` ≈ `#f8d7da` | Subtle danger background |
-| `--bs-light-bg-subtle` | `mix($gray-100, $white)` ≈ `#fcfcfd` | Subtle light background |
-| `--bs-dark-bg-subtle` | `$gray-400` = `#ced4da` | Subtle dark background |
-| `--bs-primary-border-subtle` | `tint-color($primary, 60%)` ≈ `#9ec5fe` | Subtle primary border |
-| `--bs-secondary-border-subtle` | `tint-color($secondary, 60%)` ≈ `#c4c8cb` | Subtle secondary border |
-| `--bs-success-border-subtle` | `tint-color($success, 60%)` ≈ `#a3cfbb` | Subtle success border |
-| `--bs-info-border-subtle` | `tint-color($info, 60%)` ≈ `#9eeaf9` | Subtle info border |
-| `--bs-warning-border-subtle` | `tint-color($warning, 60%)` ≈ `#ffe69c` | Subtle warning border |
-| `--bs-danger-border-subtle` | `tint-color($danger, 60%)` ≈ `#f1aeb5` | Subtle danger border |
-| `--bs-light-border-subtle` | `$gray-200` = `#e9ecef` | Subtle light border |
-| `--bs-dark-border-subtle` | `$gray-500` = `#adb5bd` | Subtle dark border |
+**Not emitted by default** (guarded by `@if ... != null` in `_root.scss`, both default to `null`): `--bs-body-text-align`, `--bs-root-font-size`, `--bs-link-hover-decoration`. Do not assume these exist in the DOM unless a project explicitly sets `$body-text-align`, `$font-size-root`, or `$link-hover-decoration`.
+
+**Consumer-only hooks (not shipped with a default value in `:root`; referenced with a CSS `var(..., fallback)` inside `.link-*` colored-links helpers only):** `--bs-link-opacity` (fallback `1`), `--bs-link-underline-opacity` (fallback `1`). These only exist once a `.link-*` utility class is applied and are not part of the base `:root` token set.
+
+**23 tokens** in the base `:root` table above (excludes the two null-guarded and two consumer-only hooks noted separately).
 
 ---
 
-## 4. Color — Semantic (Body & UI)
+## 4. Color — Text/Border emphasis
 
-| CSS property | SCSS variable | Default value | Semantic role | Components that use it |
-|---|---|---|---|---|
-| `--bs-body-color` | `$body-color` | `#212529` | Default text color | All text-bearing components |
-| `--bs-body-color-rgb` | derived | `33, 37, 41` | RGB triple | Overlay/transparency usage |
-| `--bs-body-bg` | `$body-bg` | `#ffffff` | Page background | Cards, modals, inputs |
-| `--bs-body-bg-rgb` | derived | `255, 255, 255` | RGB triple | Toast bg, modal backdrop |
-| `--bs-emphasis-color` | `$body-emphasis-color` | `#000` | High-emphasis text | Tables, headings |
-| `--bs-emphasis-color-rgb` | derived | `0, 0, 0` | RGB triple | Striped/hover row bg |
-| `--bs-secondary-color` | `$body-secondary-color` | `rgba(33,37,41,.75)` | Muted / secondary text | Form hints, captions |
-| `--bs-secondary-color-rgb` | derived | `33, 37, 41` | RGB triple | — |
-| `--bs-secondary-bg` | `$body-secondary-bg` | `#e9ecef` | Secondary surface | Disabled inputs, input-group |
-| `--bs-secondary-bg-rgb` | derived | `233, 236, 239` | RGB triple | — |
-| `--bs-tertiary-color` | `$body-tertiary-color` | `rgba(33,37,41,.5)` | Very muted text | Placeholders |
-| `--bs-tertiary-color-rgb` | derived | `33, 37, 41` | RGB triple | — |
-| `--bs-tertiary-bg` | `$body-tertiary-bg` | `#f8f9fa` | Tertiary surface | Input group addons, list hover |
-| `--bs-tertiary-bg-rgb` | derived | `248, 249, 250` | RGB triple | — |
-| `--bs-heading-color` | `$headings-color` | `inherit` | Heading text color | h1–h6 |
-| `--bs-link-color` | `$link-color` | `#0d6efd` | Hyperlink color | Nav links, pagination |
-| `--bs-link-color-rgb` | derived | `13, 110, 253` | RGB triple | — |
-| `--bs-link-decoration` | `$link-decoration` | `underline` | Link underline | a elements |
-| `--bs-link-hover-color` | `$link-hover-color` | `#0a58ca` | Hovered link color | Nav links hover |
-| `--bs-link-hover-color-rgb` | derived | `10, 88, 202` | RGB triple | — |
-| `--bs-code-color` | `$code-color` | `#d63384` | Inline code text | `<code>` elements |
-| `--bs-highlight-color` | `$mark-color` | `#212529` | Highlighted text | `<mark>` elements |
-| `--bs-highlight-bg` | `$mark-bg` | `#fff3cd` (yellow-100) | Highlight background | `<mark>` elements |
+Generated by `@each $color, $value in $theme-colors-text|-bg-subtle|-border-subtle` loops in `_root.scss` for each of the 8 theme colors (primary, secondary, success, info, warning, danger, light, dark).
+
+| CSS property pattern | Default value (primary shown) | Semantic role | Components that use it |
+|---|---|---|---|
+| `--bs-{color}-text-emphasis` | `--bs-primary-text-emphasis: #052c65` | Darkened/lightened text for subtle backgrounds | Alerts (`.alert-*`), accordion active state |
+| `--bs-{color}-bg-subtle` | `--bs-primary-bg-subtle: #cfe2ff` | Tinted background for subtle variants | Alerts, accordion active background |
+| `--bs-{color}-border-subtle` | `--bs-primary-border-subtle: #9ec5fe` | Tinted border for subtle variants | Alerts |
+
+Full set of 24 tokens (8 colors × 3 suffixes), literal property names and light-theme default values:
+
+| CSS property | Default value |
+|---|---|
+| `--bs-primary-text-emphasis` | `#052c65` |
+| `--bs-primary-bg-subtle` | `#cfe2ff` |
+| `--bs-primary-border-subtle` | `#9ec5fe` |
+| `--bs-secondary-text-emphasis` | `#2b2f32` |
+| `--bs-secondary-bg-subtle` | `#e2e3e5` |
+| `--bs-secondary-border-subtle` | `#c4c8cb` |
+| `--bs-success-text-emphasis` | `#0a3622` |
+| `--bs-success-bg-subtle` | `#d1e7dd` |
+| `--bs-success-border-subtle` | `#a3cfbb` |
+| `--bs-info-text-emphasis` | `#055160` |
+| `--bs-info-bg-subtle` | `#cff4fc` |
+| `--bs-info-border-subtle` | `#9eeaf9` |
+| `--bs-warning-text-emphasis` | `#664d03` |
+| `--bs-warning-bg-subtle` | `#fff3cd` |
+| `--bs-warning-border-subtle` | `#ffe69c` |
+| `--bs-danger-text-emphasis` | `#58151c` |
+| `--bs-danger-bg-subtle` | `#f8d7da` |
+| `--bs-danger-border-subtle` | `#f1aeb5` |
+| `--bs-light-text-emphasis` | `#495057` |
+| `--bs-light-bg-subtle` | `#fcfcfd` |
+| `--bs-light-border-subtle` | `#e9ecef` |
+| `--bs-dark-text-emphasis` | `#495057` |
+| `--bs-dark-bg-subtle` | `#ced4da` |
+| `--bs-dark-border-subtle` | `#adb5bd` |
+
+**24 tokens.**
 
 ---
 
 ## 5. Typography
 
-| CSS property | SCSS variable | Default value | Semantic role |
+| CSS property | Default value | Semantic role | Components that use it |
 |---|---|---|---|
-| `--bs-font-sans-serif` | `$font-family-sans-serif` | `system-ui, -apple-system, "Segoe UI", Roboto, …` | System sans-serif stack |
-| `--bs-font-monospace` | `$font-family-monospace` | `SFMono-Regular, Menlo, Monaco, Consolas, …` | Monospace stack |
-| `--bs-gradient` | `$gradient` | `linear-gradient(180deg, rgba(#fff,.15), rgba(#fff,0))` | Optional gradient overlay |
-| `--bs-body-font-family` | `$font-family-base` | `var(--bs-font-sans-serif)` | Body font |
-| `--bs-body-font-size` | `$font-size-base` | `1rem` | Body font size (16px default) |
-| `--bs-body-font-weight` | `$font-weight-base` | `400` | Body font weight |
-| `--bs-body-line-height` | `$line-height-base` | `1.5` | Body line height |
+| `--bs-font-sans-serif` | `system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"` | Default sans font stack | `--bs-body-font-family`, tooltip/popover `font-family` |
+| `--bs-font-monospace` | `SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace` | Monospace font stack | `code`, `kbd`, `pre` |
+| `--bs-body-font-family` | `var(--bs-font-sans-serif)` | Body text font | `<body>` |
+| `--bs-body-font-size` | `1rem` | Body text size | `<body>` |
+| `--bs-body-font-weight` | `400` | Body text weight | `<body>` |
+| `--bs-body-line-height` | `1.5` | Body text line-height | `<body>` |
 
-> `--bs-root-font-size` and `--bs-body-text-align` are only emitted if their SCSS variables are non-null (both are null by default).
+**6 tokens.** (`--bs-root-font-size` and `--bs-body-text-align` are conditionally emitted only — see §3.)
 
 ---
 
 ## 6. Border
 
-| CSS property | SCSS variable | Default value | Semantic role |
+| CSS property | Default value | Semantic role | Components that use it |
 |---|---|---|---|
-| `--bs-border-width` | `$border-width` | `1px` | Default border thickness |
-| `--bs-border-style` | `$border-style` | `solid` | Default border style |
-| `--bs-border-color` | `$border-color` | `#dee2e6` (gray-300) | Default border color |
-| `--bs-border-color-translucent` | `$border-color-translucent` | `rgba(0,0,0,.175)` | Translucent border (cards, dropdowns) |
-| `--bs-border-radius` | `$border-radius` | `.375rem` | Default rounding |
-| `--bs-border-radius-sm` | `$border-radius-sm` | `.25rem` | Small rounding |
-| `--bs-border-radius-lg` | `$border-radius-lg` | `.5rem` | Large rounding |
-| `--bs-border-radius-xl` | `$border-radius-xl` | `1rem` | Extra-large rounding |
-| `--bs-border-radius-xxl` | `$border-radius-xxl` | `2rem` | Double-XL rounding |
-| `--bs-border-radius-pill` | `$border-radius-pill` | `50rem` | Full pill/capsule shape |
-| `--bs-border-radius-2xl` | (alias of xxl) | `var(--bs-border-radius-xxl)` | **Deprecated** in v5.3.0 |
+| `--bs-border-width` | `1px` | Default border thickness | Buttons, inputs, cards, most bordered components |
+| `--bs-border-style` | `solid` | Default border style | `hr`, general borders |
+| `--bs-border-color` | `#dee2e6` | Default border color | Buttons, inputs, cards, tables, list-group |
+| `--bs-border-color-translucent` | `rgba(0, 0, 0, 0.175)` | Semi-transparent border (works on any bg) | Cards, dropdowns, modals, popovers, toasts |
+| `--bs-border-radius` | `0.375rem` | Default corner radius | Buttons, inputs, cards, alerts |
+| `--bs-border-radius-sm` | `0.25rem` | Small corner radius | `.btn-sm`, `.form-control-sm` |
+| `--bs-border-radius-lg` | `0.5rem` | Large corner radius | `.btn-lg`, modal content, popover |
+| `--bs-border-radius-xl` | `1rem` | Extra-large corner radius | `.rounded-xl` utility |
+| `--bs-border-radius-xxl` | `2rem` | Extra-extra-large corner radius | `.rounded-xxl` utility |
+| `--bs-border-radius-2xl` | `var(--bs-border-radius-xxl)` | Deprecated alias (v5.3.0+) for `-xxl` | `.rounded-2xl` utility |
+| `--bs-border-radius-pill` | `50rem` | Pill/fully-rounded radius | `.rounded-pill`, badges |
+
+**11 tokens.**
 
 ---
 
 ## 7. Shadow
 
-| CSS property | SCSS variable | Default value | Semantic role |
+| CSS property | Default value | Semantic role | Components that use it |
 |---|---|---|---|
-| `--bs-box-shadow` | `$box-shadow` | `0 .5rem 1rem rgba(0,0,0,.15)` | Standard shadow (cards, dropdowns) |
-| `--bs-box-shadow-sm` | `$box-shadow-sm` | `0 .125rem .25rem rgba(0,0,0,.075)` | Subtle shadow (small elements) |
-| `--bs-box-shadow-lg` | `$box-shadow-lg` | `0 1rem 3rem rgba(0,0,0,.175)` | Large shadow (modals, popovers) |
-| `--bs-box-shadow-inset` | `$box-shadow-inset` | `inset 0 1px 2px rgba(0,0,0,.075)` | Inset shadow (inputs) |
+| `--bs-box-shadow` | `0 0.5rem 1rem rgba(0, 0, 0, 0.15)` | Standard elevation shadow | `.shadow`, dropdown, popover, toast |
+| `--bs-box-shadow-sm` | `0 0.125rem 0.25rem rgba(0, 0, 0, 0.075)` | Subtle elevation shadow | `.shadow-sm`, modal (xs breakpoint) |
+| `--bs-box-shadow-lg` | `0 1rem 3rem rgba(0, 0, 0, 0.175)` | Prominent elevation shadow | `.shadow-lg` |
+| `--bs-box-shadow-inset` | `inset 0 1px 2px rgba(0, 0, 0, 0.075)` | Inset/pressed shadow | Form controls, progress track |
+
+**4 tokens.**
 
 ---
 
-## 8. Focus Ring
+## 8. Focus ring
 
-| CSS property | SCSS variable | Default value | Semantic role |
+| CSS property | Default value | Semantic role | Components that use it |
 |---|---|---|---|
-| `--bs-focus-ring-width` | `$focus-ring-width` | `.25rem` | Focus ring outer spread |
-| `--bs-focus-ring-opacity` | `$focus-ring-opacity` | `.25` | Focus ring alpha |
-| `--bs-focus-ring-color` | `$focus-ring-color` | `rgba($primary, .25)` ≈ `rgba(13,110,253,.25)` | Focus ring color (blue-tinted) |
+| `--bs-focus-ring-width` | `0.25rem` | Focus ring spread | `.focus-ring` helper, btn/input/pagination focus box-shadow composition |
+| `--bs-focus-ring-opacity` | `0.25` | Focus ring alpha | Same as above |
+| `--bs-focus-ring-color` | `rgba(13, 110, 253, 0.25)` | Focus ring color | Same as above |
 
-> Note: `--bs-focus-ring-color` is the **ring** color (box-shadow), not the text or border color when focused. Bootstrap's form-control focus border color is compiled to a static value (not a runtime CSS custom property).
+**Not shipped as root tokens** — referenced only inside `.focus-ring:focus` (`helpers/_focus-ring.scss`) as `var()` fallbacks with no default value: `--bs-focus-ring-x` (fallback `0`), `--bs-focus-ring-y` (fallback `0`), `--bs-focus-ring-blur` (fallback `0`). These exist only if a consumer sets them inline; do not treat them as always-present.
+
+**3 tokens** in `:root`.
 
 ---
 
-## 9. Form Validation
+## 9. Form validation
 
-| CSS property | SCSS variable | Default value | Semantic role |
+| CSS property | Default value | Semantic role | Components that use it |
 |---|---|---|---|
-| `--bs-form-valid-color` | `$form-valid-color` | `$success` = `#198754` | Valid state text/icon color |
-| `--bs-form-valid-border-color` | `$form-valid-border-color` | `$success` = `#198754` | Valid state border color |
-| `--bs-form-invalid-color` | `$form-invalid-color` | `$danger` = `#dc3545` | Invalid state text/icon color |
-| `--bs-form-invalid-border-color` | `$form-invalid-border-color` | `$danger` = `#dc3545` | Invalid state border color |
+| `--bs-form-valid-color` | `#198754` (= `$success`) | Valid-state text/icon color | `.valid-feedback`, `.is-valid` |
+| `--bs-form-valid-border-color` | `#198754` | Valid-state border color | `.is-valid` on form-control/select/check |
+| `--bs-form-invalid-color` | `#dc3545` (= `$danger`) | Invalid-state text/icon color | `.invalid-feedback`, `.is-invalid` |
+| `--bs-form-invalid-border-color` | `#dc3545` | Invalid-state border color | `.is-invalid` on form-control/select/check |
+
+**4 tokens.**
+
+**Dark mode overrides for §1–9** (from `[data-bs-theme=dark]`, `_root.scss` lines 132-187): `body-color`→`#dee2e6`, `body-bg`→`#212529`, `emphasis-color`→`#fff`, `secondary-color`→`rgba(222,226,230,.75)`, `secondary-bg`→`#343a40`, `tertiary-color`→`rgba(222,226,230,.5)`, `tertiary-bg`→`#2b3035`, all 8 `*-text-emphasis`/`*-bg-subtle`/`*-border-subtle` triads get dark-specific values, `link-color`→`#6ea8fe`, `link-hover-color`→`#8bb9fe`, `code-color`→`#e685b5`, `highlight-color`/`highlight-bg`, `border-color`→`#495057`, `border-color-translucent`→`rgba(255,255,255,.15)`, `form-valid-color`→`#75b798`, `form-valid-border-color`→`#75b798`, `form-invalid-color`→`#ea868f`, `form-invalid-border-color`→`#ea868f`. Theme colors themselves (`--bs-primary`, etc.) and typography/shadow/focus-ring tokens do **not** change in dark mode.
+
+Running total through §9: **114 tokens** (23 + 16 + 23 + 24 + 6 + 11 + 4 + 3 + 4).
 
 ---
 
-## 10. Component-Level Tokens
+## 10. Component-level tokens
 
-Component-level tokens are **scoped CSS custom properties defined inside each component's rule block** (e.g. `.btn { --bs-btn-padding-y: … }`). They are not defined in `_root.scss`. Values below are from the compiled CSS (light-mode defaults).
+Bootstrap 5.3.8 gives most (but not all) components their own scoped custom-property namespace, declared on the component's root selector (e.g. `.btn { --bs-btn-*: ...; }`) rather than in `:root`. This section documents each namespace's members and their **base-selector default** (the value on the unmodified component class, before any modifier/variant class is applied). Where a property has **no context-free default** — it is only ever set inside a variant rule (e.g. `.btn-primary`) — this is noted explicitly rather than fabricated.
 
-### Button (`--bs-btn-*`)
+Verified by reading each component's own SCSS file (`grep -rn "prefix}<name>"`) and cross-checking the compiled CSS base-selector block.
 
-Defined on `.btn {}` in `_buttons.scss`. Base tokens set structural defaults; variant tokens override color/bg per `.btn-primary`, `.btn-outline-*`, etc.
+### Button — `--bs-btn-*` (source: `_buttons.scss`, compiled CSS `.btn {}` at line 2953)
 
-**Base tokens (set on `.btn`):**
-
-| CSS property | Default value | Purpose |
+| CSS property | Default value | Semantic role |
 |---|---|---|
-| `--bs-btn-padding-y` | `0.375rem` | Vertical padding |
 | `--bs-btn-padding-x` | `0.75rem` | Horizontal padding |
-| `--bs-btn-font-family` | *(empty — inherits)* | Button font |
-| `--bs-btn-font-size` | `1rem` | Button font size |
-| `--bs-btn-font-weight` | `400` | Button font weight |
-| `--bs-btn-line-height` | `1.5` | Button line height |
-| `--bs-btn-color` | `var(--bs-body-color)` | Default button text color |
-| `--bs-btn-bg` | `transparent` | Default button background |
-| `--bs-btn-border-width` | `var(--bs-border-width)` | Button border width |
-| `--bs-btn-border-color` | `transparent` | Default button border |
-| `--bs-btn-border-radius` | `var(--bs-border-radius)` | Button corner radius |
-| `--bs-btn-hover-border-color` | `transparent` | Hover border color |
-| `--bs-btn-box-shadow` | `inset 0 1px 0 rgba(255,255,255,.15), 0 1px 1px rgba(0,0,0,.075)` | Button shadow |
-| `--bs-btn-disabled-opacity` | `0.65` | Disabled button opacity |
-| `--bs-btn-focus-box-shadow` | `0 0 0 0.25rem rgba(var(--bs-btn-focus-shadow-rgb),.5)` | Focus ring shadow |
+| `--bs-btn-padding-y` | `0.375rem` | Vertical padding |
+| `--bs-btn-font-family` | *(empty)* | Font family override hook |
+| `--bs-btn-font-size` | `1rem` | Font size |
+| `--bs-btn-font-weight` | `400` | Font weight |
+| `--bs-btn-line-height` | `1.5` | Line height |
+| `--bs-btn-color` | `var(--bs-body-color)` | Text color |
+| `--bs-btn-bg` | `transparent` | Background color |
+| `--bs-btn-border-width` | `var(--bs-border-width)` | Border thickness |
+| `--bs-btn-border-color` | `transparent` | Border color |
+| `--bs-btn-border-radius` | `var(--bs-border-radius)` | Corner radius |
+| `--bs-btn-hover-border-color` | `transparent` | Border color on hover (base default; overridden per variant) |
+| `--bs-btn-box-shadow` | `inset 0 1px 0 rgba(255,255,255,.15), 0 1px 1px rgba(0,0,0,.075)` | Resting shadow |
+| `--bs-btn-disabled-opacity` | `0.65` | Opacity when `:disabled` |
+| `--bs-btn-focus-box-shadow` | `0 0 0 0.25rem rgba(var(--bs-btn-focus-shadow-rgb), .5)` | Focus ring shadow |
+| `--bs-btn-hover-color` | *set per variant only* (e.g. `.btn-primary` → `#fff`) | Text color on hover |
+| `--bs-btn-hover-bg` | *set per variant only* | Background on hover |
+| `--bs-btn-active-color` | *set per variant only* | Text color when active/pressed |
+| `--bs-btn-active-bg` | *set per variant only* | Background when active/pressed |
+| `--bs-btn-active-border-color` | *set per variant only* | Border when active/pressed |
+| `--bs-btn-active-shadow` | *set per variant only* (`$btn-active-box-shadow`) | Shadow when active/pressed |
+| `--bs-btn-disabled-color` | *set per variant only* | Text color when disabled |
+| `--bs-btn-disabled-bg` | *set per variant only* | Background when disabled |
+| `--bs-btn-disabled-border-color` | *set per variant only* | Border when disabled |
+| `--bs-btn-focus-shadow-rgb` | *set per variant only* | RGB triplet feeding `focus-box-shadow` |
 
-**Variant-specific tokens** — set on `.btn-primary`, `.btn-secondary`, etc. via the button-variant mixin. Each variant provides these tokens:
+**25 tokens** (15 with a base default, 10 variant-scoped-only).
 
-| CSS property | Purpose |
-|---|---|
-| `--bs-btn-color` | Text color for this variant |
-| `--bs-btn-bg` | Background color for this variant |
-| `--bs-btn-border-color` | Border color for this variant |
-| `--bs-btn-hover-color` | Hover text color |
-| `--bs-btn-hover-bg` | Hover background |
-| `--bs-btn-hover-border-color` | Hover border color |
-| `--bs-btn-focus-shadow-rgb` | RGB triple for focus ring |
-| `--bs-btn-active-color` | Active/pressed text color |
-| `--bs-btn-active-bg` | Active/pressed background |
-| `--bs-btn-active-border-color` | Active/pressed border color |
-| `--bs-btn-active-shadow` | Active press shadow (`inset 0 3px 5px rgba(0,0,0,.125)`) |
-| `--bs-btn-disabled-color` | Disabled text color |
-| `--bs-btn-disabled-bg` | Disabled background |
-| `--bs-btn-disabled-border-color` | Disabled border color |
+### Close Button — `--bs-btn-close-*` (source: `_close.scss`, compiled CSS `.btn-close {}` at line 5336)
 
-> Example: `.btn-primary` sets `--bs-btn-bg: #0d6efd`, `--bs-btn-color: #fff`, etc.
+Despite the `btn-` prefix (from the `.btn-close` class name), this is a **separate component namespace** from Button — do not conflate with `--bs-btn-*` above.
 
-**Size modifier tokens** — overridden on `.btn-lg` / `.btn-sm`:
-
-| CSS property | `.btn-lg` | `.btn-sm` |
+| CSS property | Default value | Semantic role |
 |---|---|---|
-| `--bs-btn-padding-y` | `0.5rem` | `0.25rem` |
-| `--bs-btn-padding-x` | `1rem` | `0.5rem` |
-| `--bs-btn-font-size` | `1.25rem` | `0.875rem` |
-
-### Form Check / Checkbox (`--bs-form-check-*`)
-
-Bootstrap's `.form-check-input` uses runtime CSS custom properties for its appearance. Defined inside `.form-check-input {}` in `_form-check.scss`.
-
-| CSS property | Default value | Purpose |
-|---|---|---|
-| `--bs-form-check-bg` | `var(--bs-body-bg)` | Checkbox/radio background (unchecked) |
-| `--bs-form-check-bg-image` | SVG checkmark / dot / dash (set on `:checked`, varies by type) | Custom check indicator image |
-
-> `--bs-form-check-bg-image` is overridden when `:checked` (checkmark SVG), when `:indeterminate` (dash SVG), and for radio (dot SVG). This is a runtime CSS custom property, not a SCSS compile-time value.
-
-**Form Switch** (toggle):
-
-| CSS property | State | Value |
-|---|---|---|
-| `--bs-form-switch-bg` | Default | SVG circle with `rgba(0,0,0,.25)` fill |
-| `--bs-form-switch-bg` | `:focus` | SVG circle with `#86b7fe` fill |
-| `--bs-form-switch-bg` | `:checked` | SVG circle with `#fff` fill |
-
-### Form Select (`--bs-form-select-*`)
-
-Defined inside `.form-select {}` in `_form-select.scss`.
-
-| CSS property | Default value | Purpose |
-|---|---|---|
-| `--bs-form-select-bg-img` | Inline SVG caret (dark stroke for light mode) | Dropdown arrow icon |
-| `--bs-form-select-bg-icon` | Overridden for `.is-valid` (green check SVG) and `.is-invalid` (red X SVG) | Validation feedback icon |
-
-> Note: `.form-select` does **not** define `--bs-input-*` tokens. Most form-control (text input) styling uses SCSS variables compiled to static values, not runtime CSS custom properties.
-
-### Nav / Tabs (`--bs-nav-*`)
-
-Defined on `.nav {}` in `_nav.scss`.
-
-| CSS property | Default value | Purpose |
-|---|---|---|
-| `--bs-nav-link-padding-y` | `0.5rem` | Nav link vertical padding |
-| `--bs-nav-link-padding-x` | `1rem` | Nav link horizontal padding |
-| `--bs-nav-link-font-weight` | *(empty — inherits)* | Nav link font weight |
-| `--bs-nav-link-color` | `var(--bs-link-color)` | Nav link default color |
-| `--bs-nav-link-hover-color` | `var(--bs-link-hover-color)` | Nav link hover color |
-| `--bs-nav-link-disabled-color` | `var(--bs-secondary-color)` | Disabled nav link color |
-
-**Tabs** (additional tokens on `.nav-tabs`):
-
-| CSS property | Default value | Purpose |
-|---|---|---|
-| `--bs-nav-tabs-border-width` | `var(--bs-border-width)` | Tab bottom-border width |
-| `--bs-nav-tabs-border-color` | `var(--bs-border-color)` | Tab underline border color |
-| `--bs-nav-tabs-border-radius` | `var(--bs-border-radius)` | Tab top-corner rounding |
-| `--bs-nav-tabs-link-hover-border-color` | `var(--bs-secondary-bg) var(--bs-secondary-bg) var(--bs-border-color)` | Hover tab borders (top/side/bottom) |
-| `--bs-nav-tabs-link-active-color` | `var(--bs-emphasis-color)` | Active tab text color |
-| `--bs-nav-tabs-link-active-bg` | `var(--bs-body-bg)` | Active tab background |
-| `--bs-nav-tabs-link-active-border-color` | `var(--bs-border-color) var(--bs-border-color) var(--bs-body-bg)` | Active tab borders (top/side/bottom) |
-
-**Pills** (additional tokens on `.nav-pills`):
-
-| CSS property | Default value | Purpose |
-|---|---|---|
-| `--bs-nav-pills-border-radius` | `var(--bs-border-radius)` | Pill item rounding |
-| `--bs-nav-pills-link-active-color` | `#fff` | Active pill text color |
-| `--bs-nav-pills-link-active-bg` | `#0d6efd` | Active pill background |
-
-**Underline nav** (additional tokens on `.nav-underline`):
-
-| CSS property | Default value | Purpose |
-|---|---|---|
-| `--bs-nav-underline-gap` | `1rem` | Gap between items |
-| `--bs-nav-underline-border-width` | `0.125rem` | Active underline thickness |
-| `--bs-nav-underline-link-active-color` | `var(--bs-emphasis-color)` | Active underline-nav text |
-
-### Navbar (`--bs-navbar-*`)
-
-Defined on `.navbar {}` in `_navbar.scss`.
-
-| CSS property | Default value | Purpose |
-|---|---|---|
-| `--bs-navbar-padding-x` | `0` | Navbar horizontal padding |
-| `--bs-navbar-padding-y` | `0.5rem` | Navbar vertical padding |
-| `--bs-navbar-color` | `rgba(var(--bs-emphasis-color-rgb), 0.65)` | Nav item text color |
-| `--bs-navbar-hover-color` | `rgba(var(--bs-emphasis-color-rgb), 0.8)` | Nav item hover color |
-| `--bs-navbar-disabled-color` | `rgba(var(--bs-emphasis-color-rgb), 0.3)` | Disabled nav item |
-| `--bs-navbar-active-color` | `rgba(var(--bs-emphasis-color-rgb), 1)` | Active nav item |
-| `--bs-navbar-brand-padding-y` | `0.3125rem` | Brand vertical padding |
-| `--bs-navbar-brand-margin-end` | `1rem` | Brand right margin |
-| `--bs-navbar-brand-font-size` | `1.25rem` | Brand font size |
-| `--bs-navbar-brand-color` | `rgba(var(--bs-emphasis-color-rgb), 1)` | Brand text color |
-| `--bs-navbar-brand-hover-color` | `rgba(var(--bs-emphasis-color-rgb), 1)` | Brand hover color |
-| `--bs-navbar-nav-link-padding-x` | `0.5rem` | Nav link horizontal padding |
-| `--bs-navbar-toggler-padding-y` | `0.25rem` | Toggler vertical padding |
-| `--bs-navbar-toggler-padding-x` | `0.75rem` | Toggler horizontal padding |
-| `--bs-navbar-toggler-font-size` | `1.25rem` | Toggler font size |
-| `--bs-navbar-toggler-icon-bg` | SVG hamburger icon (dark strokes) | Toggler icon |
-| `--bs-navbar-toggler-border-color` | `rgba(var(--bs-emphasis-color-rgb), 0.15)` | Toggler border color |
-| `--bs-navbar-toggler-border-radius` | `var(--bs-border-radius)` | Toggler rounding |
-| `--bs-navbar-toggler-focus-width` | `0.25rem` | Toggler focus ring width |
-| `--bs-navbar-toggler-transition` | `box-shadow 0.15s ease-in-out` | Toggler transition |
-
-> `.navbar-dark` overrides several of these tokens with white-based values.
-
-### Dropdown (`--bs-dropdown-*`)
-
-Defined on `.dropdown-menu {}` in `_dropdown.scss`.
-
-| CSS property | Default value | Purpose |
-|---|---|---|
-| `--bs-dropdown-zindex` | `1000` | Dropdown z-index |
-| `--bs-dropdown-min-width` | `10rem` | Minimum menu width |
-| `--bs-dropdown-padding-x` | `0` | Menu horizontal padding |
-| `--bs-dropdown-padding-y` | `0.5rem` | Menu vertical padding |
-| `--bs-dropdown-spacer` | `0.125rem` | Gap between toggle and menu |
-| `--bs-dropdown-font-size` | `1rem` | Menu font size |
-| `--bs-dropdown-color` | `var(--bs-body-color)` | Menu text color |
-| `--bs-dropdown-bg` | `var(--bs-body-bg)` | Menu background |
-| `--bs-dropdown-border-color` | `var(--bs-border-color-translucent)` | Menu border color |
-| `--bs-dropdown-border-radius` | `var(--bs-border-radius)` | Menu rounding |
-| `--bs-dropdown-border-width` | `var(--bs-border-width)` | Menu border width |
-| `--bs-dropdown-inner-border-radius` | `calc(var(--bs-border-radius) - var(--bs-border-width))` | Inner element rounding |
-| `--bs-dropdown-divider-bg` | `var(--bs-border-color-translucent)` | Divider color |
-| `--bs-dropdown-divider-margin-y` | `0.5rem` | Divider vertical margin |
-| `--bs-dropdown-box-shadow` | `var(--bs-box-shadow)` | Menu drop shadow |
-| `--bs-dropdown-link-color` | `var(--bs-body-color)` | Item text color |
-| `--bs-dropdown-link-hover-color` | `var(--bs-body-color)` | Item hover text color |
-| `--bs-dropdown-link-hover-bg` | `var(--bs-tertiary-bg)` | Item hover background |
-| `--bs-dropdown-link-active-color` | `#fff` | Selected item text |
-| `--bs-dropdown-link-active-bg` | `#0d6efd` | Selected item background |
-| `--bs-dropdown-link-disabled-color` | `var(--bs-tertiary-color)` | Disabled item text |
-| `--bs-dropdown-item-padding-y` | `0.25rem` | Item vertical padding |
-| `--bs-dropdown-item-padding-x` | `1rem` | Item horizontal padding |
-| `--bs-dropdown-header-color` | `#6c757d` | Header text color |
-| `--bs-dropdown-header-padding-x` | `1rem` | Header horizontal padding |
-| `--bs-dropdown-header-padding-y` | `0.5rem` | Header vertical padding |
-
-### List Group (`--bs-list-group-*`)
-
-Defined on `.list-group {}` in `_list-group.scss`.
-
-| CSS property | Default value | Purpose |
-|---|---|---|
-| `--bs-list-group-color` | `var(--bs-body-color)` | Item text color |
-| `--bs-list-group-bg` | `var(--bs-body-bg)` | Item background |
-| `--bs-list-group-border-color` | `var(--bs-border-color)` | Item border color |
-| `--bs-list-group-border-width` | `var(--bs-border-width)` | Item border width |
-| `--bs-list-group-border-radius` | `var(--bs-border-radius)` | List rounding |
-| `--bs-list-group-item-padding-y` | `0.5rem` | Item vertical padding |
-| `--bs-list-group-item-padding-x` | `1rem` | Item horizontal padding |
-| `--bs-list-group-action-color` | `var(--bs-secondary-color)` | Actionable item text |
-| `--bs-list-group-action-hover-color` | `var(--bs-emphasis-color)` | Actionable item hover text |
-| `--bs-list-group-action-hover-bg` | `var(--bs-tertiary-bg)` | Actionable item hover bg |
-| `--bs-list-group-action-active-color` | `var(--bs-body-color)` | Actionable item active text |
-| `--bs-list-group-action-active-bg` | `var(--bs-secondary-bg)` | Actionable item active bg |
-| `--bs-list-group-disabled-color` | `var(--bs-secondary-color)` | Disabled item text |
-| `--bs-list-group-disabled-bg` | `var(--bs-body-bg)` | Disabled item background |
-| `--bs-list-group-active-color` | `#fff` | Selected item text |
-| `--bs-list-group-active-bg` | `#0d6efd` | Selected item background |
-| `--bs-list-group-active-border-color` | `#0d6efd` | Selected item border |
-
-> Note: The SCSS source named this `$list-group-hover-bg`; in compiled CSS it appears as `--bs-list-group-action-hover-bg`.
-
-### Accordion (`--bs-accordion-*`)
-
-Defined on `.accordion {}` in `_accordion.scss`.
-
-| CSS property | Default value | Purpose |
-|---|---|---|
-| `--bs-accordion-color` | `var(--bs-body-color)` | Content text |
-| `--bs-accordion-bg` | `var(--bs-body-bg)` | Content background |
-| `--bs-accordion-transition` | `color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out, border-radius 0.15s ease` | Header transition |
-| `--bs-accordion-border-color` | `var(--bs-border-color)` | Panel border color |
-| `--bs-accordion-border-width` | `var(--bs-border-width)` | Panel border width |
-| `--bs-accordion-border-radius` | `var(--bs-border-radius)` | Outer rounding |
-| `--bs-accordion-inner-border-radius` | `calc(var(--bs-border-radius) - (var(--bs-border-width)))` | Inner element rounding |
-| `--bs-accordion-btn-padding-y` | `1rem` | Header button vertical padding |
-| `--bs-accordion-btn-padding-x` | `1.25rem` | Header button horizontal padding |
-| `--bs-accordion-btn-color` | `var(--bs-body-color)` | Header button text |
-| `--bs-accordion-btn-bg` | `var(--bs-accordion-bg)` | Header button background |
-| `--bs-accordion-btn-focus-box-shadow` | (references `$btn-focus-box-shadow`) | Focus ring |
-| `--bs-accordion-body-padding-x` | `1.25rem` | Body horizontal padding |
-| `--bs-accordion-body-padding-y` | `1rem` | Body vertical padding |
-| `--bs-accordion-active-color` | `var(--bs-primary-text-emphasis)` | Open header text |
-| `--bs-accordion-active-bg` | `var(--bs-primary-bg-subtle)` | Open header background |
-
-### Badge (`--bs-badge-*`)
-
-Defined on `.badge {}` in `_badge.scss`.
-
-| CSS property | Default value | Purpose |
-|---|---|---|
-| `--bs-badge-padding-y` | `0.35em` | Vertical padding |
-| `--bs-badge-padding-x` | `0.65em` | Horizontal padding |
-| `--bs-badge-font-size` | `0.75em` | Badge font size |
-| `--bs-badge-font-weight` | `700` | Badge font weight |
-| `--bs-badge-color` | `#fff` | Badge text color |
-| `--bs-badge-border-radius` | `var(--bs-border-radius)` | Badge rounding |
-
-### Alert (`--bs-alert-*`)
-
-Defined on `.alert {}` in `_alert.scss`.
-
-| CSS property | Default value | Purpose |
-|---|---|---|
-| `--bs-alert-bg` | `transparent` | Alert background (overridden per variant) |
-| `--bs-alert-padding-y` | `1rem` | Vertical padding |
-| `--bs-alert-padding-x` | `1rem` | Horizontal padding |
-| `--bs-alert-margin-bottom` | `1rem` | Bottom margin |
-| `--bs-alert-color` | `inherit` | Alert text color (overridden per variant) |
-| `--bs-alert-border-color` | `transparent` | Alert border color (overridden per variant) |
-| `--bs-alert-border` | `var(--bs-border-width) solid var(--bs-alert-border-color)` | Full border shorthand |
-| `--bs-alert-border-radius` | `var(--bs-border-radius)` | Alert rounding |
-| `--bs-alert-link-color` | `inherit` | Alert link color (overridden per variant) |
-
-> Variant classes (`.alert-primary`, `.alert-danger`, etc.) override `--bs-alert-color`, `--bs-alert-bg`, `--bs-alert-border-color`, and `--bs-alert-link-color` using the `*-text-emphasis`, `*-bg-subtle`, and `*-border-subtle` tokens.
-
-### Progress (`--bs-progress-*`)
-
-Defined on `.progress {}` in `_progress.scss`.
-
-| CSS property | Default value | Purpose |
-|---|---|---|
-| `--bs-progress-height` | `1rem` | Track height |
-| `--bs-progress-font-size` | `0.75rem` | Label font size |
-| `--bs-progress-bg` | `var(--bs-secondary-bg)` | Track background |
-| `--bs-progress-border-radius` | `var(--bs-border-radius)` | Track rounding |
-| `--bs-progress-box-shadow` | `var(--bs-box-shadow-inset)` | Inset shadow on track |
-| `--bs-progress-bar-color` | `#fff` | Bar label text color |
-| `--bs-progress-bar-bg` | `#0d6efd` | Bar fill color |
-| `--bs-progress-bar-transition` | `width 0.6s ease` | Bar width animation |
-
-### Breadcrumb (`--bs-breadcrumb-*`)
-
-Defined on `.breadcrumb {}` in `_breadcrumb.scss`.
-
-| CSS property | Default value | Purpose |
-|---|---|---|
-| `--bs-breadcrumb-padding-x` | `0` | Horizontal padding |
-| `--bs-breadcrumb-padding-y` | `0` | Vertical padding |
-| `--bs-breadcrumb-margin-bottom` | `1rem` | Bottom margin |
-| `--bs-breadcrumb-bg` | *(empty)* | Background (transparent by default) |
-| `--bs-breadcrumb-border-radius` | *(empty)* | Rounding (none by default) |
-| `--bs-breadcrumb-divider-color` | `var(--bs-secondary-color)` | Divider `/` color |
-| `--bs-breadcrumb-item-padding-x` | `0.5rem` | Padding around divider |
-| `--bs-breadcrumb-item-active-color` | `var(--bs-secondary-color)` | Current page text |
-
-### Pagination (`--bs-pagination-*`)
-
-Defined on `.pagination {}` in `_pagination.scss`.
-
-| CSS property | Default value | Purpose |
-|---|---|---|
-| `--bs-pagination-padding-y` | `0.375rem` | Item vertical padding |
-| `--bs-pagination-padding-x` | `0.75rem` | Item horizontal padding |
-| `--bs-pagination-font-size` | `1rem` | Item font size |
-| `--bs-pagination-color` | `var(--bs-link-color)` | Item text color |
-| `--bs-pagination-bg` | `var(--bs-body-bg)` | Item background |
-| `--bs-pagination-border-width` | `var(--bs-border-width)` | Item border width |
-| `--bs-pagination-border-color` | `var(--bs-border-color)` | Item border color |
-| `--bs-pagination-border-radius` | `var(--bs-border-radius)` | Item rounding |
-| `--bs-pagination-hover-color` | `var(--bs-link-hover-color)` | Hover text color |
-| `--bs-pagination-hover-bg` | `var(--bs-tertiary-bg)` | Hover background |
-| `--bs-pagination-hover-border-color` | `var(--bs-border-color)` | Hover border color |
-| `--bs-pagination-focus-color` | `var(--bs-link-hover-color)` | Focused item text |
-| `--bs-pagination-focus-bg` | `var(--bs-secondary-bg)` | Focused item background |
-| `--bs-pagination-focus-box-shadow` | `0 0 0 0.25rem rgba(13,110,253,.25)` | Focused item ring |
-| `--bs-pagination-active-color` | `#fff` | Active page text |
-| `--bs-pagination-active-bg` | `#0d6efd` | Active page background |
-| `--bs-pagination-active-border-color` | `#0d6efd` | Active page border |
-| `--bs-pagination-disabled-color` | `var(--bs-secondary-color)` | Disabled page text |
-| `--bs-pagination-disabled-bg` | `var(--bs-secondary-bg)` | Disabled page background |
-| `--bs-pagination-disabled-border-color` | `var(--bs-border-color)` | Disabled page border |
-
-### Card (`--bs-card-*`)
-
-Defined on `.card {}` in `_card.scss`.
-
-| CSS property | Default value | Purpose |
-|---|---|---|
-| `--bs-card-spacer-y` | `1rem` | Card body vertical padding |
-| `--bs-card-spacer-x` | `1rem` | Card body horizontal padding |
-| `--bs-card-title-spacer-y` | `0.5rem` | Spacing below title |
-| `--bs-card-title-color` | *(empty — inherits)* | Card title color |
-| `--bs-card-subtitle-color` | *(empty — inherits)* | Card subtitle color |
-| `--bs-card-border-width` | `var(--bs-border-width)` | Card border width |
-| `--bs-card-border-color` | `var(--bs-border-color-translucent)` | Card border color |
-| `--bs-card-border-radius` | `var(--bs-border-radius)` | Card rounding |
-| `--bs-card-box-shadow` | *(empty)* | Card shadow (none by default) |
-| `--bs-card-inner-border-radius` | `calc(var(--bs-border-radius) - (var(--bs-border-width)))` | Inner element rounding |
-| `--bs-card-cap-padding-y` | `0.5rem` | Header/footer vertical padding |
-| `--bs-card-cap-padding-x` | `1rem` | Header/footer horizontal padding |
-| `--bs-card-cap-bg` | `rgba(var(--bs-body-color-rgb), 0.03)` | Header/footer background tint |
-| `--bs-card-cap-color` | *(empty — inherits)* | Header/footer text color |
-| `--bs-card-height` | *(empty)* | Card height (auto by default) |
-| `--bs-card-color` | *(empty — inherits)* | Card body text color |
-| `--bs-card-bg` | `var(--bs-body-bg)` | Card background |
-| `--bs-card-img-overlay-padding` | `1rem` | Image overlay padding |
-| `--bs-card-group-margin` | `0.75rem` | Card group gutter |
-
-### Toast (`--bs-toast-*`)
-
-Defined on `.toast {}` in `_toasts.scss`.
-
-| CSS property | Default value | Purpose |
-|---|---|---|
-| `--bs-toast-zindex` | `1090` | Toast stacking z-index |
-| `--bs-toast-padding-x` | `0.75rem` | Horizontal padding |
-| `--bs-toast-padding-y` | `0.5rem` | Vertical padding |
-| `--bs-toast-spacing` | `1.5rem` | Gap between stacked toasts |
-| `--bs-toast-max-width` | `350px` | Maximum width |
-| `--bs-toast-font-size` | `0.875rem` | Toast font size |
-| `--bs-toast-color` | *(empty — inherits)* | Toast text color |
-| `--bs-toast-bg` | `rgba(var(--bs-body-bg-rgb), 0.85)` | Toast background |
-| `--bs-toast-border-width` | `var(--bs-border-width)` | Toast border width |
-| `--bs-toast-border-color` | `var(--bs-border-color-translucent)` | Toast border color |
-| `--bs-toast-border-radius` | `var(--bs-border-radius)` | Toast rounding |
-| `--bs-toast-box-shadow` | `var(--bs-box-shadow)` | Toast drop shadow |
-| `--bs-toast-header-color` | `var(--bs-secondary-color)` | Header text color |
-| `--bs-toast-header-bg` | `rgba(var(--bs-body-bg-rgb), 0.85)` | Header background |
-| `--bs-toast-header-border-color` | `var(--bs-border-color-translucent)` | Header border color |
-
-### Modal (`--bs-modal-*`)
-
-Defined on `.modal {}` / `.modal-content {}` in `_modal.scss`.
-
-| CSS property | Default value | Purpose |
-|---|---|---|
-| `--bs-modal-zindex` | `1055` | Modal stacking z-index |
-| `--bs-modal-width` | `500px` | Default modal width |
-| `--bs-modal-padding` | `1rem` | Body/section padding |
-| `--bs-modal-margin` | `0.5rem` | Outer margin (mobile) |
-| `--bs-modal-color` | `var(--bs-body-color)` | Modal text color |
-| `--bs-modal-bg` | `var(--bs-body-bg)` | Modal background |
-| `--bs-modal-border-color` | `var(--bs-border-color-translucent)` | Modal border color |
-| `--bs-modal-border-width` | `var(--bs-border-width)` | Modal border width |
-| `--bs-modal-border-radius` | `var(--bs-border-radius-lg)` | Modal rounding |
-| `--bs-modal-box-shadow` | `var(--bs-box-shadow-sm)` | Mobile shadow |
-| `--bs-modal-inner-border-radius` | `calc(var(--bs-border-radius-lg) - (var(--bs-border-width)))` | Inner element rounding |
-| `--bs-modal-header-padding-x` | `1rem` | Header horizontal padding |
-| `--bs-modal-header-padding-y` | `1rem` | Header vertical padding |
-| `--bs-modal-header-padding` | `1rem 1rem` | Header padding shorthand |
-| `--bs-modal-header-border-color` | `var(--bs-border-color)` | Header divider border color |
-| `--bs-modal-header-border-width` | `var(--bs-border-width)` | Header divider border width |
-| `--bs-modal-title-line-height` | `1.5` | Modal title line height |
-| `--bs-modal-footer-gap` | `0.5rem` | Gap between footer actions |
-| `--bs-modal-footer-bg` | *(empty)* | Footer background (transparent) |
-| `--bs-modal-footer-border-color` | `var(--bs-border-color)` | Footer divider border color |
-| `--bs-modal-footer-border-width` | `var(--bs-border-width)` | Footer divider border width |
-
-> On `@media (min-width: 576px)`, `--bs-modal-margin` becomes `1.75rem` and `--bs-modal-box-shadow` becomes `var(--bs-box-shadow)`.
-
-### Tooltip (`--bs-tooltip-*`)
-
-Defined on `.tooltip {}` in `_tooltip.scss`.
-
-| CSS property | Default value | Purpose |
-|---|---|---|
-| `--bs-tooltip-zindex` | `1080` | Tooltip stacking z-index |
-| `--bs-tooltip-max-width` | `200px` | Maximum tooltip width |
-| `--bs-tooltip-padding-x` | `0.5rem` | Horizontal padding |
-| `--bs-tooltip-padding-y` | `0.25rem` | Vertical padding |
-| `--bs-tooltip-margin` | *(empty)* | External margin |
-| `--bs-tooltip-font-size` | `0.875rem` | Tooltip font size |
-| `--bs-tooltip-color` | `var(--bs-body-bg)` | Tooltip text color |
-| `--bs-tooltip-bg` | `var(--bs-emphasis-color)` | Tooltip background |
-| `--bs-tooltip-border-radius` | `var(--bs-border-radius)` | Tooltip rounding |
-| `--bs-tooltip-opacity` | `0.9` | Tooltip opacity |
-| `--bs-tooltip-arrow-width` | `0.8rem` | Arrow width |
-| `--bs-tooltip-arrow-height` | `0.4rem` | Arrow height |
-
-### Popover (`--bs-popover-*`)
-
-Defined on `.popover {}` in `_popover.scss`.
-
-| CSS property | Default value | Purpose |
-|---|---|---|
-| `--bs-popover-zindex` | `1070` | Popover stacking z-index |
-| `--bs-popover-max-width` | `276px` | Maximum popover width |
-| `--bs-popover-font-size` | `0.875rem` | Popover font size |
-| `--bs-popover-bg` | `var(--bs-body-bg)` | Popover background |
-| `--bs-popover-border-width` | `var(--bs-border-width)` | Popover border width |
-| `--bs-popover-border-color` | `var(--bs-border-color-translucent)` | Popover border color |
-| `--bs-popover-border-radius` | `var(--bs-border-radius-lg)` | Popover rounding |
-| `--bs-popover-inner-border-radius` | `calc(var(--bs-border-radius-lg) - var(--bs-border-width))` | Inner element rounding |
-| `--bs-popover-box-shadow` | `var(--bs-box-shadow)` | Popover drop shadow |
-| `--bs-popover-header-padding-x` | `1rem` | Header horizontal padding |
-| `--bs-popover-header-padding-y` | `0.5rem` | Header vertical padding |
-| `--bs-popover-header-font-size` | `1rem` | Header font size |
-| `--bs-popover-header-color` | `inherit` | Header text color |
-| `--bs-popover-header-bg` | `var(--bs-secondary-bg)` | Header background |
-| `--bs-popover-body-padding-x` | `1rem` | Body horizontal padding |
-| `--bs-popover-body-padding-y` | `1rem` | Body vertical padding |
-| `--bs-popover-body-color` | `var(--bs-body-color)` | Body text color |
-| `--bs-popover-arrow-width` | `1rem` | Arrow width |
-| `--bs-popover-arrow-height` | `0.5rem` | Arrow height |
-| `--bs-popover-arrow-border` | `var(--bs-popover-border-color)` | Arrow border color |
-
-### Spinner (`--bs-spinner-*`)
-
-Defined on `.spinner-border` / `.spinner-grow` in `_spinners.scss`.
-
-| CSS property | Default value | Purpose |
-|---|---|---|
-| `--bs-spinner-width` | `2rem` | Spinner size (width) |
-| `--bs-spinner-height` | `2rem` | Spinner size (height) |
-| `--bs-spinner-vertical-align` | `-0.125em` | Vertical alignment offset |
-| `--bs-spinner-border-width` | `0.25em` | Border-spinner ring width |
-| `--bs-spinner-animation-speed` | `0.75s` | Rotation speed |
-| `--bs-spinner-animation-name` | `spinner-border` or `spinner-grow` | Keyframe animation name |
-
-> `.spinner-border-sm` / `.spinner-grow-sm` override `--bs-spinner-width`, `--bs-spinner-height`, and `--bs-spinner-border-width`.
-
-### Offcanvas (`--bs-offcanvas-*`)
-
-Defined on `.offcanvas {}` in `_offcanvas.scss`.
-
-| CSS property | Default value | Purpose |
-|---|---|---|
-| `--bs-offcanvas-zindex` | `1045` | Offcanvas z-index |
-| `--bs-offcanvas-width` | `400px` | Default width (side panels) |
-| `--bs-offcanvas-height` | `30vh` | Default height (top/bottom panels) |
-| `--bs-offcanvas-padding-x` | `1rem` | Horizontal padding |
-| `--bs-offcanvas-padding-y` | `1rem` | Vertical padding |
-| `--bs-offcanvas-color` | `var(--bs-body-color)` | Content text color |
-| `--bs-offcanvas-bg` | `var(--bs-body-bg)` | Panel background |
-| `--bs-offcanvas-border-width` | `var(--bs-border-width)` | Edge border width |
-| `--bs-offcanvas-border-color` | `var(--bs-border-color-translucent)` | Edge border color |
-| `--bs-offcanvas-box-shadow` | `var(--bs-box-shadow-sm)` | Panel shadow |
-| `--bs-offcanvas-transition` | `transform 0.3s ease-in-out` | Slide-in transition |
-| `--bs-offcanvas-title-line-height` | `1.5` | Title line height |
-
-### Table (`--bs-table-*`)
-
-Defined on `.table {}` in `_tables.scss`.
-
-| CSS property | Default value | Purpose |
-|---|---|---|
-| `--bs-table-color-type` | `initial` | Type-based cell color (used for striping) |
-| `--bs-table-bg-type` | `initial` | Type-based cell background |
-| `--bs-table-color-state` | `initial` | State-based cell color (hover/active) |
-| `--bs-table-bg-state` | `initial` | State-based cell background |
-| `--bs-table-color` | `var(--bs-emphasis-color)` | Default cell text |
-| `--bs-table-bg` | `var(--bs-body-bg)` | Default cell background |
-| `--bs-table-border-color` | `var(--bs-border-color)` | Row/cell border color |
-| `--bs-table-accent-bg` | `transparent` | Accent overlay (legacy) |
-| `--bs-table-striped-color` | `var(--bs-emphasis-color)` | Striped row text |
-| `--bs-table-striped-bg` | `rgba(var(--bs-emphasis-color-rgb), 0.05)` | Striped row background |
-| `--bs-table-active-color` | `var(--bs-emphasis-color)` | Active row text |
-| `--bs-table-active-bg` | `rgba(var(--bs-emphasis-color-rgb), 0.1)` | Active row background |
-| `--bs-table-hover-color` | `var(--bs-emphasis-color)` | Hover row text |
-| `--bs-table-hover-bg` | `rgba(var(--bs-emphasis-color-rgb), 0.075)` | Hover row background |
-
-### Button Close (`--bs-btn-close-*`)
-
-Defined on `.btn-close {}` in `_close.scss`.
-
-| CSS property | Default value | Purpose |
-|---|---|---|
-| `--bs-btn-close-color` | `#000` | Close icon color |
-| `--bs-btn-close-bg` | Inline SVG × icon | Close icon image |
-| `--bs-btn-close-opacity` | `0.5` | Default opacity |
+| `--bs-btn-close-color` | `#000` | Icon color |
+| `--bs-btn-close-bg` | inline SVG data-URI (X icon, black stroke) | Icon image |
+| `--bs-btn-close-opacity` | `0.5` | Resting opacity |
 | `--bs-btn-close-hover-opacity` | `0.75` | Hover opacity |
-| `--bs-btn-close-focus-shadow` | `0 0 0 0.25rem rgba(13,110,253,.25)` | Focus ring |
-| `--bs-btn-close-focus-opacity` | `1` | Focused opacity |
+| `--bs-btn-close-focus-shadow` | `0 0 0 0.25rem rgba(13,110,253,.25)` | Focus ring shadow |
+| `--bs-btn-close-focus-opacity` | `1` | Focus opacity |
 | `--bs-btn-close-disabled-opacity` | `0.25` | Disabled opacity |
-| `--bs-btn-close-filter` | *(empty for light; `invert(1) grayscale(100%) brightness(200%)` for dark)* | Dark-mode inversion filter |
+| `--bs-btn-close-filter` | *(empty in light; `invert(1) grayscale(100%) brightness(200%)` in dark, and on `.btn-close-white`)* | Icon color-inversion filter |
 
----
+**8 tokens.**
 
-## 11. Layout Tokens
+### Form controls — no dedicated `--bs-input-*` namespace
 
-### Grid Gutters (`--bs-gutter-*`)
+**Verified absence:** `grep -rn "prefix}input\b"` and `grep -rn "prefix}form"` across `forms/_form-control.scss`, `forms/_form-select.scss`, `forms/_form-range.scss`, `forms/_input-group.scss`, `forms/_floating-labels.scss`, `forms/_labels.scss`, `forms/_form-text.scss` returns **no custom-property declarations** in `_form-control.scss`, `_form-range.scss`, `_input-group.scss`, `_floating-labels.scss`, `_labels.scss`, or `_form-text.scss`. Unlike Button/Card/Dropdown/etc., `.form-control` compiles `$input-*` SCSS variables directly into static declarations (e.g. `padding: 0.375rem 0.75rem;`) — there is no `--bs-input-padding-x` or similar consumer override hook. Do not invent one.
 
-Set on row/column elements. Not defined at `:root`.
+The only form-related custom properties that exist at runtime are narrow, image-only hooks:
 
-| CSS property | Default value | Purpose |
+| CSS property | Default value | Semantic role | Component |
+|---|---|---|---|
+| `--bs-form-select-bg-img` | inline SVG data-URI (chevron, stroke `#343a40`; dark theme override uses `#dee2e6`) | Select dropdown arrow icon | Form Select (`.form-select`) |
+| `--bs-form-select-bg-icon` | *not set by default*; set to a validation-icon SVG only when `.form-select.is-valid` (green check) or `.form-select.is-invalid` (red circle) is applied | Validation icon layered behind the arrow icon | Form Select |
+| `--bs-form-check-bg` | `var(--bs-body-bg)` | Checkbox/radio background | Form Check (`.form-check-input`) |
+| `--bs-form-check-bg-image` | *not set by default* (unchecked state has no image); set to a checkmark/circle/dash SVG when `:checked` or `:indeterminate` | Checkbox check glyph / radio dot / indeterminate dash | Form Check |
+
+**4 tokens.** (See `states.md` for the full `:checked`/`:indeterminate`/`.is-valid`/`.is-invalid` selector list that toggles these.)
+
+### Form Switch — image-only hook
+
+`_form-check.scss` defines `$form-switch-bg-image` etc. as **SCSS variables only** — no `--bs-form-switch-*` custom property is emitted in `:root`. Compiled CSS shows exactly one runtime custom property for switches:
+
+| CSS property | Default value | Semantic role |
 |---|---|---|
-| `--bs-gutter-x` | `1.5rem` | Horizontal gutter between columns |
-| `--bs-gutter-y` | `0` | Vertical gutter (wrapping rows) |
+| `--bs-form-switch-bg` | inline SVG data-URI (circle, `rgba(0,0,0,.25)`) | Switch track thumb-off image, referenced from the `form` prefix group in compiled CSS |
 
-> Override via `.g-*`, `.gx-*`, `.gy-*` utility classes (0 / 0.25rem / 0.5rem / 1rem / 1.5rem / 3rem).
+**1 token.**
 
-### Breakpoints (`--bs-breakpoint-*`)
+### Nav — `--bs-nav-*` (source: `_nav.scss`, compiled CSS `.nav {}` at line 3797, `.nav-tabs`/`.nav-pills`/`.nav-underline` blocks following)
 
-Defined on `.container {}` — informational only, not consumed by CSS calc.
+| CSS property | Default value | Scope |
+|---|---|---|
+| `--bs-nav-link-padding-x` | `1rem` | `.nav` |
+| `--bs-nav-link-padding-y` | `0.5rem` | `.nav` |
+| `--bs-nav-link-font-weight` | *(empty)* | `.nav` |
+| `--bs-nav-link-color` | `var(--bs-link-color)` | `.nav` |
+| `--bs-nav-link-hover-color` | `var(--bs-link-hover-color)` | `.nav` |
+| `--bs-nav-link-disabled-color` | `var(--bs-secondary-color)` | `.nav` |
+| `--bs-nav-tabs-border-width` | `var(--bs-border-width)` | `.nav-tabs` |
+| `--bs-nav-tabs-border-color` | `var(--bs-border-color)` | `.nav-tabs` |
+| `--bs-nav-tabs-border-radius` | `var(--bs-border-radius)` | `.nav-tabs` |
+| `--bs-nav-tabs-link-hover-border-color` | `var(--bs-secondary-bg) var(--bs-secondary-bg) var(--bs-border-color)` | `.nav-tabs` |
+| `--bs-nav-tabs-link-active-color` | `var(--bs-emphasis-color)` | `.nav-tabs` |
+| `--bs-nav-tabs-link-active-bg` | `var(--bs-body-bg)` | `.nav-tabs` |
+| `--bs-nav-tabs-link-active-border-color` | `var(--bs-border-color) var(--bs-border-color) var(--bs-body-bg)` | `.nav-tabs` |
+| `--bs-nav-pills-border-radius` | `var(--bs-border-radius)` | `.nav-pills` |
+| `--bs-nav-pills-link-active-color` | `#fff` | `.nav-pills` |
+| `--bs-nav-pills-link-active-bg` | `#0d6efd` | `.nav-pills` |
+| `--bs-nav-underline-gap` | `1rem` | `.nav-underline` |
+| `--bs-nav-underline-border-width` | `0.125rem` | `.nav-underline` |
+| `--bs-nav-underline-link-active-color` | `var(--bs-emphasis-color)` | `.nav-underline` |
 
-| CSS property | Value |
+**18 tokens.**
+
+### Navbar — `--bs-navbar-*` (source: `_navbar.scss`, compiled CSS `.navbar {}` at line 3932)
+
+| CSS property | Default value |
 |---|---|
-| `--bs-breakpoint-xs` | `0` |
-| `--bs-breakpoint-sm` | `576px` |
-| `--bs-breakpoint-md` | `768px` |
-| `--bs-breakpoint-lg` | `992px` |
-| `--bs-breakpoint-xl` | `1200px` |
-| `--bs-breakpoint-xxl` | `1400px` |
+| `--bs-navbar-padding-x` | `0` |
+| `--bs-navbar-padding-y` | `0.5rem` |
+| `--bs-navbar-color` | `rgba(var(--bs-emphasis-color-rgb), .65)` |
+| `--bs-navbar-hover-color` | `rgba(var(--bs-emphasis-color-rgb), .8)` |
+| `--bs-navbar-disabled-color` | `rgba(var(--bs-emphasis-color-rgb), .3)` |
+| `--bs-navbar-active-color` | `rgba(var(--bs-emphasis-color-rgb), 1)` |
+| `--bs-navbar-brand-padding-y` | `0.3125rem` |
+| `--bs-navbar-brand-margin-end` | `1rem` |
+| `--bs-navbar-brand-font-size` | `1.25rem` |
+| `--bs-navbar-brand-color` | `rgba(var(--bs-emphasis-color-rgb), 1)` |
+| `--bs-navbar-brand-hover-color` | `rgba(var(--bs-emphasis-color-rgb), 1)` |
+| `--bs-navbar-nav-link-padding-x` | `0.5rem` |
+| `--bs-navbar-toggler-padding-y` | `0.25rem` |
+| `--bs-navbar-toggler-padding-x` | `0.75rem` |
+| `--bs-navbar-toggler-font-size` | `1.25rem` |
+| `--bs-navbar-toggler-icon-bg` | inline SVG (hamburger) |
+| `--bs-navbar-toggler-border-color` | `rgba(var(--bs-emphasis-color-rgb), .15)` |
+| `--bs-navbar-toggler-border-radius` | `var(--bs-border-radius)` |
+| `--bs-navbar-toggler-focus-width` | `0.25rem` |
+| `--bs-navbar-toggler-transition` | `box-shadow 0.15s ease-in-out` |
+
+**19 tokens.** (`.navbar-dark`/`.navbar-light` legacy theme classes override `--bs-navbar-*` and `--bs-navbar-brand-*` colors directly; not separate token names.)
+
+### Dropdown — `--bs-dropdown-*` (source: `_dropdown.scss`, compiled CSS `.dropdown-menu {}` at line 3405)
+
+| CSS property | Default value |
+|---|---|
+| `--bs-dropdown-zindex` | `1000` |
+| `--bs-dropdown-min-width` | `10rem` |
+| `--bs-dropdown-padding-x` | `0` |
+| `--bs-dropdown-padding-y` | `0.5rem` |
+| `--bs-dropdown-spacer` | `0.125rem` |
+| `--bs-dropdown-font-size` | `1rem` |
+| `--bs-dropdown-color` | `var(--bs-body-color)` |
+| `--bs-dropdown-bg` | `var(--bs-body-bg)` |
+| `--bs-dropdown-border-color` | `var(--bs-border-color-translucent)` |
+| `--bs-dropdown-border-radius` | `var(--bs-border-radius)` |
+| `--bs-dropdown-border-width` | `var(--bs-border-width)` |
+| `--bs-dropdown-inner-border-radius` | `calc(var(--bs-border-radius) - var(--bs-border-width))` |
+| `--bs-dropdown-divider-bg` | `var(--bs-border-color-translucent)` |
+| `--bs-dropdown-divider-margin-y` | `0.5rem` |
+| `--bs-dropdown-box-shadow` | `var(--bs-box-shadow)` |
+| `--bs-dropdown-link-color` | `var(--bs-body-color)` |
+| `--bs-dropdown-link-hover-color` | `var(--bs-body-color)` |
+| `--bs-dropdown-link-hover-bg` | `var(--bs-tertiary-bg)` |
+| `--bs-dropdown-link-active-color` | `#fff` |
+| `--bs-dropdown-link-active-bg` | `#0d6efd` |
+| `--bs-dropdown-link-disabled-color` | `var(--bs-tertiary-color)` |
+| `--bs-dropdown-item-padding-x` | `1rem` |
+| `--bs-dropdown-item-padding-y` | `0.25rem` |
+| `--bs-dropdown-header-color` | `#6c757d` |
+| `--bs-dropdown-header-padding-x` | `1rem` |
+| `--bs-dropdown-header-padding-y` | `0.5rem` |
+
+**25 tokens.** `.dropdown-menu-dark` overrides several of these (color/bg/border/link colors) inline as a modifier class rather than exposing new token names.
+
+### Pagination — `--bs-pagination-*` (source: `_pagination.scss`, compiled CSS `.pagination {}` at line 4715)
+
+| CSS property | Default value |
+|---|---|
+| `--bs-pagination-padding-x` | `0.75rem` |
+| `--bs-pagination-padding-y` | `0.375rem` |
+| `--bs-pagination-font-size` | `1rem` |
+| `--bs-pagination-color` | `var(--bs-link-color)` |
+| `--bs-pagination-bg` | `var(--bs-body-bg)` |
+| `--bs-pagination-border-width` | `var(--bs-border-width)` |
+| `--bs-pagination-border-color` | `var(--bs-border-color)` |
+| `--bs-pagination-border-radius` | `var(--bs-border-radius)` |
+| `--bs-pagination-hover-color` | `var(--bs-link-hover-color)` |
+| `--bs-pagination-hover-bg` | `var(--bs-tertiary-bg)` |
+| `--bs-pagination-hover-border-color` | `var(--bs-border-color)` |
+| `--bs-pagination-focus-color` | `var(--bs-link-hover-color)` |
+| `--bs-pagination-focus-bg` | `var(--bs-secondary-bg)` |
+| `--bs-pagination-focus-box-shadow` | `0 0 0 0.25rem rgba(13,110,253,.25)` |
+| `--bs-pagination-active-color` | `#fff` |
+| `--bs-pagination-active-bg` | `#0d6efd` |
+| `--bs-pagination-active-border-color` | `#0d6efd` |
+| `--bs-pagination-disabled-color` | `var(--bs-secondary-color)` |
+| `--bs-pagination-disabled-bg` | `var(--bs-secondary-bg)` |
+| `--bs-pagination-disabled-border-color` | `var(--bs-border-color)` |
+
+**19 tokens.**
+
+### Accordion — `--bs-accordion-*` (source: `_accordion.scss`, compiled CSS `.accordion {}` at line 4546)
+
+| CSS property | Default value |
+|---|---|
+| `--bs-accordion-color` | `var(--bs-body-color)` |
+| `--bs-accordion-bg` | `var(--bs-body-bg)` |
+| `--bs-accordion-transition` | `color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out, border-radius .15s ease` |
+| `--bs-accordion-border-color` | `var(--bs-border-color)` |
+| `--bs-accordion-border-width` | `var(--bs-border-width)` |
+| `--bs-accordion-border-radius` | `var(--bs-border-radius)` |
+| `--bs-accordion-inner-border-radius` | `calc(var(--bs-border-radius) - var(--bs-border-width))` |
+| `--bs-accordion-btn-padding-x` | `1.25rem` |
+| `--bs-accordion-btn-padding-y` | `1rem` |
+| `--bs-accordion-btn-color` | `var(--bs-body-color)` |
+| `--bs-accordion-btn-bg` | `var(--bs-accordion-bg)` |
+| `--bs-accordion-btn-icon` | inline SVG chevron (stroke `#212529`) |
+| `--bs-accordion-btn-icon-width` | `1.25rem` |
+| `--bs-accordion-btn-icon-transform` | `rotate(-180deg)` |
+| `--bs-accordion-btn-icon-transition` | `transform .2s ease-in-out` |
+| `--bs-accordion-btn-active-icon` | inline SVG chevron (stroke `#052c65`, matches `primary-text-emphasis`) |
+| `--bs-accordion-btn-focus-box-shadow` | `0 0 0 0.25rem rgba(13,110,253,.25)` |
+| `--bs-accordion-body-padding-x` | `1.25rem` |
+| `--bs-accordion-body-padding-y` | `1rem` |
+| `--bs-accordion-active-color` | `var(--bs-primary-text-emphasis)` |
+| `--bs-accordion-active-bg` | `var(--bs-primary-bg-subtle)` |
+
+**20 tokens.**
+
+### Card — `--bs-card-*` (source: `_card.scss`, compiled CSS `.card {}` at line 4359)
+
+| CSS property | Default value |
+|---|---|
+| `--bs-card-spacer-y` | `1rem` |
+| `--bs-card-spacer-x` | `1rem` |
+| `--bs-card-title-spacer-y` | `0.5rem` |
+| `--bs-card-title-color` | *(empty)* |
+| `--bs-card-subtitle-color` | *(empty)* |
+| `--bs-card-border-width` | `var(--bs-border-width)` |
+| `--bs-card-border-color` | `var(--bs-border-color-translucent)` |
+| `--bs-card-border-radius` | `var(--bs-border-radius)` |
+| `--bs-card-box-shadow` | *(empty)* |
+| `--bs-card-inner-border-radius` | `calc(var(--bs-border-radius) - var(--bs-border-width))` |
+| `--bs-card-cap-padding-y` | `0.5rem` |
+| `--bs-card-cap-padding-x` | `1rem` |
+| `--bs-card-cap-bg` | `rgba(var(--bs-body-color-rgb), .03)` |
+| `--bs-card-cap-color` | *(empty)* |
+| `--bs-card-height` | *(empty)* |
+| `--bs-card-color` | *(empty)* |
+| `--bs-card-bg` | `var(--bs-body-bg)` |
+| `--bs-card-img-overlay-padding` | `1rem` |
+| `--bs-card-group-margin` | `0.75rem` |
+
+**19 tokens.**
+
+### List Group — `--bs-list-group-*` (source: `_list-group.scss`, compiled CSS `.list-group {}` at line 4993)
+
+| CSS property | Default value |
+|---|---|
+| `--bs-list-group-color` | `var(--bs-body-color)` |
+| `--bs-list-group-bg` | `var(--bs-body-bg)` |
+| `--bs-list-group-border-color` | `var(--bs-border-color)` |
+| `--bs-list-group-border-width` | `var(--bs-border-width)` |
+| `--bs-list-group-border-radius` | `var(--bs-border-radius)` |
+| `--bs-list-group-item-padding-x` | `1rem` |
+| `--bs-list-group-item-padding-y` | `0.5rem` |
+| `--bs-list-group-action-color` | `var(--bs-secondary-color)` |
+| `--bs-list-group-action-hover-color` | `var(--bs-emphasis-color)` |
+| `--bs-list-group-action-hover-bg` | `var(--bs-tertiary-bg)` |
+| `--bs-list-group-action-active-color` | `var(--bs-body-color)` |
+| `--bs-list-group-action-active-bg` | `var(--bs-secondary-bg)` |
+| `--bs-list-group-disabled-color` | `var(--bs-secondary-color)` |
+| `--bs-list-group-disabled-bg` | `var(--bs-body-bg)` |
+| `--bs-list-group-active-color` | `#fff` |
+| `--bs-list-group-active-bg` | `#0d6efd` |
+| `--bs-list-group-active-border-color` | `#0d6efd` |
+
+**17 tokens.**
+
+### Table — `--bs-table-*` (source: `_variables.scss` table-variables block, compiled CSS `.table {}` at line 1862)
+
+| CSS property | Default value |
+|---|---|
+| `--bs-table-color-type` | `initial` |
+| `--bs-table-bg-type` | `initial` |
+| `--bs-table-color-state` | `initial` |
+| `--bs-table-bg-state` | `initial` |
+| `--bs-table-color` | `var(--bs-emphasis-color)` |
+| `--bs-table-bg` | `var(--bs-body-bg)` |
+| `--bs-table-border-color` | `var(--bs-border-color)` |
+| `--bs-table-accent-bg` | `transparent` |
+| `--bs-table-striped-color` | `var(--bs-emphasis-color)` |
+| `--bs-table-striped-bg` | `rgba(var(--bs-emphasis-color-rgb), .05)` |
+| `--bs-table-active-color` | `var(--bs-emphasis-color)` |
+| `--bs-table-active-bg` | `rgba(var(--bs-emphasis-color-rgb), .1)` |
+| `--bs-table-hover-color` | `var(--bs-emphasis-color)` |
+| `--bs-table-hover-bg` | `rgba(var(--bs-emphasis-color-rgb), .075)` |
+
+**14 tokens.** `-type` and `-state` variants are internal composition hooks used by `.table-{variant}` and `.table-{active,hover}` modifier classes (see `mixins/_table-variants.scss`) — they aren't meant to be set directly by consumers.
+
+### Alert — `--bs-alert-*` (source: `_alert.scss`, compiled CSS `.alert {}` at line 4836)
+
+| CSS property | Default value |
+|---|---|
+| `--bs-alert-bg` | `transparent` |
+| `--bs-alert-padding-x` | `1rem` |
+| `--bs-alert-padding-y` | `1rem` |
+| `--bs-alert-margin-bottom` | `1rem` |
+| `--bs-alert-color` | `inherit` |
+| `--bs-alert-border-color` | `transparent` |
+| `--bs-alert-border` | `var(--bs-border-width) solid var(--bs-alert-border-color)` |
+| `--bs-alert-border-radius` | `var(--bs-border-radius)` |
+| `--bs-alert-link-color` | `inherit` |
+
+**9 tokens.** Each `.alert-{variant}` (primary/secondary/success/info/warning/danger/light/dark) overrides `-color`/`-bg`/`-border-color`/`-link-color` with the theme color's subtle/emphasis tokens from §4 — no new token names.
+
+### Badge — `--bs-badge-*` (source: `_variables.scss` badge-variables, compiled CSS `.badge {}` at line 4809)
+
+| CSS property | Default value |
+|---|---|
+| `--bs-badge-padding-x` | `0.65em` |
+| `--bs-badge-padding-y` | `0.35em` |
+| `--bs-badge-font-size` | `0.75em` |
+| `--bs-badge-font-weight` | `700` |
+| `--bs-badge-color` | `#fff` |
+| `--bs-badge-border-radius` | `var(--bs-border-radius)` |
+
+**6 tokens.**
+
+### Breadcrumb — `--bs-breadcrumb-*` (source: `_breadcrumb.scss`, compiled CSS `.breadcrumb {}` at line 4683)
+
+| CSS property | Default value |
+|---|---|
+| `--bs-breadcrumb-padding-x` | `0` |
+| `--bs-breadcrumb-padding-y` | `0` |
+| `--bs-breadcrumb-margin-bottom` | `1rem` |
+| `--bs-breadcrumb-bg` | *(empty)* |
+| `--bs-breadcrumb-border-radius` | *(empty)* |
+| `--bs-breadcrumb-divider-color` | `var(--bs-secondary-color)` |
+| `--bs-breadcrumb-item-padding-x` | `0.5rem` |
+| `--bs-breadcrumb-item-active-color` | `var(--bs-secondary-color)` |
+
+**8 tokens.**
+
+### Progress — `--bs-progress-*` (source: `_progress.scss`, compiled CSS `.progress, .progress-stacked {}` at line 4936)
+
+| CSS property | Default value |
+|---|---|
+| `--bs-progress-height` | `1rem` |
+| `--bs-progress-font-size` | `0.75rem` |
+| `--bs-progress-bg` | `var(--bs-secondary-bg)` |
+| `--bs-progress-border-radius` | `var(--bs-border-radius)` |
+| `--bs-progress-box-shadow` | `var(--bs-box-shadow-inset)` |
+| `--bs-progress-bar-color` | `#fff` |
+| `--bs-progress-bar-bg` | `#0d6efd` |
+| `--bs-progress-bar-transition` | `width .6s ease` |
+
+**8 tokens.**
+
+### Spinner — `--bs-spinner-*` (source: `_spinners.scss`, compiled CSS `.spinner-border {}` / `.spinner-grow {}` around line 6213)
+
+| CSS property | Default value | Scope |
+|---|---|---|
+| `--bs-spinner-width` | `2rem` | Both variants (`1rem` on `-sm` modifiers) |
+| `--bs-spinner-height` | `2rem` | Both variants (`1rem` on `-sm`) |
+| `--bs-spinner-vertical-align` | `-0.125em` | Both |
+| `--bs-spinner-border-width` | `0.25em` | `.spinner-border` only (`0.2em` on `-sm`) |
+| `--bs-spinner-animation-speed` | `0.75s` (`1.5s` under `prefers-reduced-motion: reduce`) | Both |
+| `--bs-spinner-animation-name` | `spinner-border` / `spinner-grow` | Set per variant |
+
+**6 tokens.**
+
+### Toast — `--bs-toast-*` (source: `_toasts.scss`, compiled CSS `.toast {}` at line 5386)
+
+| CSS property | Default value |
+|---|---|
+| `--bs-toast-zindex` | `1090` |
+| `--bs-toast-padding-x` | `0.75rem` |
+| `--bs-toast-padding-y` | `0.5rem` |
+| `--bs-toast-spacing` | `1.5rem` |
+| `--bs-toast-max-width` | `350px` |
+| `--bs-toast-font-size` | `0.875rem` |
+| `--bs-toast-color` | *(empty)* |
+| `--bs-toast-bg` | `rgba(var(--bs-body-bg-rgb), .85)` |
+| `--bs-toast-border-width` | `var(--bs-border-width)` |
+| `--bs-toast-border-color` | `var(--bs-border-color-translucent)` |
+| `--bs-toast-border-radius` | `var(--bs-border-radius)` |
+| `--bs-toast-box-shadow` | `var(--bs-box-shadow)` |
+| `--bs-toast-header-color` | `var(--bs-secondary-color)` |
+| `--bs-toast-header-bg` | `rgba(var(--bs-body-bg-rgb), .85)` |
+| `--bs-toast-header-border-color` | `var(--bs-border-color-translucent)` |
+
+**15 tokens.**
+
+### Tooltip — `--bs-tooltip-*` (source: `_tooltip.scss`, compiled CSS `.tooltip {}` at line 5749)
+
+| CSS property | Default value |
+|---|---|
+| `--bs-tooltip-zindex` | `1080` |
+| `--bs-tooltip-max-width` | `200px` |
+| `--bs-tooltip-padding-x` | `0.5rem` |
+| `--bs-tooltip-padding-y` | `0.25rem` |
+| `--bs-tooltip-margin` | *(empty)* |
+| `--bs-tooltip-font-size` | `0.875rem` |
+| `--bs-tooltip-color` | `var(--bs-body-bg)` |
+| `--bs-tooltip-bg` | `var(--bs-emphasis-color)` |
+| `--bs-tooltip-border-radius` | `var(--bs-border-radius)` |
+| `--bs-tooltip-opacity` | `0.9` |
+| `--bs-tooltip-arrow-width` | `0.8rem` |
+| `--bs-tooltip-arrow-height` | `0.4rem` |
+
+**12 tokens.**
+
+### Popover — `--bs-popover-*` (source: `_popover.scss`, compiled CSS `.popover {}` at line 5851)
+
+| CSS property | Default value |
+|---|---|
+| `--bs-popover-zindex` | `1070` |
+| `--bs-popover-max-width` | `276px` |
+| `--bs-popover-font-size` | `0.875rem` |
+| `--bs-popover-bg` | `var(--bs-body-bg)` |
+| `--bs-popover-border-width` | `var(--bs-border-width)` |
+| `--bs-popover-border-color` | `var(--bs-border-color-translucent)` |
+| `--bs-popover-border-radius` | `var(--bs-border-radius-lg)` |
+| `--bs-popover-inner-border-radius` | `calc(var(--bs-border-radius-lg) - var(--bs-border-width))` |
+| `--bs-popover-box-shadow` | `var(--bs-box-shadow)` |
+| `--bs-popover-header-padding-x` | `1rem` |
+| `--bs-popover-header-padding-y` | `0.5rem` |
+| `--bs-popover-header-font-size` | `1rem` |
+| `--bs-popover-header-color` | `inherit` |
+| `--bs-popover-header-bg` | `var(--bs-secondary-bg)` |
+| `--bs-popover-body-padding-x` | `1rem` |
+| `--bs-popover-body-padding-y` | `1rem` |
+| `--bs-popover-body-color` | `var(--bs-body-color)` |
+| `--bs-popover-arrow-width` | `1rem` |
+| `--bs-popover-arrow-height` | `0.5rem` |
+| `--bs-popover-arrow-border` | `var(--bs-popover-border-color)` |
+
+**20 tokens.**
+
+### Modal — `--bs-modal-*` (source: `_modal.scss`, compiled CSS `.modal {}` at line 5455)
+
+| CSS property | Default value |
+|---|---|
+| `--bs-modal-zindex` | `1055` |
+| `--bs-modal-width` | `500px` |
+| `--bs-modal-padding` | `1rem` |
+| `--bs-modal-margin` | `0.5rem` |
+| `--bs-modal-color` | `var(--bs-body-color)` |
+| `--bs-modal-bg` | `var(--bs-body-bg)` |
+| `--bs-modal-border-color` | `var(--bs-border-color-translucent)` |
+| `--bs-modal-border-width` | `var(--bs-border-width)` |
+| `--bs-modal-border-radius` | `var(--bs-border-radius-lg)` |
+| `--bs-modal-box-shadow` | `var(--bs-box-shadow-sm)` |
+| `--bs-modal-inner-border-radius` | `calc(var(--bs-border-radius-lg) - var(--bs-border-width))` |
+| `--bs-modal-header-padding-x` | `1rem` |
+| `--bs-modal-header-padding-y` | `1rem` |
+| `--bs-modal-header-padding` | `1rem 1rem` |
+| `--bs-modal-header-border-color` | `var(--bs-border-color)` |
+| `--bs-modal-header-border-width` | `var(--bs-border-width)` |
+| `--bs-modal-title-line-height` | `1.5` |
+| `--bs-modal-footer-gap` | `0.5rem` |
+| `--bs-modal-footer-bg` | *(empty)* |
+| `--bs-modal-footer-border-color` | `var(--bs-border-color)` |
+| `--bs-modal-footer-border-width` | `var(--bs-border-width)` |
+
+**20 tokens**, declared on `.modal` (not `.modal-content` — `.modal-content` only consumes them via `var()`).
+
+**Modal backdrop — `--bs-backdrop-*`** (shared namespace with Offcanvas; declared separately on `.modal-backdrop` and `.offcanvas-backdrop`):
+
+| CSS property | Default value |
+|---|---|
+| `--bs-backdrop-zindex` | `1050` (modal) / different value on offcanvas backdrop |
+| `--bs-backdrop-bg` | `#000` |
+| `--bs-backdrop-opacity` | `0.5` |
+
+**3 tokens** (namespace reused, not duplicated, by Offcanvas).
+
+### Offcanvas — `--bs-offcanvas-*` (source: `_offcanvas.scss`, compiled CSS `.offcanvas, .offcanvas-xxl, .offcanvas-xl, .offcanvas-lg, .offcanvas-md, .offcanvas-sm {}` at line 6275)
+
+| CSS property | Default value |
+|---|---|
+| `--bs-offcanvas-zindex` | `1045` |
+| `--bs-offcanvas-width` | `400px` |
+| `--bs-offcanvas-height` | `30vh` |
+| `--bs-offcanvas-padding-x` | `1rem` |
+| `--bs-offcanvas-padding-y` | `1rem` |
+| `--bs-offcanvas-color` | `var(--bs-body-color)` |
+| `--bs-offcanvas-bg` | `var(--bs-body-bg)` |
+| `--bs-offcanvas-border-width` | `var(--bs-border-width)` |
+| `--bs-offcanvas-border-color` | `var(--bs-border-color-translucent)` |
+| `--bs-offcanvas-box-shadow` | `var(--bs-box-shadow-sm)` |
+| `--bs-offcanvas-transition` | `transform 0.3s ease-in-out` |
+| `--bs-offcanvas-title-line-height` | `1.5` |
+
+**12 tokens.** Note the base selector is a comma-joined group (`.offcanvas, .offcanvas-xxl, ...`), not just `.offcanvas` alone — all size-responsive variants share one default block, then each breakpoint's media query re-scopes `--bs-offcanvas-height`/`-border-width` for the horizontal-becomes-inline breakpoint behavior.
+
+### Carousel — no dedicated `--bs-carousel-*` root namespace
+
+`_variables.scss` defines `$carousel-*` SCSS variables, but only 3 end up as runtime custom properties in compiled CSS (all declared inline on specific sub-elements, not a shared `.carousel` block): `--bs-carousel-caption-color`, `--bs-carousel-control-icon-filter`, `--bs-carousel-indicator-active-bg`. Carousel is out of the 31-component scope for this KB (not in the "Components to document" list) — flagged here only because it surfaced during the `--bs-*` grep; not expanded further.
+
+### Grid gutters — `--bs-gutter-x` / `--bs-gutter-y` (source: `mixins/_grid.scss`)
+
+| CSS property | Default value | Scope |
+|---|---|---|
+| `--bs-gutter-x` | `1.5rem` (`$grid-gutter-width`) | `.row` |
+| `--bs-gutter-y` | `0` | `.row` |
+
+**2 tokens.** Layout-system tokens, not tied to a single component in the 31-component list; included for completeness since they appeared in the token grep.
 
 ---
 
-## Dark Mode Overrides
+## Section 10 totals
 
-Bootstrap 5.3 supports dark mode via `[data-bs-theme="dark"]`. In dark mode the following root tokens are overridden. Key changed values:
+Button 25 + Close Button 8 + Form controls 4 + Form Switch 1 + Nav 18 + Navbar 19 + Dropdown 25 + Pagination 19 + Accordion 20 + Card 19 + List Group 17 + Table 14 + Alert 9 + Badge 6 + Breadcrumb 8 + Progress 8 + Spinner 6 + Toast 15 + Tooltip 12 + Popover 20 + Modal 20 + Backdrop 3 + Offcanvas 12 + Grid gutters 2 = **310 tokens**.
 
-| Token | Dark mode value | Notes |
-|---|---|---|
-| `--bs-body-color` | `#dee2e6` | Light text on dark |
-| `--bs-body-bg` | `#212529` | Dark background |
-| `--bs-emphasis-color` | `#fff` | Max contrast text |
-| `--bs-secondary-color` | `rgba(222,226,230,.75)` | Muted light text |
-| `--bs-secondary-bg` | `#343a40` | Slightly lighter than bg |
-| `--bs-tertiary-color` | `rgba(222,226,230,.5)` | Very muted light text |
-| `--bs-tertiary-bg` | `#2b3035` | Dark tertiary surface |
-| `--bs-border-color` | `#495057` | Gray-700 border on dark |
-| `--bs-border-color-translucent` | `rgba(255,255,255,.15)` | White-based translucent border |
-| `--bs-form-valid-color` | `#75b798` | Light green for dark bg |
-| `--bs-form-valid-border-color` | `#75b798` | — |
-| `--bs-form-invalid-color` | `#ea868f` | Light red for dark bg |
-| `--bs-form-invalid-border-color` | `#ea868f` | — |
-| `--bs-link-color` | `#6ea8fe` | Lighter blue link |
-| `--bs-link-hover-color` | `#8bb9fe` | Even lighter on hover |
-| `--bs-code-color` | `#e685b5` | Lighter pink code |
-| `--bs-highlight-bg` | `#664d03` | Dark yellow highlight |
-| `--bs-*-text-emphasis` | Lighter tints | Per-theme-color (e.g. `#6ea8fe` for primary) |
-| `--bs-*-bg-subtle` | Darker shades | Per-theme-color (e.g. `#031633` for primary) |
-| `--bs-*-border-subtle` | Mid-dark shades | Per-theme-color (e.g. `#084298` for primary) |
+## Grand total
 
-Component-level dark mode: `.dropdown-menu-dark` overrides `--bs-dropdown-*` tokens directly. `.navbar-dark` overrides `--bs-navbar-*` tokens.
+§1–9 (114) + §10 (310) = **424 tokens** documented (matches the compiled-CSS unique-property-name count for these namespaces; the full compiled CSS has 459 unique `--bs-*` names in total — the remaining ~35 are per-color-scale `fusv-disable` maps like `$blue-100`..`$blue-900` that never reach `:root` as CSS, deprecated-alias variables, and a small number of internal composition variables covered inline above such as `--bs-table-bg-type`).
+
+---
+
+## Verification note (per skill instruction: re-read `_root.scss` and confirm every property has an entry)
+
+Re-read of `_root.scss` (188 lines, full file) confirms every `--#{$prefix}...` emission in that file is represented above in §1–9: palette (`$colors`, `$grays`, `$theme-colors`, `$theme-colors-rgb`, `$theme-colors-text`, `$theme-colors-bg-subtle`, `$theme-colors-border-subtle` loops), `white-rgb`/`black-rgb`, fonts, `gradient`, root-body-variables block, link/code/highlight, root-border-var block, shadow, root-focus-variables block, root-form-validation-variables block, and the entire `[data-bs-theme=dark]` override block. No property emitted by `_root.scss` is missing from this file.

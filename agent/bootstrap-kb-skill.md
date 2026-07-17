@@ -18,7 +18,7 @@ Use this skill when an agent needs to build or rebuild the Bootstrap knowledge b
 
 4. **Do not infer token names:** Before recording any `--bs-*` token, confirm it exists in `_root.scss` or the component's own SCSS file. Names can be misleading (e.g. `--bs-input-focus-color` is the text color, not the focus ring color).
 
-5. **Bridge file:** The bridge layer is `src/scss/_bootstrap-bridges.scss`.
+5. **Bootstrap-only scope:** Document only what Bootstrap's CSS, DOM, and JS actually do. The project context describes a React Aria bridging architecture, and several fields above ask for React Aria crosswalk names — that's fine, but do not extend any entry into a bridging strategy, resolution, or "no bridge needed" conclusion. That judgment is Stage 4's (`mapping-and-references-skill`), made per-component with source verification.
 
 ---
 
@@ -111,23 +111,18 @@ Document any selectors that appear in the compiled CSS but not as literal string
 ```markdown
 ---
 what: Bootstrap 5.3.8 state and interaction reference
-contains: For each state: CSS selector Bootstrap uses, visual change produced, components it applies to, and React Aria data-* equivalent. Includes JS state mutation catalog and bridge strategy overview.
+contains: For each state: CSS selector Bootstrap uses, visual change produced, components it applies to. Includes JS state mutation catalog.
 when-to-load: ALWAYS during the mapping phase. Primary source for the "State mappings" column of mapping-table.md.
-related: components.md for component-specific state context; patterns.md for JS mutation conflicts
+related: components.md for component-specific state context
 ---
 ```
 
 **State Catalog table:**
-`| State | Bootstrap selector(s) | How applied | Visual effect | React Aria data-* equivalent |`
+`| State | Bootstrap selector(s) | How applied | Visual effect |`
 
 States to document: Hover (`:hover`), Focus (`:focus`, `:focus-visible`, `.focus-ring` helper), Active / Pressed (`:active`; `.active` on nav/list-group/pagination), Disabled (`:disabled`, `[disabled]`, `.disabled`), Checked (`:checked`), Selected (`.active` on list-group/dropdown items), Expanded / Open (`.show`), Collapsed (`.collapse`, `.collapsing`), Valid (`.is-valid`; `:valid` with `was-validated`), Invalid (`.is-invalid`; `:invalid` with `was-validated`), Read-only (`[readonly]`), Indeterminate (`:indeterminate`), Placeholder shown (`:placeholder-shown`)
 
 **JS State Mutations section:** For each JS-toggled class: what adds it, what element it targets, what it reveals/selects. Cover `.show`, `.active`, `.collapse`/`.collapsing`/`.show`.
-
-**Bridge Strategy Overview section:**
-1. **CSS pseudo-class overlap** — React Aria's `[data-focused]` is redundant with `:focus-visible`; no bridge needed.
-2. **Compound selector bridge** — React Aria never adds `.active`/`.show`; use `[data-selected]` or `[data-open]` in compound selectors (e.g. `.react-aria-ListBoxItem[data-selected]`) to reproduce `.active` visual styling.
-3. **`_bootstrap-bridges.scss`** — Global bridge layer at `src/scss/_bootstrap-bridges.scss` for rules shared across multiple components.
 
 ---
 
@@ -143,7 +138,7 @@ States to document: Hover (`:hover`), Focus (`:focus`, `:focus-visible`, `.focus
 what: Bootstrap 5.3.8 component class and DOM structure reference
 contains: For each Bootstrap component: primary classes, modifier classes, expected DOM tree, sub-element roles, JS-driven class mutations, cross-references.
 when-to-load: During mapping — load the specific component entry, not the whole file. Do not load the entire file into context at once.
-related: states.md for state-specific selectors; patterns.md for Bootstrap↔React Aria DOM conflicts; tokens.md for component-level tokens
+related: states.md for state-specific selectors; patterns.md for compound component DOM structure; tokens.md for component-level tokens
 ---
 ```
 
@@ -172,37 +167,33 @@ Button, Button Group, Form Control / Text Input, Form Select, Form Check (checkb
 ## File 5: patterns.md
 
 **Sources:**
-- `src/scss/_bootstrap-bridges.scss` — current bridge layer; read first
-- React Aria MCP (`mcp__react-aria__get_react_aria_page`) for components with known DOM conflicts
-- Bootstrap docs via WebFetch for highest-conflict components (dropdowns, select, navs-tabs, checks-radios, input-group)
+- Bootstrap docs via WebFetch for compound components where DOM structure isn't clear from SCSS alone (dropdowns, select, navs-tabs, checks-radios, input-group)
+- Component SCSS files directly for compound components whose structure *is* clear from source but whose selectors are still ancestor/sibling-dependent (modal, btn-check toggle). Needing a WebFetch lookup is not the test for Section 2 inclusion below — selector dependency is.
 
 **Frontmatter template:**
 ```markdown
 ---
-what: Bootstrap↔React Aria structural pattern analysis
-contains: How Bootstrap structures compound components; where React Aria's rendered DOM diverges from Bootstrap's expected DOM; where Bootstrap JS state mutations conflict with React Aria data-* attributes; proposed resolutions.
-when-to-load: During mapping table construction for any component with a DOM conflict. Also load at the start of any mapping session.
-related: states.md for state-level conflicts; components.md for Bootstrap's expected DOM; tokens.md for token-level customization that sidesteps DOM conflicts
+what: Bootstrap compound-component structural reference
+contains: A selector-pattern taxonomy; how Bootstrap structures compound components (assumed DOM chains); which Bootstrap components have a flat, single-element structure versus a compound one.
+when-to-load: When mapping any compound React Aria component to Bootstrap, to see Bootstrap's expected DOM chain before comparing it against React Aria's actual rendered markup.
+related: components.md for per-component DOM structure and JS mutations; states.md for state selectors
 ---
 ```
 
-**Section 1: Bootstrap Compound Component Patterns** — For each compound component, document Bootstrap's assumed DOM chain (e.g. `.input-group > .input-group-text | .form-control | .btn`).
+**Section 1: Selector Pattern Taxonomy** (write this first, before any per-component entry) — a short table classifying the kinds of structural CSS-selector relationships Bootstrap's component CSS relies on, so Section 2 entries can name a pattern instead of re-deriving it each time. Minimum rows: direct descendant (`.parent > .child`), nested descendant (`.ancestor .descendant`), adjacent sibling (`+`), general sibling (`~`), pseudo-class stacked with class (e.g. `:not(.collapsed)`), class stacked with class (e.g. `.btn.active`), attribute selector (e.g. `[data-bs-popper]`). One real example per row, pulled from a component documented in Section 2, plus one sentence on what the pattern structurally requires (e.g. general sibling requires a specific DOM *order*, not just co-location in the subtree).
 
-**Section 2: DOM Conflict Register table:**
-`| React Aria Component | React Aria DOM | Bootstrap Expects | Conflict | Resolution |`
+**Section 2: Bootstrap Compound Component Patterns** — For each compound component, document Bootstrap's assumed DOM chain (e.g. `.input-group > .input-group-text | .form-control | .btn`), and name which Section 1 taxonomy row its load-bearing selector belongs to.
 
-Required entries:
-- **Button** — likely low conflict; `.btn` attaches to React Aria's `<button>` directly
-- **TextField** — label/input relationship; React Aria renders wrapper + label + input; Bootstrap's `.form-label` + `.form-control` should attach cleanly but verify wrapper doesn't break `.mb-3` spacing
-- **Checkbox** — React Aria renders `<label>` root with custom visual `<div>`, not `<input type="checkbox">`; Bootstrap's `.form-check` targets native input; cannot use `.form-check-input` directly
-- **Select** — React Aria renders `<button>` trigger + Popover + ListBox; Bootstrap's `.form-select` targets `<select>` element; must use dropdown pattern instead
-- **Tabs** — React Aria's `TabList > Tab` maps well to `.nav.nav-tabs > .nav-link`; conflict is state: React Aria uses `[data-selected]`, Bootstrap uses `.active`
-- **Calendar** — no Bootstrap calendar component; use `.btn.btn-sm` for cells, table utilities for grid; keep Calendar.css for grid layout
-- **ListBox** — React Aria's `ListBox > ListBoxItem` maps to `.list-group > .list-group-item`; sections/headers may insert intermediate elements that break Bootstrap's structural selectors
+*Inclusion criterion:* a component belongs here if any of its CSS selectors depend on a specific ancestor/descendant/sibling *relationship* — not merely on a class being present somewhere in the subtree. This means the minimum list is Input Group, Dropdown, Nav/Tabs, Accordion, Form Select, Form Check, **plus two components that are easy to skip because their DOM is already obvious from SCSS or from a components.md snippet — obviousness is not the same as flatness:**
 
-**Section 3: JS State Mutation Conflicts** — For each Bootstrap component where JS adds/removes classes, document the React Aria data-* attribute that replaces it and the bridge strategy.
+- **Modal** — canonical example of a load-bearing *nesting depth*. Document the full `.modal > .modal-dialog > .modal-content` chain and state explicitly that collapsing a level (e.g. applying `.modal-content`'s styles directly to `.modal-dialog`) breaks the intended layout. This is a depth dependency, distinct from the flat sibling dependencies elsewhere in this section — call that distinction out.
+- **`.btn-check` toggle pattern** — canonical example of an *adjacent-sibling* dependency. Document `<input class="btn-check"> + <label class="btn">` and state explicitly that `.btn-check:checked + .btn` will not fire unless the input immediately precedes the label as a sibling — moving the input elsewhere in the DOM (e.g. nesting it inside the label) silently breaks the selector with no error.
 
-**Section 4: Bootstrap Patterns That Compose Well** — `.badge`, `.alert`, `.table`, `.progress`/`.progress-bar`, `.breadcrumb`/`.breadcrumb-item`.
+Use Modal as the template for how deep to go: don't stop at "here's the DOM tree" — state which specific relationship in that tree the CSS depends on, and what observably breaks if it's violated. Apply that same standard to every other Section 2 entry, not just these two.
+
+**Verifying "what breaks" claims:** before asserting a consequence, locate the exact selector responsible in source or compiled CSS and read what it declares. A component's visible behavior is often produced by more than one selector on the same class — some ancestor-qualified, some not. Do not attribute an effect (a color change, an icon rotation, a border-radius) to the relational selector under discussion without confirming that selector, and not some other unqualified rule targeting the same class, is what actually declares it. Grep the compiled CSS for the full property list matching the class before writing the claim.
+
+**Section 3: Bootstrap Components With Minimal DOM Structure** — `.badge`, `.alert`, `.table`, `.progress`/`.progress-bar`, `.breadcrumb`/`.breadcrumb-item`: components whose Bootstrap class attaches to a single element or a shallow, optional structure, in contrast to Section 2's compound chains.
 
 ---
 
@@ -226,7 +217,7 @@ related: All other files in agent/bootstrap-kb/
 "What utility class does Y?" → utilities.md
 "What state selector does Bootstrap use for Z?" → states.md
 "What DOM structure does Bootstrap's Accordion expect?" → components.md#accordion
-"Will React Aria's Select conflict with Bootstrap?" → patterns.md
+"What DOM chain does Bootstrap's dropdown/Select pattern expect?" → patterns.md
 "What modifier classes does .btn have?" → components.md#button
 ```
 
@@ -261,5 +252,8 @@ Before reporting the KB as complete:
 - [ ] components.md has approximately 31 component entries (`grep -c "^## " agent/bootstrap-kb/components.md`)
 - [ ] tokens.md has 80+ token entries (`grep -c "| \`--bs-" agent/bootstrap-kb/tokens.md`)
 - [ ] states.md has 13+ state sections (`grep -c "^## " agent/bootstrap-kb/states.md`)
+- [ ] patterns.md opens with a Selector Pattern Taxonomy table (7 pattern types minimum) before any per-component entry
+- [ ] patterns.md's compound-component section includes Modal and the `.btn-check` toggle pattern, each stating the specific relationship its CSS depends on and what breaks if it's violated — not just the DOM tree
+- [ ] Every "what breaks" claim in patterns.md Section 2 was checked against the actual selector's declared properties (grep the compiled CSS), not inferred from what the component visually appears to do
 - [ ] README.md completion table is filled in with actual dates
 - [ ] README.md is the last file written in this session

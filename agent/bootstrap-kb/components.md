@@ -2,43 +2,41 @@
 what: Bootstrap 5.3.8 component class and DOM structure reference
 contains: For each Bootstrap component: primary classes, modifier classes, expected DOM tree, sub-element roles, JS-driven class mutations, cross-references.
 when-to-load: During mapping — load the specific component entry, not the whole file. Do not load the entire file into context at once.
-related: states.md for state-specific selectors; patterns.md for Bootstrap↔React Aria DOM conflicts; tokens.md for component-level tokens
+related: states.md for state-specific selectors; patterns.md for compound component DOM structure; tokens.md for component-level tokens
 ---
 
-# Bootstrap 5.3.8 Component Reference
+# Bootstrap 5.3.8 Components
 
-> **Usage note:** Load only the component section you need. This file is too large to load in full during a mapping session.
+Sources: component SCSS files under `src/scss/vendor/bootstrap-5.3.8/` (read in full per component). For compound components where DOM/ARIA structure is not fully evident from SCSS alone, verified against Bootstrap's official docs (getbootstrap.com/docs/5.3/) via WebFetch: Input Group, Dropdown, Nav/Tabs, Accordion, Form Select, Form Check (checks-radios). Those six entries include a literal HTML example pulled from the live docs page in addition to the SCSS-derived class/token facts.
+
+31 components documented below, in the order listed in the generation skill.
 
 ---
 
 ## Button
 
 **Primary class:** `.btn`
-**Modifier classes:** `.btn-{variant}` (primary, secondary, success, danger, warning, info, light, dark), `.btn-outline-{variant}`, `.btn-link`, `.btn-sm`, `.btn-lg`
-**JS mutations:** `.active` (toggle buttons), `.disabled`, `.show` (when button is a dropdown trigger that is open)
+**Modifier classes:** `.btn-primary`, `.btn-secondary`, `.btn-success`, `.btn-info`, `.btn-warning`, `.btn-danger`, `.btn-light`, `.btn-dark`, `.btn-link` (8 theme + link = 9 solid variants), `.btn-outline-{primary,secondary,success,info,warning,danger,light,dark}` (8 outline variants), `.btn-sm`, `.btn-lg`, `.btn-check` (hidden native input proxy, not a `.btn` modifier but a sibling pattern), `.active`, `.disabled`, `.show` (dropdown-toggle open state)
+**JS mutations:** `.active`/`.show` toggled by Bootstrap JS when the button is a dropdown-toggle whose menu is open, or when driven by a `.btn-check` proxy input's `:checked` state (see states.md Active/Pressed)
 **Expected DOM:**
 ```html
-<button type="button" class="btn btn-primary">Label</button>
+<button type="button" class="btn btn-primary">Button</button>
 <!-- or -->
-<a href="#" class="btn btn-secondary" role="button">Label</a>
-```
-**Sub-elements:** None — `.btn` is a single element.
-**Toggle button pattern (btn-check):** Bootstrap uses a hidden `<input type="checkbox" class="btn-check">` paired with a `<label class="btn ...">` to create toggle buttons. The `.btn-check` class hides the native input; the `.btn` on the label receives `:checked`-derived styles via the `+` sibling combinator. This is distinct from using `.active` directly on a button.
-```html
+<a class="btn btn-primary" href="#" role="button">Link button</a>
+<!-- checkbox/radio-styled toggle button -->
 <input type="checkbox" class="btn-check" id="btn-check" autocomplete="off">
-<label class="btn btn-primary" for="btn-check">Toggle</label>
+<label class="btn btn-outline-primary" for="btn-check">Toggle</label>
 ```
-**State selectors:** `:hover`, `:focus-visible`, `:active`, `:disabled`, `.disabled`, `.active`, `.show` (open dropdown trigger)
-**Compiled state selectors on `.btn`:** `.btn-check:checked + .btn` (checked toggle), `.btn-check:focus-visible + .btn` (focus ring on toggle), `.btn-check[disabled] + .btn` (disabled toggle)
-**Cross-references:** Button Group (wraps multiple `.btn`), Close Button (specialized `.btn-close`), Dropdown (`.dropdown-toggle-split` variant)
+**Sub-elements:** none — Button is a single-element component (the `.btn` class attaches directly to the interactive element itself: `<button>`, `<a>`, or `<input type="submit/reset/button">`).
+**Cross-references:** Button Group (composes multiple `.btn`), Close Button (separate `--bs-btn-close-*` namespace despite the `btn-` prefix), Dropdown (`.dropdown-toggle` is a `.btn` modifier), Input Group (`.btn` can be an input-group addon).
 
 ---
 
 ## Button Group
 
-**Primary class:** `.btn-group`
-**Modifier classes:** `.btn-group-sm`, `.btn-group-lg`, `.btn-group-vertical`
-**JS mutations:** None (managed by individual button states)
+**Primary class:** `.btn-group` (horizontal), `.btn-group-vertical`
+**Modifier classes:** `.btn-group-sm`, `.btn-group-lg` (re-applies `.btn-sm`/`.btn-lg` to children via `@extend`), `.btn-toolbar` (groups multiple `.btn-group`s), `.dropdown-toggle-split`
+**JS mutations:** `.show` added to `.btn-group` when a contained `.dropdown-toggle` button's menu opens (`.btn-group.show .dropdown-toggle` gets an inset active-style box-shadow)
 **Expected DOM:**
 ```html
 <div class="btn-group" role="group" aria-label="Basic example">
@@ -46,365 +44,271 @@ related: states.md for state-specific selectors; patterns.md for Bootstrap↔Rea
   <button type="button" class="btn btn-primary">Middle</button>
   <button type="button" class="btn btn-primary">Right</button>
 </div>
-<!-- Toggle button group using btn-check pattern -->
-<div class="btn-group" role="group" aria-label="Toggle group">
-  <input type="checkbox" class="btn-check" id="btncheck1" autocomplete="off">
-  <label class="btn btn-outline-primary" for="btncheck1">Option 1</label>
-  <input type="checkbox" class="btn-check" id="btncheck2" autocomplete="off">
-  <label class="btn btn-outline-primary" for="btncheck2">Option 2</label>
-</div>
 ```
-**Sub-elements:** Children must be `.btn` elements (or `.btn-check` + `<label class="btn">` pairs, or dropdown wrappers). No inner wrapper needed.
-**Related classes:** `.btn-toolbar` — groups multiple `.btn-group` elements into a toolbar (`display: flex; flex-wrap: wrap`).
-**Cross-references:** Button, Dropdown (can contain dropdown triggers)
+**Sub-elements:** direct `.btn` children (border-radius stripped from adjacent edges via `:not(:last-child)`/`:nth-child(n+3)` sibling selectors, not per-child modifier classes); nested `.btn-group` for split-button dropdown groups.
+**Cross-references:** Button (child element), Dropdown (`.dropdown-toggle-split` pattern for split dropdown buttons), Input Group (`.btn-toolbar .input-group { width: auto }` interaction).
 
 ---
 
 ## Form Control / Text Input
 
 **Primary class:** `.form-control`
-**Modifier classes:** `.form-control-sm`, `.form-control-lg`, `.form-control-plaintext`, `.form-control-color`
-**JS mutations:** `.is-valid`, `.is-invalid` (via form validation); `:focus` (browser)
+**Modifier classes:** `.form-control-sm`, `.form-control-lg`, `.form-control-plaintext`, `.form-control-color` (color-picker variant), `.is-valid`, `.is-invalid`
+**JS mutations:** none inherent to the control itself (validation classes are consumer/JS-snippet applied, not auto-managed by `bootstrap.bundle.js`)
 **Expected DOM:**
 ```html
-<div class="mb-3">
-  <label for="inputId" class="form-label">Label</label>
-  <input type="text" class="form-control" id="inputId" placeholder="Text">
-  <div class="invalid-feedback">Error message</div>
-  <div class="form-text">Helper text</div>
-</div>
+<input type="text" class="form-control" placeholder="...">
+<!-- or -->
+<textarea class="form-control"></textarea>
 ```
-**Sub-elements:**
-- `.form-label` — the `<label>` element above the input
-- `.form-text` — helper text below (renders as small muted text)
-- `.valid-feedback` / `.invalid-feedback` — error/success messages (hidden by default; shown when `.is-valid`/`.is-invalid` applied)
-- `.valid-tooltip` / `.invalid-tooltip` — tooltip-style validation messages (alternative to feedback divs)
-**State selectors:** `:focus`, `:disabled`, `[readonly]`, `.is-valid`, `.is-invalid`
-**Validation pattern:** Either add `.is-valid`/`.is-invalid` directly to `.form-control`, or add `.was-validated` to the wrapping `<form>` (Bootstrap then uses `:valid`/`:invalid` pseudo-classes). Both patterns produce the same compiled result.
-**File input sub-selectors:** `.form-control[type=file]` has special rules; `::file-selector-button` (and vendor `::-webkit-file-upload-button`) is styled as an inset button. Hover state: `.form-control:hover:not(:disabled):not([readonly])::file-selector-button`.
-**Cross-references:** Floating Labels (wraps `.form-control`), Input Group (wraps in flex row)
+**Sub-elements:** `::file-selector-button` pseudo-element (styled only when `type="file"`); `::placeholder`, `::-webkit-date-and-time-value`, `::-webkit-datetime-edit` (browser-specific pseudo-elements for date/file inputs).
+**Cross-references:** Input Group (form-control as a flex child), Floating Labels (`.form-floating > .form-control`), Form Label (paired via native `for`/`id`, no Bootstrap-enforced structure), Form Text (help text sibling), states.md Valid/Invalid/Read-only/Disabled sections.
 
 ---
 
 ## Form Select
 
 **Primary class:** `.form-select`
-**Modifier classes:** `.form-select-sm`, `.form-select-lg`
-**JS mutations:** `.is-valid`, `.is-invalid`
-**Expected DOM:**
+**Modifier classes:** `.form-select-sm`, `.form-select-lg`, `.is-valid`, `.is-invalid`
+**JS mutations:** none (no Bootstrap JS plugin — native `<select>` element)
+**Expected DOM** (WebFetch-verified against `getbootstrap.com/docs/5.3/forms/select/`):
 ```html
-<select class="form-select" aria-label="Select example">
-  <option value="1">Option 1</option>
-  <option value="2">Option 2</option>
+<select class="form-select" aria-label="Default select example">
+  <option selected>Open this select menu</option>
+  <option value="1">One</option>
+  <option value="2">Two</option>
+  <option value="3">Three</option>
 </select>
+<!-- multiple selection -->
+<select class="form-select" multiple aria-label="Multiple select example">...</select>
+<!-- fixed visible-row count -->
+<select class="form-select" size="3" aria-label="Size 3 select example">...</select>
 ```
-**Sub-elements:** None — `.form-select` is applied directly to `<select>`. Bootstrap adds a custom chevron via `background-image` (stored in `--bs-form-select-bg-img` CSS variable) on the element itself.
-**Critical note:** `.form-select` requires a native `<select>` element. React Aria's `Select` renders a `<button>` + Popover + ListBox — completely incompatible with `.form-select`. See `patterns.md#select`.
-**State selectors:** `:focus`, `:disabled`, `.is-valid`, `.is-invalid`
-**Additional compiled selectors:** `.form-select[multiple]` and `.form-select[size]:not([size="1"])` — removes background-image (no chevron for multi-select). `:-moz-focusring` — removes dotted outline in Firefox.
-**Validation pattern:** `.is-valid`/`.is-invalid` classes or parent `.was-validated` (uses `:valid`/`:invalid` pseudo-classes). Valid state injects a checkmark icon via `--bs-form-select-bg-icon`.
-**Cross-references:** Patterns.md (DOM conflict)
+**Sub-elements:** `<option>` children (no Bootstrap class — native element styling only; the dropdown arrow and validation icon are `background-image` layers on the `<select>` itself via `--bs-form-select-bg-img`/`--bs-form-select-bg-icon`, not separate DOM nodes). `[multiple]` and `[size]:not([size="1"])` suppress the arrow icon and reclaim its padding (native multi-row list rendering makes a decorative arrow meaningless).
+**Cross-references:** Input Group (form-select as a flex child, same sizing/border-radius treatment as form-control), Floating Labels (`.form-floating > .form-select`), tokens.md's "Form controls — no dedicated `--bs-input-*` namespace" note (form-select is the one form component that *does* expose narrow custom properties).
 
 ---
 
-## Form Check (Checkbox / Radio)
+## Form Check (checkbox/radio)
 
 **Primary class:** `.form-check` (wrapper), `.form-check-input` (the `<input>`), `.form-check-label` (the `<label>`)
-**Modifier classes:** `.form-check-inline`, `.form-check-reverse`
-**JS mutations:** `:checked` (browser manages)
-**Expected DOM:**
+**Modifier classes:** `.form-check-reverse` (input on the right), `.form-check-inline`, `.is-valid`, `.is-invalid`
+**JS mutations:** none (native input; `:checked`/`:indeterminate` are native states, `:indeterminate` is only ever set via JS `el.indeterminate = true`, never an HTML attribute)
+**Expected DOM** (WebFetch-verified against `getbootstrap.com/docs/5.3/forms/checks-radios/`):
 ```html
 <div class="form-check">
-  <input class="form-check-input" type="checkbox" id="check1">
-  <label class="form-check-label" for="check1">Checkbox label</label>
+  <input class="form-check-input" type="checkbox" value="" id="checkDefault">
+  <label class="form-check-label" for="checkDefault">Default checkbox</label>
+</div>
+<div class="form-check">
+  <input class="form-check-input" type="radio" name="radioDefault" id="radioDefault1">
+  <label class="form-check-label" for="radioDefault1">Default radio</label>
 </div>
 ```
-**Sub-elements:**
-- `.form-check-input` — the `<input type="checkbox">` or `<input type="radio">`. Bootstrap uses CSS `appearance: none` + SVG background image for the custom visual.
-- `.form-check-label` — the `<label>` for the input
-**Critical note:** Bootstrap's checkbox visual is on `<input type="checkbox">` using pseudo-states (`:checked`, `:indeterminate`). React Aria's Checkbox renders a `<label>` wrapping a custom visual element — no native `<input>` participates in styling. Full bridge required.
-**State selectors:** `:checked`, `:indeterminate`, `:disabled`, `[disabled]`, `:focus`, `:active`, `.is-valid`, `.is-invalid`
-**Key compiled sub-selectors:**
-- `.form-check-input[type=checkbox]` — border-radius for checkbox shape
-- `.form-check-input[type=radio]` — border-radius for radio shape
-- `.form-check-input:checked[type=checkbox]` — checked checkbox SVG background
-- `.form-check-input:checked[type=radio]` — checked radio SVG background
-- `.form-check-input[type=checkbox]:indeterminate` — indeterminate state SVG
-- `.form-check-input:focus` — focus ring (box-shadow)
-- `.form-check-input:active` — active state
-- `.form-check-input[disabled] ~ .form-check-label, .form-check-input:disabled ~ .form-check-label` — mutes label when input is disabled
-- `.form-check-input.is-valid` / `.form-check-input.is-invalid` — validation colors
-- `.form-check-input.is-valid ~ .form-check-label` / `.form-check-input.is-invalid ~ .form-check-label` — label color follows validation state
-**Cross-references:** Form Switch (variant), Patterns.md (DOM conflict)
+**Sub-elements:** `.form-check-input` and `.form-check-label` are **siblings**, not nested — connected only by native `id`/`for` attribute pairing (Bootstrap enforces no DOM nesting relationship; float/margin CSS on `.form-check-input` positions it to the left of the label visually).
+**Cross-references:** Form Switch (adds `.form-switch` to the `.form-check` wrapper, `role="switch"` on the input — same base structure), Button (`.btn-check` reuses the native-input pattern but hides the input entirely and styles the `<label>` as a `.btn`), states.md Checked/Indeterminate sections.
 
 ---
 
 ## Form Switch
 
-**Primary class:** `.form-switch` on wrapper, `.form-check-input` on the input
-**Modifier classes:** `.form-check-reverse`
-**Expected DOM:**
+**Primary class:** `.form-switch` (added alongside `.form-check` on the wrapper)
+**Modifier classes:** none beyond the base Form Check set (`.form-check-reverse` combines with `.form-switch`)
+**JS mutations:** none
+**Expected DOM** (WebFetch-verified):
 ```html
 <div class="form-check form-switch">
-  <input class="form-check-input" type="checkbox" role="switch" id="switch1">
-  <label class="form-check-label" for="switch1">Toggle label</label>
+  <input class="form-check-input" type="checkbox" role="switch" id="switchCheckDefault">
+  <label class="form-check-label" for="switchCheckDefault">Default switch checkbox input</label>
 </div>
 ```
-**Sub-elements:** Same as Form Check. Switch variant uses wider width + pill border-radius + sliding dot animation on the `<input>`.
-**State selectors:** Same as Form Check + `:focus` changes the dot SVG color (via `--bs-form-switch-bg` CSS variable).
-**Key compiled sub-selectors:**
-- `.form-switch .form-check-input` — sets pill shape and switch-specific background image
-- `.form-switch .form-check-input:focus` — updates `--bs-form-switch-bg` to focused dot SVG
-- `.form-switch .form-check-input:checked` — updates `--bs-form-switch-bg` to checked (white) dot SVG and moves thumb via `background-position`
-- `.form-switch.form-check-reverse` — reverses layout direction
-- `.form-switch.form-check-reverse .form-check-input` — adjusts margin for reversed layout
+**Sub-elements:** identical structure to Form Check — `.form-switch` is a wrapper modifier, not a new component tree. `role="switch"` on the input is an author-added ARIA role (Bootstrap's CSS does not require it to render correctly, but it's the documented accessible pattern).
+**Cross-references:** Form Check (parent component; Form Switch is purely a CSS/token variant of it — see tokens.md's single `--bs-form-switch-bg` token, distinct from `--bs-form-check-bg`/`--bs-form-check-bg-image`).
 
 ---
 
 ## Form Range
 
 **Primary class:** `.form-range`
+**Modifier classes:** none (no size/variant modifiers)
+**JS mutations:** none (native `<input type="range">`)
 **Expected DOM:**
 ```html
-<label for="range1" class="form-label">Range label</label>
-<input type="range" class="form-range" id="range1">
+<input type="range" class="form-range" min="0" max="5" step="0.5" id="customRange3">
 ```
-**Sub-elements:** None — `.form-range` targets `<input type="range">` directly. Thumb and track are styled via `::-webkit-slider-thumb`, `::-moz-range-thumb`, `::-webkit-slider-runnable-track`, `::-moz-range-track` pseudo-elements.
-**State selectors:** `:focus` (box-shadow on thumb), `:disabled` (muted thumb)
+**Sub-elements:** `::-webkit-slider-thumb` / `::-moz-range-thumb` (draggable handle), `::-webkit-slider-runnable-track` / `::-moz-range-track` (track) — all browser vendor-prefixed pseudo-elements; no separate DOM nodes exist for thumb/track, they're pure CSS pseudo-element styling on the single `<input>`. Per the SCSS file's own comment: "Vendor-specific rules for pseudo elements cannot be mixed. As such, there are no shared styles for focus or active states on prefixed selectors" — each vendor prefix needs its own duplicated ruleset.
+**Cross-references:** none within the 31-component scope (range is visually and structurally independent of Form Control/Select/Check).
 
 ---
 
 ## Input Group
 
 **Primary class:** `.input-group`
-**Modifier classes:** `.input-group-sm`, `.input-group-lg`, `.has-validation`
-**Expected DOM:**
+**Modifier classes:** `.input-group-text` (addon), `.input-group-sm`, `.input-group-lg`, `.has-validation` (adjusts corner-radius selectors when a validation feedback message is also a flex child)
+**JS mutations:** none
+**Expected DOM** (WebFetch-verified against `getbootstrap.com/docs/5.3/forms/input-group/`):
 ```html
-<div class="input-group">
-  <span class="input-group-text">@</span>
-  <input type="text" class="form-control" placeholder="Username">
-  <button class="btn btn-outline-secondary" type="button">Go</button>
+<div class="input-group mb-3">
+  <span class="input-group-text" id="basic-addon1">@</span>
+  <input type="text" class="form-control" placeholder="Username" aria-label="Username" aria-describedby="basic-addon1">
+</div>
+<!-- button addon -->
+<div class="input-group mb-3">
+  <button class="btn btn-outline-secondary" type="button" id="button-addon1">Button</button>
+  <input type="text" class="form-control" aria-label="Example text with button addon" aria-describedby="button-addon1">
 </div>
 ```
-**Sub-elements:**
-- `.input-group-text` — text/icon addon (`<span>`); gets matching border/bg to look connected
-- `.form-control` — the input (flex-grow: 1)
-- `.form-select` — select variant
-- `.form-floating` — floating label wrapper can also be a direct child of `.input-group`
-- `.btn` — button addon
-**DOM rules:** Bootstrap removes border-radius on inner edges using child combinators. Children that are not first or not last have adjacent border-radii zeroed. The `.has-validation` modifier adjusts this logic to leave room for validation feedback icons.
-**Key compiled selectors:**
-- `.input-group > .form-control`, `.input-group > .form-select`, `.input-group > .form-floating` — flex children with `position: relative` for z-index layering
-- `.input-group > .form-control:focus`, `.input-group > .form-select:focus`, `.input-group > .form-floating:focus-within` — raises z-index of focused child above siblings
-- `.input-group .btn` — sets `position: relative`; `.input-group .btn:focus` raises z-index
-- `.input-group:not(.has-validation) > :not(:last-child):not(.dropdown-toggle)...` — removes right border-radius on non-last children
-- `.input-group > :not(:first-child):not(.dropdown-menu)...` — removes left border-radius and border-left on non-first children (prevents double border)
-**Cross-references:** Form Control, Button
+**Sub-elements:** flat flex-row of direct children — any mix of `.input-group-text`, `.form-control`, `.form-select`, `.btn`, `.form-floating` is valid; Bootstrap's CSS strips/reassigns `border-radius` on interior edges purely via sibling-position selectors (`:not(:last-child)`, `:not(:first-child)`), not via a fixed tag-order requirement. `z-index` is bumped on `:focus`/`:focus-within` (5) and on `.btn` (2, or 5 focused) so the focused/interactive child's border isn't visually clipped by neighbors.
+**Cross-references:** Form Control, Form Select, Button (all valid addon/content children), Floating Labels (`.form-floating` can be an input-group child), states.md Valid/Invalid (`.input-group > .form-control:not(:focus).is-invalid` z-index bump).
 
 ---
 
 ## Floating Labels
 
-**Primary class:** `.form-floating` (wrapper)
+**Primary class:** `.form-floating`
+**Modifier classes:** none (wrapper-only; the floating behavior applies automatically to any `.form-control`/`.form-control-plaintext`/`.form-select` child)
+**JS mutations:** none — purely CSS-driven via `:placeholder-shown`/`:focus` (see states.md)
 **Expected DOM:**
 ```html
-<div class="form-floating mb-3">
-  <input type="email" class="form-control" id="emailInput" placeholder="name@example.com">
-  <label for="emailInput">Email address</label>
+<div class="form-floating">
+  <input type="email" class="form-control" id="floatingInput" placeholder="name@example.com">
+  <label for="floatingInput">Email address</label>
 </div>
 ```
-**Important DOM constraint:** The `<label>` MUST come after the `<input>` in the DOM. Bootstrap uses `~` (general sibling combinator) to detect when the input has value via `:placeholder-shown` and `:-webkit-autofill`. The label starts overlaid on the input and animates up when focused or filled.
-**Sub-elements:**
-- `<input>` or `<select>` with `.form-control` / `.form-select` (must come first)
-- `<label>` (must come second)
-**State selectors:** `:focus`, `:not(:placeholder-shown)` (label transform trigger)
+**Sub-elements:** `<label>` is a **sibling** of the control (not wrapping it), positioned absolutely and animated via `transform` when the control is focused or non-empty (`:not(:placeholder-shown)`). Requires a non-empty `placeholder` attribute on the control even though the placeholder text itself is made `color: transparent` — the placeholder's mere *presence* is what the `:placeholder-shown` pseudo-class keys off.
+**Cross-references:** Form Control, Form Select (both valid children), Input Group (`.form-floating` can itself be an input-group child), states.md Placeholder shown section.
 
 ---
 
 ## Form Label
 
 **Primary class:** `.form-label`
-**Modifier classes:** None specific (use typography utilities for sizing)
+**Modifier classes:** `.col-form-label`, `.col-form-label-sm`, `.col-form-label-lg` (variants for horizontal/grid-aligned forms, matching form-control padding instead of block spacing)
+**JS mutations:** none
 **Expected DOM:**
 ```html
-<label class="form-label" for="inputId">Label text</label>
+<label for="exampleInput" class="form-label">Email address</label>
 ```
-**Sub-elements:** None.
-**Notes:** `.form-label` adds `margin-bottom: .5rem`. It is the standard way to label form controls outside of floating labels.
+**Sub-elements:** none — single-element component, a plain `<label>` with the class applied.
+**Cross-references:** Form Control, Form Select, Form Check Label (`.form-check-label` is a related-but-separate class scoped specifically to check/radio, not `.form-label`).
 
 ---
 
 ## Form Text
 
 **Primary class:** `.form-text`
+**Modifier classes:** none
+**JS mutations:** none
 **Expected DOM:**
 ```html
-<div class="form-text">We'll never share your email.</div>
+<div id="passwordHelpBlock" class="form-text">
+  Your password must be 8-20 characters long.
+</div>
 ```
-**Sub-elements:** None. Renders as small muted text (uses `--bs-secondary-color`).
+**Sub-elements:** none — single-element, typically a `<div>` or `<small>`, connected to its control only via `aria-describedby` (author-managed, not Bootstrap-enforced).
+**Cross-references:** Form Control (`aria-describedby` pairing), Form Feedback (`.valid-feedback`/`.invalid-feedback` are a visually similar but functionally distinct class from `mixins/_forms.scss`, shown/hidden by validation state rather than always visible).
 
 ---
 
 ## Dropdown
 
-**Primary class:** `.dropdown` (wrapper), `.dropdown-toggle` (trigger), `.dropdown-menu` (menu)
-**Modifier classes:** `.dropup`, `.dropend`, `.dropstart`, `.dropdown-center`, `.dropup-center`, `.dropdown-menu-{breakpoint}-{start|end}`, `.dropdown-menu-dark`
-**JS mutations:** `.show` on `.dropdown-menu` (open), `.show` on `.dropdown` (container); Popper.js adds `[data-bs-popper]` attribute to `.dropdown-menu` for positioning
-**Expected DOM:**
+**Primary class:** `.dropdown` (wrapper), `.dropdown-menu` (the popup), `.dropdown-toggle` (trigger modifier on a `.btn`), `.dropdown-item` (menu entry)
+**Modifier classes:** `.dropup`, `.dropend`, `.dropstart`, `.dropup-center`, `.dropdown-center` (direction variants on the wrapper), `.dropdown-menu-{bp}-start/-end` (responsive alignment), `.dropdown-menu-dark`, `.dropdown-divider`, `.dropdown-header`, `.dropdown-item-text`, `.dropdown-toggle-split`, `.show` (open state), `.active`/`.disabled` on `.dropdown-item`
+**JS mutations:** `.show` added to both `.dropdown-menu` (`display:block`) and the wrapper `.dropdown`/`.btn-group` (box-shadow on the toggle); `[data-bs-popper]` attribute added to `.dropdown-menu` when Popper.js positioning is active (switches from static CSS positioning to inline-style Popper positioning); `aria-expanded` toggled `true`/`false` on the toggle button.
+**Expected DOM** (WebFetch-verified against `getbootstrap.com/docs/5.3/components/dropdowns/`):
 ```html
 <div class="dropdown">
   <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-    Dropdown
+    Dropdown button
   </button>
   <ul class="dropdown-menu">
     <li><a class="dropdown-item" href="#">Action</a></li>
     <li><a class="dropdown-item" href="#">Another action</a></li>
-    <li><hr class="dropdown-divider"></li>
-    <li><a class="dropdown-item" href="#">Something else</a></li>
   </ul>
 </div>
-<!-- Split button with separate toggle -->
-<div class="btn-group">
-  <button type="button" class="btn btn-primary">Action</button>
-  <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
-    <span class="visually-hidden">Toggle</span>
-  </button>
-  <ul class="dropdown-menu">...</ul>
-</div>
 ```
-**Sub-elements:**
-- `.dropdown-toggle` — the trigger button/link; has auto-generated caret via `::after` pseudo-element (`.dropstart` uses `::before` instead)
-- `.dropdown-toggle-split` — narrower split button variant for the caret-only part; `::after` is the only content
-- `.dropdown-menu` — the menu container (`display: none` by default; `.show` makes it visible)
-- `.dropdown-menu[data-bs-popper]` — Popper.js positioning mode (adds `position`, `inset` styles)
-- `.dropdown-item` — each menu item (anchors or buttons)
-- `.dropdown-divider` — separator (`<hr>`)
-- `.dropdown-header` — non-interactive section header
-- `.dropdown-item-text` — non-interactive plain-text item
-**State selectors:** `.dropdown-item:hover/:focus`, `.dropdown-item.active`, `.dropdown-item:active`, `.dropdown-item.disabled`, `.dropdown-item:disabled`, `.dropdown-menu.show`
-**Caret direction by modifier:**
-- `.dropdown` — caret points down (`::after` with border trick)
-- `.dropup` — caret points up (`.dropup .dropdown-toggle::after`)
-- `.dropend` — caret points right (`.dropend .dropdown-toggle::after`)
-- `.dropstart` — caret points left (`.dropstart .dropdown-toggle::before`; `.dropstart .dropdown-toggle::after` is hidden)
-**Cross-references:** Nav (dropdown variant inside nav), Patterns.md (React Aria Select maps to this pattern)
+**Sub-elements:** `.dropdown-toggle` (the `.btn` that opens the menu — a modifier class, not a separate element type), `.dropdown-menu` (positioned `absolute`, `display:none` until `.show`), `.dropdown-item` (individual `<a>`/`<button>` entries, `<li>` wrapping is a docs convention, not CSS-required — `.dropdown-item` styles apply directly regardless of `<li>` presence), `.dropdown-divider` (an `<hr>`-like separator, see Separator/Divider entry), `.dropdown-header` (non-interactive section label).
+**Cross-references:** Button (`.dropdown-toggle` is applied to a `.btn`), Button Group (`.btn-group.show .dropdown-toggle`), Nav/Tabs (`.nav-item.show .nav-link` shares the same open-state concept for a nav-item containing a dropdown), Navbar (`.navbar-nav .dropdown-menu { position: static }` override), patterns.md for the full compound DOM chain.
 
 ---
 
 ## Nav / Tabs
 
-**Primary class:** `.nav` (list), `.nav-link` (item)
-**Modifier classes:** `.nav-tabs`, `.nav-pills`, `.nav-underline`, `.nav-fill`, `.nav-justified`
-**JS mutations:** `.active` on `.nav-link`, `.show` on dropdown within nav
-**Expected DOM (tabs):**
+**Primary class:** `.nav` (base flex list), `.nav-link` (individual item), `.nav-tabs`/`.nav-pills`/`.nav-underline` (visual variant added alongside `.nav`), `.tab-content`/`.tab-pane` (JS-tab content panes)
+**Modifier classes:** `.nav-item` (docs convention wrapper, optional), `.nav-fill`, `.nav-justified`, `.active`, `.disabled`, `.show` (nav-item with open dropdown)
+**JS mutations:** `.active` toggled on `.nav-link` and its paired `.tab-pane` by the Tab plugin; `aria-selected` toggled `true`/`false`; `.fade`/`.show` combination on `.tab-pane` for the cross-fade transition.
+**Expected DOM** (WebFetch-verified against `getbootstrap.com/docs/5.3/components/navs-tabs/`, JS-powered Tabs variant):
 ```html
-<ul class="nav nav-tabs">
-  <li class="nav-item">
-    <button class="nav-link active" aria-selected="true">Tab 1</button>
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home-tab-pane"
+            type="button" role="tab" aria-controls="home-tab-pane" aria-selected="true">Home</button>
   </li>
-  <li class="nav-item">
-    <button class="nav-link">Tab 2</button>
-  </li>
-  <li class="nav-item">
-    <button class="nav-link disabled">Disabled</button>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-tab-pane"
+            type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="false">Profile</button>
   </li>
 </ul>
-<div class="tab-content">
-  <div class="tab-pane active" id="pane1">Content 1</div>
-  <div class="tab-pane" id="pane2">Content 2</div>
+<div class="tab-content" id="myTabContent">
+  <div class="tab-pane fade show active" id="home-tab-pane" role="tabpanel" aria-labelledby="home-tab" tabindex="0">...</div>
+  <div class="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">...</div>
 </div>
 ```
-**Sub-elements:**
-- `.nav-item` — the `<li>` wrapper
-- `.nav-link` — the interactive link/button
-- `.tab-content` — container for tab panels
-- `.tab-pane` — individual panel (`display: none` by default; `.active` shows it; add `.fade` for opacity transition + `.show` for visible)
-**State selectors:** `.nav-link:hover`, `.nav-link:focus`, `.nav-link:focus-visible`, `.nav-link.active`, `.nav-link.disabled`, `.nav-link:disabled`
-**Note:** Both `.nav-link.disabled` AND `.nav-link:disabled` are compiled selectors — Bootstrap styles both the class and native disabled state.
-**Tab panel transitions:** `.tab-pane.fade` starts at `opacity: 0`; adding `.show` brings opacity to 1. The `.tab-content > .tab-pane` rule hides non-active panes (`display: none`). `.tab-content > .active` shows the active pane.
-**Nav-tabs specific compiled selectors:**
-- `.nav-tabs .nav-link` — base tab styling (no bottom border, border-radius top)
-- `.nav-tabs .nav-link:hover, .nav-tabs .nav-link:focus` — hover/focus border color
-- `.nav-tabs .nav-link.active, .nav-tabs .nav-item.show .nav-link` — active tab (white bg, border bottom removed)
-- `.nav-tabs .dropdown-menu` — adjusts border-radius for dropdown inside tab nav
-**Nav-pills specific:** `.nav-pills .nav-link.active, .nav-pills .show > .nav-link` — filled background
-**Nav-underline specific:** `.nav-underline .nav-link.active, .nav-underline .show > .nav-link` — colored underline
-**Cross-references:** Accordion (different expand pattern), React Aria Tabs maps to this structure
+**Sub-elements:** `.nav-item` (`role="presentation"`, purely structural — the interactive semantics live on `.nav-link` via `role="tab"`), `.nav-link` (the trigger, can be `<a>` or `<button>` — Bootstrap CSS doesn't care which tag), `.tab-content` > `.tab-pane` (`role="tabpanel"`, hidden via `display:none` unless `.active`).
+**Cross-references:** Navbar (`.navbar-nav` is a `.nav` variant with its own CSS-var-overridden `--bs-nav-link-*` scope), Dropdown (a `.nav-item` can contain a `.dropdown`), Pagination (visually distinct but conceptually similar "list of link-styled items" pattern), Card (`.card-header-tabs`/`.card-header-pills` re-style `.nav-tabs`/`.nav-pills` for use inside a card header).
 
 ---
 
 ## Navbar
 
 **Primary class:** `.navbar`
-**Modifier classes:** `.navbar-expand-{sm|md|lg|xl|xxl}`, `.navbar-{light|dark}`, `.bg-{theme}`, `.fixed-top`, `.fixed-bottom`, `.sticky-top`
-**JS mutations:** `.show` on `.navbar-collapse` (mobile menu open)
+**Modifier classes:** `.navbar-brand`, `.navbar-nav` (a `.nav` variant scoped to the navbar), `.navbar-text`, `.navbar-collapse`, `.navbar-toggler`, `.navbar-toggler-icon`, `.navbar-nav-scroll`, `.navbar-expand`/`.navbar-expand-{sm,md,lg,xl,xxl}` (responsive collapse breakpoint), `.navbar-dark` (deprecated in favor of `data-bs-theme="dark"` on the navbar itself; `.navbar-light` is fully deprecated as of v5.2.0 per an explicit `@include deprecate(...)` call in the SCSS)
+**JS mutations:** shares the Collapse plugin's `.collapse`/`.collapsing`/`.show` triad on `.navbar-collapse`; `aria-expanded` toggled on `.navbar-toggler`.
 **Expected DOM:**
 ```html
-<nav class="navbar navbar-expand-lg bg-body-tertiary">
+<nav class="navbar navbar-expand-lg" data-bs-theme="dark">
   <div class="container-fluid">
-    <a class="navbar-brand" href="#">Brand</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+    <a class="navbar-brand" href="#">Navbar</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav">
         <li class="nav-item"><a class="nav-link active" href="#">Home</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Features</a></li>
       </ul>
     </div>
   </div>
 </nav>
 ```
-**Sub-elements:**
-- `.navbar-brand` — logo/brand text
-- `.navbar-toggler` — mobile menu toggle button
-- `.navbar-toggler-icon` — hamburger icon (CSS background-image)
-- `.navbar-collapse` — collapsible nav area; gets `.collapse` + `.show` via JS
-- `.navbar-nav` — the nav list (uses `.nav-link`, `.nav-item`)
-- `.navbar-text` — inline text
+**Sub-elements:** `.navbar-brand` (logo/site name), `.navbar-toggler` + `.navbar-toggler-icon` (mobile hamburger button, hidden above the `.navbar-expand-*` breakpoint via `display:none`), `.navbar-collapse` (the collapsible content wrapper, reuses `.collapse`), `.navbar-nav` (a `.nav` with navbar-scoped `--bs-nav-link-*` CSS-var overrides pointing at `--bs-navbar-*` tokens), `.navbar-text`, `.navbar-nav-scroll` (constrains max-height with overflow scroll).
+**Cross-references:** Nav/Tabs (`.navbar-nav` is a `.nav` variant), Dropdown (`.navbar-nav .dropdown-menu { position: static }` — a navbar-specific override), Container (`.navbar > .container*` gets flex properties re-declared since flex isn't inherited by non-flex children automatically), Offcanvas (`.navbar-expand-*` has explicit CSS to neutralize an `.offcanvas` used as the collapse target at wide viewports).
 
 ---
 
 ## List Group
 
 **Primary class:** `.list-group`
-**Modifier classes:** `.list-group-flush`, `.list-group-horizontal`, `.list-group-horizontal-{breakpoint}`, `.list-group-numbered`, `.list-group-item-{variant}` (contextual color variants: primary, secondary, success, danger, warning, info, light, dark)
-**JS mutations:** `.active` on `.list-group-item`
+**Modifier classes:** `.list-group-item` (entry), `.list-group-item-action` (interactive/hoverable entry), `.list-group-numbered`, `.list-group-horizontal`/`.list-group-horizontal-{bp}`, `.list-group-flush`, `.list-group-item-{primary,secondary,success,info,warning,danger,light,dark}` (8 contextual color variants), `.active`, `.disabled`
+**JS mutations:** none inherent (no dedicated List Group JS plugin; `.active` is author/app-managed unless composed with Tabs, in which case the Tab plugin manages it)
 **Expected DOM:**
 ```html
 <ul class="list-group">
-  <li class="list-group-item">First item</li>
-  <li class="list-group-item active" aria-current="true">Active item</li>
-  <li class="list-group-item disabled" aria-disabled="true">Disabled</li>
+  <li class="list-group-item active" aria-current="true">Cras justo odio</li>
+  <li class="list-group-item">Dapibus ac facilisis in</li>
+  <li class="list-group-item disabled" aria-disabled="true">Morbi leo risus</li>
 </ul>
-<!-- Interactive variant -->
-<div class="list-group">
-  <a href="#" class="list-group-item list-group-item-action active">Active link</a>
-  <a href="#" class="list-group-item list-group-item-action">Link item</a>
-  <button class="list-group-item list-group-item-action">Button item</button>
-</div>
-<!-- Numbered list group -->
-<ol class="list-group list-group-numbered">
-  <li class="list-group-item">First item</li>
-  <li class="list-group-item">Second item</li>
-</ol>
 ```
-**Sub-elements:**
-- `.list-group-item` — each item
-- `.list-group-item-action` — adds hover/focus/active interactivity styling (use on `<a>` or `<button>`)
-**State selectors:** `.list-group-item.active`, `.list-group-item.disabled`, `.list-group-item:disabled`, `.list-group-item-action:hover/:focus` (only when not `.active`), `.list-group-item-action:active` (only when not `.active`)
-**Note:** `.list-group-item-action` hover/focus/active selectors are qualified with `:not(.active)` — an already-active item does not change on hover.
-**Numbered list group note:** `.list-group-numbered > .list-group-item::before` generates the counter number as `::before` content.
-**Contextual color classes:** `.list-group-item-primary`, `.list-group-item-secondary`, `.list-group-item-success`, `.list-group-item-danger`, `.list-group-item-warning`, `.list-group-item-info`, `.list-group-item-light`, `.list-group-item-dark` — each sets `--bs-list-group-color` and `--bs-list-group-bg`.
-**Cross-references:** Patterns.md (React Aria ListBox maps to this structure)
+**Sub-elements:** `.list-group-item` children (any tag — `<li>`, `<div>`, `<a>`, `<button>`; interactive variants use `<a>`/`<button>` plus `.list-group-item-action` for hover/focus/active affordances). `.list-group-numbered` adds a CSS `counter()` pseudo-element (`::before`) rather than requiring literal numbering in markup.
+**Cross-references:** Card (`.card > .list-group` gets border-radius inheritance treatment), Dropdown/Nav (structurally similar "list of interactive items" pattern, but a separate token namespace).
 
 ---
 
 ## Breadcrumb
 
-**Primary class:** `.breadcrumb` (list), `.breadcrumb-item` (item)
-**Modifier classes:** None
-**JS mutations:** None
+**Primary class:** `.breadcrumb`
+**Modifier classes:** `.breadcrumb-item`, `.active` (on the current/last `.breadcrumb-item`)
+**JS mutations:** none
 **Expected DOM:**
 ```html
 <nav aria-label="breadcrumb">
@@ -415,88 +319,74 @@ related: states.md for state-specific selectors; patterns.md for Bootstrap↔Rea
   </ol>
 </nav>
 ```
-**Sub-elements:**
-- `.breadcrumb-item` — each crumb; the separator (default `/`) is generated via `::before` content on all items after the first
-- `.breadcrumb-item.active` — current page (not a link); uses `--bs-breadcrumb-item-active-color`
-**State selectors:** `.breadcrumb-item.active`
+**Sub-elements:** `.breadcrumb-item` children; the separator (`/` by default) is a CSS `content:` value on `.breadcrumb-item + .breadcrumb-item::before` — not a DOM node, and not literally typed into markup.
+**Cross-references:** none within scope (visually/structurally standalone; shares only the generic `--bs-secondary-color` token family with other components).
 
 ---
 
 ## Pagination
 
 **Primary class:** `.pagination`
-**Modifier classes:** `.pagination-sm`, `.pagination-lg`
-**JS mutations:** `.active` on `.page-item`, `.disabled` on `.page-item`
+**Modifier classes:** `.page-item`, `.page-link`, `.pagination-sm`, `.pagination-lg`, `.active`, `.disabled`
+**JS mutations:** none (fully static; no Bootstrap JS plugin)
 **Expected DOM:**
 ```html
-<nav aria-label="Page navigation">
+<nav aria-label="...">
   <ul class="pagination">
-    <li class="page-item disabled"><a class="page-link" href="#">Previous</a></li>
-    <li class="page-item"><a class="page-link" href="#">1</a></li>
-    <li class="page-item active" aria-current="page"><a class="page-link" href="#">2</a></li>
-    <li class="page-item"><a class="page-link" href="#">3</a></li>
+    <li class="page-item disabled"><a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a></li>
+    <li class="page-item active" aria-current="page"><a class="page-link" href="#">1</a></li>
+    <li class="page-item"><a class="page-link" href="#">2</a></li>
     <li class="page-item"><a class="page-link" href="#">Next</a></li>
   </ul>
 </nav>
 ```
-**Sub-elements:**
-- `.page-item` — each `<li>` wrapper; holds `.active` and `.disabled` state classes
-- `.page-link` — the actual link/button inside each item
-**State selectors:** `.page-link:hover`, `.page-link:focus`, `.page-link.active` (or `.active > .page-link`), `.page-link.disabled`
+**Sub-elements:** `.page-item` (`<li>`, structural) > `.page-link` (`<a>` or `<span>`, the actual styled/interactive surface — `.active`/`.disabled` can be applied to either the `.page-item` wrapper or directly on `.page-link`, both selector forms exist: `.page-link.active, .active > .page-link`).
+**Cross-references:** Nav/Tabs (conceptually similar "row of link items" pattern, separate token namespace), List Group (shares the active/disabled/hover triad pattern in structure though not token names).
 
 ---
 
 ## Accordion
 
 **Primary class:** `.accordion`
-**Modifier classes:** `.accordion-flush`
-**JS mutations:** `.collapsed` on `.accordion-button` (added when item is collapsed), `.show` on `.accordion-collapse`
-**Expected DOM:**
+**Modifier classes:** `.accordion-item`, `.accordion-header`, `.accordion-button`, `.accordion-collapse`, `.accordion-body`, `.accordion-flush`, `.collapsed` (on `.accordion-button`, marks closed state)
+**JS mutations:** `.collapsed` added/removed on `.accordion-button`; `.collapse`/`.collapsing`/`.show` triad (shared with the generic Collapse plugin, see `_transitions.scss`) on `.accordion-collapse`; `aria-expanded` toggled on the button; `data-bs-parent` (author-set, not JS-mutated) restricts accordion behavior to one-open-at-a-time within the same `#id` group.
+**Expected DOM** (WebFetch-verified against `getbootstrap.com/docs/5.3/components/accordion/`):
 ```html
 <div class="accordion" id="accordionExample">
   <div class="accordion-item">
     <h2 class="accordion-header">
-      <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
-        Item 1
+      <button class="accordion-button" type="button" data-bs-toggle="collapse"
+              data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+        Accordion Item #1
       </button>
     </h2>
-    <div id="collapseOne" class="accordion-collapse collapse show">
-      <div class="accordion-body">Content</div>
+    <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
+      <div class="accordion-body">...</div>
     </div>
   </div>
   <div class="accordion-item">
     <h2 class="accordion-header">
-      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
-        Item 2
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+              data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+        Accordion Item #2
       </button>
     </h2>
-    <div id="collapseTwo" class="accordion-collapse collapse">
-      <div class="accordion-body">Content</div>
+    <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+      <div class="accordion-body">...</div>
     </div>
   </div>
 </div>
 ```
-**Sub-elements:**
-- `.accordion-item` — each panel wrapper
-- `.accordion-header` — the heading (usually `<h2>`) containing the button
-- `.accordion-button` — trigger button; open state = no class, closed state = `.collapsed`
-- `.accordion-collapse` — the collapsible container; has `.collapse` class always; `.show` when open
-- `.accordion-body` — inner content padding wrapper
-**State selectors:** `.accordion-button:not(.collapsed)` (open), `.accordion-button.collapsed` (closed), `.accordion-button:hover`, `.accordion-button:focus`
-**Compiled selectors:**
-- `.accordion-button:not(.collapsed)` — open state: text/bg color change, rotated chevron (`::after`)
-- `.accordion-button:not(.collapsed)::after` — rotated chevron icon
-- `.accordion-button::after` — default chevron icon (collapsed state)
-- `.accordion-button:hover` — cursor pointer
-- `.accordion-button:focus` — focus ring (box-shadow)
+**Sub-elements:** `.accordion-item` (one collapsible section) > `.accordion-header` (`<h2>`, wraps the trigger for document-outline purposes) > `.accordion-button` (the clickable trigger, styles depend on `:not(.collapsed)` for the "currently open" look — see states.md Collapsed) + sibling `.accordion-collapse` (`id`-targeted by the button's `data-bs-target`) > `.accordion-body` (padding wrapper for the actual content).
+**Cross-references:** states.md's Collapsed section (full `.collapsed`/`.collapse`/`.collapsing`/`.show` mechanics), patterns.md (full compound DOM chain), Card (accordion items visually resemble stacked cards but share no CSS classes with `.card`).
 
 ---
 
 ## Modal
 
 **Primary class:** `.modal`
-**Modifier classes:** `.modal-sm`, `.modal-lg`, `.modal-xl`, `.modal-fullscreen`, `.modal-fullscreen-{breakpoint}-down`, `.modal-dialog-scrollable`, `.modal-dialog-centered`, `.fade`
-**JS mutations:** `.show` on `.modal` (opens modal), `.show` on `.modal-dialog` (triggers animation), `.modal-open` on `<body>`
+**Modifier classes:** `.modal-dialog`, `.modal-content`, `.modal-header`, `.modal-title`, `.modal-body`, `.modal-footer`, `.modal-backdrop`, `.modal-dialog-scrollable`, `.modal-dialog-centered`, `.modal-sm`/`.modal-lg`/`.modal-xl`, `.modal-fullscreen`/`.modal-fullscreen-{bp}-down`, `.modal-static` (shake-to-indicate-blocked feedback), `.fade`, `.show`
+**JS mutations:** `.show` added to `.modal` and `.modal-backdrop` on open (`display:block` is set inline by JS on `.modal`, since the base CSS default is `display:none` with no CSS-only way to reveal it — unlike Dropdown/Collapse, Modal's open/close visibility toggle is JS-driven, not purely `.show`-class-driven, though `.show` still drives the opacity/transform transition); `.modal-open` added to `<body>`; `aria-hidden`/`aria-modal` toggled on `.modal`.
 **Expected DOM:**
 ```html
 <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -506,176 +396,152 @@ related: states.md for state-specific selectors; patterns.md for Bootstrap↔Rea
         <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body">
-        Modal body content.
-      </div>
+      <div class="modal-body">...</div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary">Save changes</button>
       </div>
     </div>
   </div>
 </div>
 ```
-**Sub-elements:**
-- `.modal-dialog` — positioning/sizing wrapper; animated on open (slide-in) when `.fade`
-- `.modal-content` — visual card with bg/border/shadow
-- `.modal-header` — title row + close button
-- `.modal-title` — heading text
-- `.modal-body` — content area
-- `.modal-footer` — action buttons row
-- `.modal-backdrop` — separate DOM element added by Bootstrap JS (fixed overlay)
-**State selectors:** `.modal.show` (visible), `.modal.fade` (transition enabled)
+**Sub-elements:** `.modal` (fixed full-viewport scroll container, `--bs-modal-*` tokens live here, not on `.modal-content`) > `.modal-dialog` (positioning shell, `pointer-events:none` so backdrop clicks pass through) > `.modal-content` (the actual visible bordered/shadowed box) > `.modal-header`/`.modal-body`/`.modal-footer`. `.modal-backdrop` is a **sibling** of `.modal` at the body level, not a descendant (separate full-viewport overlay element).
+**Cross-references:** Offcanvas (shares `.modal-content-border-*`-derived tokens for backdrop, `--bs-backdrop-*` namespace), Close Button (`.btn-close` in the header), states.md Expanded/Open section.
 
 ---
 
 ## Offcanvas
 
-**Primary class:** `.offcanvas`
-**Modifier classes:** `.offcanvas-start`, `.offcanvas-end`, `.offcanvas-top`, `.offcanvas-bottom`
-**JS mutations:** `.show` on `.offcanvas`, `.offcanvas-backdrop` added to DOM
+**Primary class:** `.offcanvas` (+ responsive variants `.offcanvas-sm`/`-md`/`-lg`/`-xl`/`-xxl`, each with its own breakpoint-scoped behavior)
+**Modifier classes:** `.offcanvas-start`, `.offcanvas-end`, `.offcanvas-top`, `.offcanvas-bottom` (placement), `.offcanvas-header`, `.offcanvas-title`, `.offcanvas-body`, `.offcanvas-backdrop`, `.showing`/`.hiding` (transient transition-state classes distinct from `.show`)
+**JS mutations:** `.showing` (transient, entrance transition), `.show` (rest-open state), `.hiding` (transient, exit transition) all toggled by the Offcanvas plugin; `aria-hidden`/`aria-modal` toggled; `.offcanvas-backdrop` inserted/removed from the DOM.
 **Expected DOM:**
 ```html
-<div class="offcanvas offcanvas-start" id="offcanvasExample" tabindex="-1">
+<div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasExample" aria-labelledby="offcanvasExampleLabel">
   <div class="offcanvas-header">
-    <h5 class="offcanvas-title">Offcanvas</h5>
-    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+    <h5 class="offcanvas-title" id="offcanvasExampleLabel">Offcanvas</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
   </div>
-  <div class="offcanvas-body">
-    Content here.
-  </div>
+  <div class="offcanvas-body">...</div>
 </div>
 ```
-**Sub-elements:**
-- `.offcanvas-header` — title + close button row
-- `.offcanvas-title` — panel title
-- `.offcanvas-body` — scrollable content area
+**Sub-elements:** `.offcanvas-header` (title + close button) and `.offcanvas-body` (scrollable content) are direct children of `.offcanvas` — no intermediate "dialog"/"content" wrapper layer the way Modal has (`.modal-dialog` > `.modal-content`); Offcanvas is flatter.
+**Cross-references:** Modal (shares backdrop mechanics and `.showing`/`.hiding`/`.show` transition pattern, though Modal only uses `.fade`/`.show`), Close Button, Navbar (`.navbar-expand-*` neutralizes an `.offcanvas` used as the navbar's collapse target above the breakpoint — see Navbar entry).
 
 ---
 
 ## Popover
 
 **Primary class:** `.popover`
-**Modifier classes:** `.bs-popover-{top|bottom|start|end}` (set by Popper.js), `.popover-header` + `.popover-body`
-**JS mutations:** Entire `.popover` element is created/destroyed by Bootstrap JS; positioned via `data-bs-popper`
-**Expected DOM (generated by JS):**
+**Modifier classes:** `.popover-header`, `.popover-body`, `.popover-arrow`, `.bs-popover-{top,bottom,start,end,auto}` (placement, JS-applied), `.bs-popover-auto` (Popper-driven auto-placement, resolves to one of the four directional classes via `[data-popper-placement^=...]` attribute selectors)
+**JS mutations:** entire `.popover` element is inserted into/removed from the DOM by the Popover plugin (it does not exist in static markup — only a `data-bs-toggle="popover"` trigger element does); placement class and `[data-popper-placement]` attribute set by Popper.js.
+**Expected DOM (JS-generated, not authored):**
 ```html
-<div class="popover bs-popover-top" role="tooltip">
+<!-- Trigger, authored -->
+<button type="button" class="btn btn-secondary" data-bs-toggle="popover" data-bs-title="Popover title" data-bs-content="Content">Click</button>
+<!-- Popover itself, JS-inserted on trigger -->
+<div class="popover bs-popover-top" role="tooltip" data-popper-placement="top">
   <div class="popover-arrow"></div>
-  <h3 class="popover-header">Title</h3>
-  <div class="popover-body">Content here.</div>
+  <h3 class="popover-header">Popover title</h3>
+  <div class="popover-body">Content</div>
 </div>
 ```
-**Sub-elements:**
-- `.popover-arrow` — CSS arrow pointing to the trigger
-- `.popover-header` — title (optional)
-- `.popover-body` — content
-**Cross-references:** Tooltip (simpler variant), Patterns.md (React Aria Popover maps to this)
+**Sub-elements:** `.popover-arrow` (pointer triangle, built from `::before`/`::after` pseudo-elements, not a nested visible child), `.popover-header` (optional — `&:empty { display:none }`), `.popover-body`.
+**Cross-references:** Tooltip (near-identical structure and JS-generation pattern, but Popover adds an optional header and supports richer HTML content), patterns.md (JS-inserted-element pattern, distinct from author-written compound DOM).
 
 ---
 
 ## Tooltip
 
 **Primary class:** `.tooltip`
-**Modifier classes:** `.bs-tooltip-{top|bottom|start|end}` (Popper.js), `.tooltip-inner`
-**JS mutations:** Entire `.tooltip` element created/destroyed by JS
-**Expected DOM (generated by JS):**
+**Modifier classes:** `.tooltip-arrow`, `.tooltip-inner`, `.bs-tooltip-{top,bottom,start,end,auto}`, `.show` (opacity transition target)
+**JS mutations:** entire `.tooltip` element is JS-inserted/removed exactly like Popover (not present in static markup — only the `data-bs-toggle="tooltip"` trigger is authored); `.show` toggled for the opacity fade-in.
+**Expected DOM (JS-generated):**
 ```html
-<div class="tooltip bs-tooltip-top" role="tooltip">
+<!-- Trigger, authored -->
+<button type="button" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-title="Tooltip text">Hover</button>
+<!-- Tooltip itself, JS-inserted -->
+<div class="tooltip bs-tooltip-top show" role="tooltip" data-popper-placement="top">
   <div class="tooltip-arrow"></div>
   <div class="tooltip-inner">Tooltip text</div>
 </div>
 ```
-**Sub-elements:**
-- `.tooltip-arrow` — the directional arrow
-- `.tooltip-inner` — the text box
+**Sub-elements:** `.tooltip-arrow` (pseudo-element-built pointer), `.tooltip-inner` (the text content box — no header sub-element, unlike Popover).
+**Cross-references:** Popover (structurally near-identical, Tooltip is the simpler/text-only sibling), patterns.md.
 
 ---
 
 ## Alert
 
 **Primary class:** `.alert`
-**Modifier classes:** `.alert-{primary|secondary|success|danger|warning|info|light|dark}`, `.alert-dismissible`
-**JS mutations:** Remove from DOM on dismiss (no class toggle — Bootstrap JS calls `element.remove()`)
+**Modifier classes:** `.alert-{primary,secondary,success,info,warning,danger,light,dark}` (8 contextual variants), `.alert-dismissible`, `.alert-heading`, `.alert-link`, `.fade`, `.show`
+**JS mutations:** `.show` removed (and the element eventually removed from the DOM entirely, after the `.fade` opacity transition) by the Alert plugin's dismiss behavior, triggered via `data-bs-dismiss="alert"` on a close button.
 **Expected DOM:**
 ```html
-<div class="alert alert-primary alert-dismissible fade show" role="alert">
-  <strong>Alert heading</strong> Alert text.
+<div class="alert alert-warning alert-dismissible fade show" role="alert">
+  <strong>Holy guacamole!</strong> You should check in on some of those fields below.
   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 </div>
 ```
-**Sub-elements:**
-- `.alert-heading` — styled heading inside alert
-- `.alert-link` — styled link inside alert
-- `.btn-close` — dismiss button (when `.alert-dismissible`)
-**State selectors:** `.alert.show` (opacity 1 when `.fade` present)
-**Notes:** Alert variants use contextual token system (`--bs-*-bg-subtle`, `--bs-*-text-emphasis`, `--bs-*-border-subtle`).
+**Sub-elements:** none required beyond content — `.alert-heading` and `.alert-link` are content-styling modifiers (typically on `<h4>`/`<a>`) rather than structural sub-components; `.btn-close` is the optional dismiss trigger for `.alert-dismissible`.
+**Cross-references:** Close Button (`.btn-close` dismiss trigger), Badge (shares the 8-theme-color modifier-class pattern), tokens.md §4 (Alert variants consume the `-text-emphasis`/`-bg-subtle`/`-border-subtle` triad directly).
 
 ---
 
 ## Badge
 
 **Primary class:** `.badge`
-**Modifier classes:** `.bg-{theme}`, `.text-bg-{theme}`, `.rounded-pill`
-**JS mutations:** None
+**Modifier classes:** the 8 theme-color text/background utility classes are applied externally (`.text-bg-primary`, etc. from `helpers/_color-bg.scss` — Badge has no dedicated `.badge-{color}` modifier classes of its own in 5.3.8, unlike Alert/List Group/Button, which do)
+**JS mutations:** none
 **Expected DOM:**
 ```html
-<span class="badge bg-primary">New</span>
-<span class="badge text-bg-secondary rounded-pill">99+</span>
+<span class="badge text-bg-primary">New</span>
+<!-- badge inside a heading or button -->
+<button type="button" class="btn btn-primary">
+  Notifications <span class="badge text-bg-secondary">4</span>
+</button>
 ```
-**Sub-elements:** None — `.badge` is a single `<span>`.
-**Notes:** `.badge` alone provides sizing/typography; color is added via `.bg-*` or `.text-bg-*`. Empty badges (`&:empty`) are automatically `display: none`.
+**Sub-elements:** none — single-element, typically `<span>`.
+**Cross-references:** Alert (shares the "8-theme-color contextual variant" concept, but via a different class-application mechanism — utility class vs. dedicated modifier), Button (`.btn .badge { position:relative; top:-1px }` positioning correction when nested inside a button).
 
 ---
 
 ## Progress
 
-**Primary class:** `.progress` (track), `.progress-bar` (fill)
-**Modifier classes:** `.progress-bar-striped`, `.progress-bar-animated`, `.progress-stacked`
-**JS mutations:** `width` style on `.progress-bar` (set inline via JS or CSS)
+**Primary class:** `.progress` (track/container), `.progress-bar` (fill)
+**Modifier classes:** `.progress-stacked` (shares the same CSS-var block as `.progress`, for multi-segment progress), `.progress-bar-striped`, `.progress-bar-animated`
+**JS mutations:** none (fully static/CSS; width is typically set via inline `style="width: N%"` or `aria-valuenow`, author-managed, not a Bootstrap JS plugin)
 **Expected DOM:**
 ```html
-<div class="progress" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
-  <div class="progress-bar" style="width: 25%">25%</div>
-</div>
-<!-- Stacked -->
-<div class="progress-stacked">
-  <div class="progress" style="width: 15%"><div class="progress-bar bg-success">15%</div></div>
-  <div class="progress" style="width: 30%"><div class="progress-bar bg-warning">30%</div></div>
+<div class="progress" role="progressbar" aria-label="Basic example" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+  <div class="progress-bar" style="width: 25%"></div>
 </div>
 ```
-**Sub-elements:**
-- `.progress` — the track (background bar)
-- `.progress-bar` — the fill (width set inline)
-**Notes:** Set `width` inline on `.progress-bar`. The ARIA attributes go on the outer `.progress` element.
+**Sub-elements:** `.progress-bar` — single required child representing the filled portion; `.progress-stacked > .progress > .progress-bar` for multi-segment bars (nested `.progress` elements, each becoming one segment).
+**Cross-references:** none within scope (standalone; only tokens.md-level relationship via shared `--bs-box-shadow-inset`).
 
 ---
 
 ## Spinner
 
-**Primary class:** `.spinner-border` (ring) or `.spinner-grow` (pulse)
-**Modifier classes:** `.spinner-border-sm`, `.spinner-grow-sm`, `.text-{theme}` for color
-**JS mutations:** None
+**Primary class:** `.spinner-border`, `.spinner-grow` (two visually distinct animation variants, same DOM shape)
+**Modifier classes:** `.spinner-border-sm`, `.spinner-grow-sm`, `.visually-hidden` (typically applied to an inner status-text span, not the spinner itself)
+**JS mutations:** none
 **Expected DOM:**
 ```html
 <div class="spinner-border" role="status">
   <span class="visually-hidden">Loading...</span>
 </div>
-<div class="spinner-grow text-primary" role="status">
-  <span class="visually-hidden">Loading...</span>
-</div>
 ```
-**Sub-elements:**
-- `.visually-hidden` inside spinner — provides accessible text for screen readers
-**Notes:** Color is inherited from `currentcolor` (border/bg use `currentcolor`); use `.text-{theme}` to set it.
+**Sub-elements:** an inner text node (commonly wrapped in `.visually-hidden`) providing an accessible name for `role="status"` — not a Bootstrap-defined sub-element class, just a convention shown in the docs.
+**Cross-references:** Screen reader utility (`.visually-hidden`, utilities.md §18).
 
 ---
 
 ## Toast
 
 **Primary class:** `.toast`
-**Modifier classes:** `.toast-container` (positioning wrapper), `.align-items-center` (variant)
-**JS mutations:** `.show` on `.toast` (visible), `.hide` on dismiss start
+**Modifier classes:** `.toast-container`, `.toast-header`, `.toast-body`, `.showing`, `.show`, `.fade` (toast typically omits `.fade` by default per docs example, unlike Modal/Alert which include it — presence is author-controlled)
+**JS mutations:** `.showing` (transient) and `.show` toggled by the Toast plugin; the base rule `.toast:not(.show) { display:none }` means `.show` is required for any visibility at all (stricter than Alert, which only fades opacity).
 **Expected DOM:**
 ```html
 <div class="toast-container position-fixed bottom-0 end-0 p-3">
@@ -683,117 +549,95 @@ related: states.md for state-specific selectors; patterns.md for Bootstrap↔Rea
     <div class="toast-header">
       <strong class="me-auto">Bootstrap</strong>
       <small>11 mins ago</small>
-      <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+      <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
     </div>
-    <div class="toast-body">Hello, world!</div>
+    <div class="toast-body">Hello, world! This is a toast message.</div>
   </div>
 </div>
 ```
-**Sub-elements:**
-- `.toast-header` — icon + title + timestamp + close button
-- `.toast-body` — content area
-**State selectors:** `.toast.show` (visible with opacity 1)
+**Sub-elements:** `.toast-container` (positioning wrapper for one or more toasts — not required if a toast is manually positioned), `.toast-header` (optional, contains dismiss `.btn-close`), `.toast-body`.
+**Cross-references:** Close Button (`.btn-close` dismiss trigger), Alert (conceptually similar dismissible-notification pattern, different visibility mechanics).
 
 ---
 
 ## Card
 
 **Primary class:** `.card`
-**Modifier classes:** `.card-img-top`, `.card-img-bottom`, `.card-img-overlay`, `.text-bg-{theme}`, `.border-{theme}`, `.card-group`, `.card-columns`
-**JS mutations:** None
+**Modifier classes:** `.card-body`, `.card-title`, `.card-subtitle`, `.card-text`, `.card-link`, `.card-header`, `.card-footer`, `.card-header-tabs`, `.card-header-pills`, `.card-img`/`.card-img-top`/`.card-img-bottom`, `.card-img-overlay`, `.card-group`
+**JS mutations:** none (fully static component)
 **Expected DOM:**
 ```html
 <div class="card" style="width: 18rem;">
   <img src="..." class="card-img-top" alt="...">
   <div class="card-body">
     <h5 class="card-title">Card title</h5>
-    <p class="card-text">Card text.</p>
-    <a href="#" class="btn btn-primary">Go somewhere</a>
+    <p class="card-text">Some quick example text.</p>
+    <a href="#" class="card-link">Card link</a>
   </div>
-  <ul class="list-group list-group-flush">
-    <li class="list-group-item">Item</li>
-  </ul>
-  <div class="card-footer text-body-secondary">Footer</div>
 </div>
 ```
-**Sub-elements:**
-- `.card-body` — main content area with padding
-- `.card-title` — heading text
-- `.card-subtitle` — subtitle text
-- `.card-text` — paragraph text
-- `.card-link` — a link inside card body
-- `.card-header` — top header row (darker bg)
-- `.card-footer` — bottom footer row
-- `.card-img-top` / `.card-img-bottom` — images at top/bottom with rounding
-- `.card-img-overlay` — absolute-positioned overlay on image
+**Sub-elements:** `.card-header`/`.card-footer` (optional caps, first/last-child get corner-radius via `:first-child`/`:last-child`, not fixed position requirement), `.card-body` (main content wrapper — a card can contain multiple `.card-body`/`.card-header`/list-group blocks stacked directly as children), `.card-img-top`/`.card-img-bottom` (edge-to-edge images, corner-radius-aware), `.card-img-overlay` (absolute-positioned overlay for text-on-image cards).
+**Cross-references:** List Group (`.card > .list-group` gets special border-inheritance treatment), Nav/Tabs (`.card-header-tabs`/`.card-header-pills` restyle `.nav-tabs`/`.nav-pills` to fit a card header), Close Button (`.card-header .btn-close` composition, not defined in `_card.scss` itself but a common pattern).
 
 ---
 
 ## Table
 
 **Primary class:** `.table`
-**Modifier classes:** `.table-{primary|secondary|success|…}` (row/cell color), `.table-striped`, `.table-striped-columns`, `.table-hover`, `.table-bordered`, `.table-borderless`, `.table-sm`, `.caption-top`, `.table-responsive{-{breakpoint}}`
-**JS mutations:** None
+**Modifier classes:** `.table-striped`, `.table-striped-columns`, `.table-hover`, `.table-active`, `.table-bordered`, `.table-borderless`, `.table-sm`, `.table-responsive`/`.table-responsive-{bp}`, `.table-group-divider`, `.caption-top`, `.table-{primary,secondary,success,info,warning,danger,light,dark}` (8 contextual row/cell variants via `mixins/_table-variants.scss`)
+**JS mutations:** none (fully static)
 **Expected DOM:**
 ```html
-<table class="table table-striped table-hover">
+<table class="table table-striped">
   <thead>
     <tr><th scope="col">#</th><th scope="col">Name</th></tr>
   </thead>
   <tbody>
-    <tr><td>1</td><td>Alice</td></tr>
-    <tr class="table-active"><td>2</td><td>Bob</td></tr>
+    <tr><th scope="row">1</th><td>Mark</td></tr>
   </tbody>
-  <tfoot>
-    <tr><td colspan="2">Footer</td></tr>
-  </tfoot>
 </table>
 ```
-**Sub-elements:** Standard table elements (`<thead>`, `<tbody>`, `<tfoot>`, `<tr>`, `<th>`, `<td>`, `<caption>`).
-**State selectors:** `.table-active` on `<tr>` or `<td>` (highlighted row/cell)
+**Sub-elements:** native `<thead>`/`<tbody>`/`<tfoot>`/`<tr>`/`<th>`/`<td>`/`<caption>` — Bootstrap adds no custom classes to these by default; all cell styling flows down from `.table` via CSS-var cascade (`--bs-table-color-type`/`--bs-table-bg-type` reset chain documented in tokens.md §10). The universal-selector rule `> :not(caption) > * > *` targets `th`/`td` regardless of thead/tbody/tfoot ancestry with a single compact selector.
+**Cross-references:** Card (a table is a common `.card-body` child, no special integration classes needed), tokens.md §10 Table entry for the `-type`/`-state` CSS-var precedence chain.
 
 ---
 
 ## Close Button
 
 **Primary class:** `.btn-close`
-**Modifier classes:** `.btn-close-white` (deprecated v5.3.4; use `.text-reset` + filter), `data-bs-dismiss` attribute
-**JS mutations:** None (Bootstrap JS listens for click and calls dismiss on parent)
+**Modifier classes:** `.btn-close-white` (forces the invert-filter used automatically in dark mode, for use on a light-on-dark surface within an otherwise light-themed page)
+**JS mutations:** none inherent to the button itself; `data-bs-dismiss="{modal|alert|offcanvas|toast}"` (author-set attribute, not JS-mutated) is what each host component's plugin listens for to trigger its own dismiss behavior.
 **Expected DOM:**
 ```html
 <button type="button" class="btn-close" aria-label="Close"></button>
 ```
-**Sub-elements:** None — purely visual via `background-image` SVG.
-**Notes:** Used inside Modal, Alert, Toast, Offcanvas headers.
+**Sub-elements:** none — single empty `<button>`, the "X" glyph is a `background-image` (inline SVG data-URI), not text content or a child icon element. `aria-label="Close"` is required since the button has no visible text.
+**Cross-references:** Modal, Offcanvas, Toast, Alert (all use `.btn-close` as their dismiss trigger); tokens.md's Close Button entry (`--bs-btn-close-*` namespace, easily confused with Button's `--bs-btn-*` due to shared prefix but fully separate).
 
 ---
 
-## Separator / Divider
+## Separator/Divider
 
-**In Dropdowns:** `.dropdown-divider` — rendered as `<hr>` inside `.dropdown-menu`
-**In Nav:** `<li role="separator">` with visual styling via utilities
-**In Buttons:** Achieved via CSS border-left on adjacent `.btn` in `.btn-group`
+**Primary class:** none single — this is a concept covered by three distinct, unrelated Bootstrap mechanisms:
+1. **`<hr>`** (Reboot-styled native element, no Bootstrap class required) — `margin: $hr-margin-y 0; border-top: var(--bs-border-width) solid; opacity: .25` (color inherits from context via `color: inherit` + `border-color: currentcolor` pattern).
+2. **`.dropdown-divider`** — an `<hr>`-like horizontal rule purpose-built for inside `.dropdown-menu` (see Dropdown entry): `height:0; margin: var(--bs-dropdown-divider-margin-y) 0; border-top: 1px solid var(--bs-dropdown-divider-bg); opacity:1`.
+3. **`.vr`** (`helpers/_vr.scss`) — a *vertical* rule for inline/flex contexts: `display:inline-block; align-self:stretch; width: var(--bs-border-width); min-height:1em; background-color: currentcolor; opacity: .25`.
 
+**Modifier classes:** none for any of the three.
+**JS mutations:** none.
+**Expected DOM:**
 ```html
-<!-- Dropdown divider -->
-<li><hr class="dropdown-divider"></li>
+<hr>
+<!-- inside a dropdown -->
+<ul class="dropdown-menu"><li><hr class="dropdown-divider"></li></ul>
+<!-- inline vertical rule, e.g. in a toolbar -->
+<div class="vr"></div>
 ```
-
-No standalone "separator" component in Bootstrap — use `<hr>` with utilities for general separators.
+**Sub-elements:** none — all three are single, content-free elements.
+**Cross-references:** Dropdown (`.dropdown-divider` is scoped for use there), tokens.md §7 Border tokens (`hr` consumes `--bs-border-width`/`border-color` generically, no dedicated token namespace of its own — confirmed by the absence of any `--bs-hr-*` token in the compiled-CSS grep for tokens.md).
 
 ---
 
-## Component Token Cross-Reference
+### Component count
 
-| Component | Token namespace | Key tokens for React Aria bridge |
-|---|---|---|
-| Button | `--bs-btn-*` | `--bs-btn-hover-bg`, `--bs-btn-active-bg`, `--bs-btn-disabled-opacity`, `--bs-btn-focus-box-shadow` |
-| Nav/Tabs | `--bs-nav-*`, `--bs-nav-tabs-*` | `--bs-nav-link-color`, `--bs-nav-tabs-link-active-color`, `--bs-nav-tabs-link-active-bg` |
-| List Group | `--bs-list-group-*` | `--bs-list-group-active-bg`, `--bs-list-group-active-color`, `--bs-list-group-hover-bg` |
-| Dropdown | `--bs-dropdown-*` | `--bs-dropdown-link-active-bg`, `--bs-dropdown-link-hover-bg`, `--bs-dropdown-link-disabled-color` |
-| Accordion | `--bs-accordion-*` | `--bs-accordion-active-bg`, `--bs-accordion-active-color`, `--bs-accordion-btn-focus-box-shadow` |
-| Badge | `--bs-badge-*` | `--bs-badge-font-size`, `--bs-badge-border-radius` |
-| Alert | `--bs-alert-*` | `--bs-alert-bg`, `--bs-alert-color`, `--bs-alert-border-color` |
-| Progress | `--bs-progress-*` | `--bs-progress-bar-bg`, `--bs-progress-bg` |
-| Pagination | `--bs-pagination-*` | `--bs-pagination-active-bg`, `--bs-pagination-hover-bg` |
-| Modal | `--bs-modal-*` | `--bs-modal-bg`, `--bs-modal-border-radius`, `--bs-modal-box-shadow` |
+31 components documented above, matching the skill's required list exactly.

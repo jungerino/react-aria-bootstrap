@@ -158,3 +158,91 @@
   font-weight: 500;
   line-height: 1.2;
 }
+
+// ============================================================
+// Button
+// ============================================================
+
+// Button renders a genuine native `<button>` styled with the real `.btn`
+// class, so `:hover`/`:focus-visible`/`:active`/`:disabled` already fire on
+// their own with zero bridge CSS (see button-taxonomy.md). These bridges
+// exist for cross-modality reliability (touch, keyboard-only press, RAC's own
+// focus-visible heuristic) — not to work around a broken selector — plus the
+// one state with no native trigger at all (`[data-pending]`). Token values
+// are copied verbatim from Bootstrap's compiled `.btn:hover`/`:focus-visible`/
+// `:active`/`:disabled` rules (P-036) — the same values presentation.scss's
+// `.faux-*` classes use for the reference story's static specimens.
+
+.react-aria-Button.btn[data-hovered] {
+  color: var(--bs-btn-hover-color);
+  background-color: var(--bs-btn-hover-bg);
+  border-color: var(--bs-btn-hover-border-color);
+}
+
+// `.btn:focus-visible` (compiled CSS) reuses the hover-color tokens and adds a
+// box-shadow ring — verified NOT combined with `--bs-btn-box-shadow`: that
+// token is defined on every button variant but never consumed by any
+// `box-shadow:` declaration anywhere in the compiled stylesheet (see
+// button-taxonomy.md Confidence). No bridge for plain `[data-focused]` alone
+// — Bootstrap defines no distinct `:focus` rule, so plain-focused (not
+// focus-visible) is identical to resting (see taxonomy DOM conflicts).
+.react-aria-Button.btn[data-focus-visible] {
+  color: var(--bs-btn-hover-color);
+  background-color: var(--bs-btn-hover-bg);
+  border-color: var(--bs-btn-hover-border-color);
+  outline: 0;
+  box-shadow: var(--bs-btn-focus-box-shadow);
+}
+// `.btn-link:focus-visible` (compiled CSS) uniquely overrides color back to
+// the resting value at higher specificity than the generic rule above — link
+// buttons don't adopt hover-color on focus, only gain the shadow ring.
+.react-aria-Button.btn-link[data-focus-visible] {
+  color: var(--bs-btn-color);
+}
+
+// `data-pressed` bridges `.btn:active`/`.btn.active`/`.btn.show` — native
+// `:active` is unreliable across keyboard/touch activation in some browsers,
+// the documented reason RAC ships `data-pressed`, so this one is not purely
+// belt-and-suspenders. Verified no `box-shadow` is applied by this rule
+// despite `--bs-btn-active-shadow` existing as a token (also never consumed
+// anywhere in the compiled stylesheet — same dead-variable pattern as
+// `--bs-btn-box-shadow` above).
+.react-aria-Button.btn[data-pressed] {
+  color: var(--bs-btn-active-color);
+  background-color: var(--bs-btn-active-bg);
+  border-color: var(--bs-btn-active-border-color);
+}
+// Pressed + focus-visible together: Bootstrap's compiled cascade keeps active
+// colors and layers the focus ring on top rather than reverting to hover
+// colors. Source order here (declared after the focus-visible rule)
+// reproduces the same outcome for the shared color/bg/border properties.
+.react-aria-Button.btn[data-pressed][data-focus-visible] {
+  box-shadow: var(--bs-btn-focus-box-shadow);
+}
+
+// `isDisabled` also sets the real `disabled` HTML attribute (confirmed in
+// `Button.js`), so native `:disabled` already fires — this bridge is
+// defensive/redundant, not required.
+.react-aria-Button.btn[data-disabled] {
+  color: var(--bs-btn-disabled-color);
+  background-color: var(--bs-btn-disabled-bg);
+  border-color: var(--bs-btn-disabled-border-color);
+  opacity: var(--bs-btn-disabled-opacity);
+  pointer-events: none;
+}
+
+// `data-pending` has no native Bootstrap trigger: RAC sets `aria-disabled`
+// but never the native `disabled` attribute while pending (button must stay
+// focusable — confirmed in `Button.js`), so `:disabled` never fires.
+// Reproduces the same dimmed look as Bootstrap's own disabled tokens.
+// Declared last so it wins over `[data-hovered]` when both are present (equal
+// specificity, source order breaks the tie) — pending must always look
+// pending, even while hovered (RAC preserves hover events during pending for
+// tooltip support).
+.react-aria-Button.btn[data-pending] {
+  color: var(--bs-btn-disabled-color);
+  background-color: var(--bs-btn-disabled-bg);
+  border-color: var(--bs-btn-disabled-border-color);
+  opacity: var(--bs-btn-disabled-opacity);
+  pointer-events: none;
+}

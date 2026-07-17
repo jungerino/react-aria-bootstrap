@@ -121,4 +121,12 @@
 
 ### Button
 **Principles used:**
-- *(e.g., `P014 data-pressed`, `P022 bs-icons`)*
+- `P001 compound-sel`
+- `P002 class-in-tsx`
+- `P003 scss-bridge`
+- `P007 variant-replace`
+- `P013 prefer-component-cls`
+- `P014 data-pressed`
+- `P038 prop-audit-first`
+- `P044 faux-state-class`
+- `P047 presentation-import`

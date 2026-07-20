@@ -92,8 +92,24 @@ Corrections to mistakes an agent will predictably make without being told. Loade
 
 **Tempting-but-wrong:** Set `className` to a plain string containing only the target Bootstrap class (e.g. `className="form-select"`), since it looks simpler than the callback form or a fully-spelled literal.
 **Why-it-fails:** A plain string *replaces* React Aria's default `.react-aria-{Component}` class entirely — it doesn't add to it. The default class is only used as a fallback when `className` is `undefined`. Any bridge selector written against `.react-aria-{Component}` (the usual pattern) will never match this element.
-**Correct-approach:** Either use the callback form (P002) to preserve the default class dynamically, or explicitly include it in the literal string: `className="react-aria-Button form-select"`. If the RAC class genuinely isn't needed as a selector (e.g. scoping via `data-trigger` instead), write every bridge rule for that element against the class that's actually present — never assume `.react-aria-{Component}` by habit.
+**Correct-approach:** Either use the render-prop callback form — destructure `defaultClassName` from the callback argument and append to it, e.g. `({ defaultClassName }) => \`${defaultClassName ?? ''} form-select\`.trim()` — to preserve the default class dynamically, or explicitly include it in a literal string: `className="react-aria-Button form-select"`. If the RAC class genuinely isn't needed as a selector (e.g. scoping via `data-trigger` instead), write every bridge rule for that element against the class that's actually present — never assume `.react-aria-{Component}` by habit.
 **Symptom:** A bridge rule that should apply to this element (correct selector, correct property values) never takes effect, with no error — because the element's actual class list doesn't include what the selector expects.
+
+### G050: native-active-keyboard-gap
+
+**Tempting-but-wrong:** Assume Bootstrap's native `:active` pseudo-class is sufficient for press-state styling on an element carrying a Bootstrap component class with its own `:active` rule (`.btn`, `.dropdown-item`, `.nav-link`, `.page-link`, `.accordion-button`, and others).
+**Why-it-fails:** `:active` fires reliably for mouse and touch press, but not for keyboard activation (Enter/Space on a focused element). React Aria's `usePress` hook sets `[data-pressed]` uniformly across all three input modalities. The gap is invisible to pixel-diff comparison, since a mouse-rendered reference screenshot never exercises the keyboard path.
+**Correct-approach:** Bridge `[data-pressed]` to mirror the applied class's real `:active` output values, unconditionally — not just where `:active` seems insufficient. Example for `.btn`:
+```scss
+.react-aria-Button.btn[data-pressed] {
+  color: var(--bs-btn-active-color);
+  background-color: var(--bs-btn-active-bg);
+  border-color: var(--bs-btn-active-border-color);
+  @include box-shadow(var(--bs-btn-active-shadow));
+}
+```
+The same pattern applies to any Bootstrap component class with its own `:active` rule, not just `.btn`.
+**Symptom:** Keyboard users pressing Enter/Space see no visual press feedback at all, while mouse/touch users do.
 
 ---
 

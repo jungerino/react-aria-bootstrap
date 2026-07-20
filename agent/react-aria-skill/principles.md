@@ -21,7 +21,7 @@ Each principle declares a `**Type:**` (Triggered, Preference, Fact, Verification
 - [P002 class-in-tsx](#p002-class-in-tsx) — Two forms for writing `className` on a React Aria component
 - [P013 prefer-component-cls](#p013-prefer-component-cls) — Prefer Bootstrap component classes over utility classes
 
-### Interaction-State Bridging (P003; P014, P044 pending)
+### Interaction-State Bridging (P003; P044 pending)
 - [P003 scss-bridge](#p003-scss-bridge) — Bridge every data-* attribute to Bootstrap's corresponding style, uniformly
 
 ### DOM & Counterpart Matching (P036, P053)
@@ -38,7 +38,6 @@ Each principle declares a `**Type:**` (Triggered, Preference, Fact, Verification
 - [P007 variant-replace](#p007-variant-replace) — Bootstrap variants replace, don't extend
 - [P009 clean-slate](#p009-clean-slate) — Comment-out is not a clean slate
 - [P011 cursor-pointer](#p011-cursor-pointer) — Non-native interactive elements need `cursor: pointer`
-- [P014 data-pressed](#p014-data-pressed) — Bridge `[data-pressed]` to `:active` styles
 - [P015 scss-mixins](#p015-scss-mixins) — Use Bootstrap's SCSS mixins for `$enable-*`-gated properties
 - [P016 fixed-dims](#p016-fixed-dims) — Fix explicit dimensions for mounting/unmounting indicators
 - [P017 border-transparent](#p017-border-transparent) — `border-color: transparent` over `border-width: 0`
@@ -187,19 +186,6 @@ Each principle declares a `**Type:**` (Triggered, Preference, Fact, Verification
 ### P011: cursor-pointer
 
 **Interactive non-anchor, non-button elements need `cursor: pointer` added explicitly:** Bootstrap interactive components built on `<a>` elements get pointer cursor for free. React Aria replaces many of these with `<div>` or `<span>` elements that carry no native cursor behavior. Any interactive React Aria element that would produce a pointer cursor in the equivalent Bootstrap component must have `cursor: pointer` added in the bridge.
-
-### P014: data-pressed
-
-**Bridge `[data-pressed]` to `:active` styles for keyboard press support:** CSS `:active` fires on mouse and touch press but not on keyboard activation. React Aria sets `[data-pressed]` for all three. Any `.btn`-based element needs a `[data-pressed]` bridge that mirrors Bootstrap's `:active` rule — otherwise keyboard-triggered press states are visually silent. Example for `.btn`:
-```scss
-.react-aria-Button.btn[data-pressed] {
-  color: var(--bs-btn-active-color);
-  background-color: var(--bs-btn-active-bg);
-  border-color: var(--bs-btn-active-border-color);
-  @include box-shadow(var(--bs-btn-active-shadow));
-}
-```
-This applies to any component using `.btn`, not just Button.
 
 ### P015: scss-mixins
 

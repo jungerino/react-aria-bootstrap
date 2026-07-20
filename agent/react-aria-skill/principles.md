@@ -40,11 +40,14 @@ Each principle declares a `**Type:**` (Triggered, Preference, Fact, Verification
 - [P020 reboot-align](#p020-reboot-align) — Bootstrap reboot silently changes browser-default styling
 - [P050 reboot-mismatch](#p050-reboot-mismatch) — Element type substitution invalidates Bootstrap reboot rules
 
+### Dimensions & Layout Stability (P016, P026)
+- [P016 fixed-dims](#p016-fixed-dims) — Fix explicit dimensions for mounting/unmounting indicators
+- [P026 use-rem](#p026-use-rem) — Use `rem` for Bootstrap-matched sizing
+
 ### Core Principles (not yet reviewed — membership below is current; see tracker for status)
 - [P005 bundle-isolation](#p005-bundle-isolation) — Bootstrap-test stories require bundle-level isolation
 - [P011 cursor-pointer](#p011-cursor-pointer) — Non-native interactive elements need `cursor: pointer`
 - [P015 scss-mixins](#p015-scss-mixins) — Use Bootstrap's SCSS mixins for `$enable-*`-gated properties
-- [P016 fixed-dims](#p016-fixed-dims) — Fix explicit dimensions for mounting/unmounting indicators
 - [P017 border-transparent](#p017-border-transparent) — `border-color: transparent` over `border-width: 0`
 - [P018 postcss-scope](#p018-postcss-scope) — Scope Bootstrap via `postcss-prefix-selector`, not SCSS nesting
 - [P019 outline-base](#p019-outline-base) — `btn-outline-{variant}` for borderless interactive elements
@@ -53,7 +56,6 @@ Each principle declares a `**Type:**` (Triggered, Preference, Fact, Verification
 - [P023 css-native-visual](#p023-css-native-visual) — Let Bootstrap render CSS-native visual elements
 - [P024 caret-flip](#p024-caret-flip) — Directional caret flip for expandable elements
 - [P025 hardcode-show](#p025-hardcode-show) — Hardcode `.show` on Bootstrap overlay elements
-- [P026 use-rem](#p026-use-rem) — Use `rem` for Bootstrap-matched sizing
 - [P027 btn-non-button](#p027-btn-non-button) — `btn` on non-`<button>` interactive elements
 - [P028 btn-sm-dense](#p028-btn-sm-dense) — `btn-sm` in grid-constrained contexts
 
@@ -207,6 +209,26 @@ Each principle declares a `**Type:**` (Triggered, Preference, Fact, Verification
 
 ---
 
+## Dimensions & Layout Stability
+
+### P016: fixed-dims
+
+**Type:** Triggered
+**Trigger:** A visual indicator element mounts or unmounts on a state change (e.g. a checkmark SVG toggling visibility, a badge appearing) — not an element that's always present and only changes visual treatment (color, border, background).
+**Action:** Reserve the indicator's `width` and `height` explicitly, in `rem` units (P026), so the container occupies the same space whether or not the indicator is present.
+**Rationale:** An indicator that mounts/unmounts without a held dimension shifts the container's layout at the instant of the change. Elements that are always present get their size from natural padding/content and don't need this.
+
+### P026: use-rem
+
+**Type:** Preference
+**Preferred:** `rem` for any dimension that must match a fixed Bootstrap value.
+**Over:** `em`.
+**Rationale:** Bootstrap sizes fixed UI elements in `rem`, anchored to the root font size; `em` scales with the local (inherited) font-size context, so the same nominal value can diverge from Bootstrap's actual rendered size inside a differently-sized ancestor.
+**Exception:** Use `em` where Bootstrap itself uses it for intentionally fluid scaling.
+**Example:** A checkbox indicator sized `1em × 1em` shrinks inside a smaller-font-size context; `1rem × 1rem` matches Bootstrap's `.form-check-input` regardless of nesting.
+
+---
+
 ## Core Principles
 
 ### P005: bundle-isolation
@@ -220,10 +242,6 @@ Each principle declares a `**Type:**` (Triggered, Preference, Fact, Verification
 ### P015: scss-mixins
 
 **Use Bootstrap's SCSS mixins for `$enable-*`-gated properties in bridge selectors:** Bootstrap conditionally emits certain CSS properties through mixins that check `$enable-*` flags — `@include box-shadow(...)` (`$enable-shadows`), `@include transition(...)` (`$enable-transitions`), `@include border-radius(...)` (`$enable-rounded`), `@include gradient-bg(...)` (`$enable-gradients`). Writing these as raw CSS properties in a bridge selector bypasses those flags and produces output the project may have deliberately suppressed (e.g. `$enable-shadows: false` is Bootstrap's default, so a raw `box-shadow:` declaration applies a shadow Bootstrap itself never renders). Since `_bootstrap-bridges.scss` is compiled after Bootstrap's variables and mixins are loaded, use the same mixin Bootstrap uses — not a raw property declaration.
-
-### P016: fixed-dims
-
-**Fix explicit dimensions only when the indicator element itself mounts or unmounts:** When a visual indicator appears or disappears on state change (e.g., a checkmark SVG toggling visibility, a badge mounting), the container can shift layout if dimensions aren't held constant. Set explicit `width` and `height` using `rem` units (not `em`, which varies with inherited font-size) so the container occupies the same space regardless of state. Do not apply this to elements that are always present and only change visual treatment (color, border, background) — those should get their size from natural padding and content.
 
 ### P017: border-transparent
 
@@ -272,10 +290,6 @@ Background-image swaps cannot be transitioned — the caret snaps. This matches 
 ### P025: hardcode-show
 
 **Hardcode `.show` on Bootstrap overlay elements:** Bootstrap JS toggles overlay visibility by adding/removing `.show` on elements like `.dropdown-menu`, `.collapse`, and `.modal`. React Aria manages visibility by mounting/unmounting the element instead. When using Bootstrap overlay classes, hardcode `.show` permanently — React Aria's mount/unmount provides the visibility control; `.show` just ensures Bootstrap's visible styles are always active when the element exists in the DOM. For portal-rendered elements (Popover, Modal), add `.show` directly to `className` in TSX rather than via a bridge rule — ancestor selectors don't reach portal elements (see P052).
-
-### P026: use-rem
-
-**Use `rem` for Bootstrap-matched sizing, not `em`:** Bootstrap sizes fixed UI elements in `rem`, anchored to the root font size. Using `em` causes elements to scale with local font-size context, diverging from Bootstrap's values in nested containers. Only use `em` where Bootstrap itself uses it for intentionally fluid scaling. Example: a checkbox indicator sized `1em × 1em` shrinks inside a smaller-font-size context; `1rem × 1rem` matches Bootstrap's `.form-check-input` regardless of nesting.
 
 ### P027: btn-non-button
 

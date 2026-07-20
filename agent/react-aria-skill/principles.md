@@ -21,8 +21,9 @@ Each principle declares a `**Type:**` (Triggered, Preference, Fact, Verification
 - [P002 class-in-tsx](#p002-class-in-tsx) — Two forms for writing `className` on a React Aria component
 - [P013 prefer-component-cls](#p013-prefer-component-cls) — Prefer Bootstrap component classes over utility classes
 
-### Interaction-State Bridging (P003; P044 pending)
+### Interaction-State Bridging (P003, P044)
 - [P003 scss-bridge](#p003-scss-bridge) — Bridge every data-* attribute to Bootstrap's corresponding style, uniformly
+- [P044 faux-state-class](#p044-faux-state-class) — Simulate a non-declarative interactive state in a mirror story specimen
 
 ### DOM & Counterpart Matching (P036, P053)
 - [P036 derive-from-counterpart](#p036-derive-from-counterpart) — Derive bridge rules from the counterpart's actual CSS mechanism
@@ -72,7 +73,6 @@ Each principle declares a `**Type:**` (Triggered, Preference, Fact, Verification
 - [P030 layout-variants-story](#p030-layout-variants-story) — Layout Variants story
 - [P031 state-stories](#p031-state-stories) — State stories (Disabled, Invalid, WithDescription)
 - [P032 title-case-labels](#p032-title-case-labels) — Title-cased Variants story labels
-- [P044 faux-state-class](#p044-faux-state-class) — Simulate interactive states with `.faux-*` CSS
 - [P047 presentation-import](#p047-presentation-import) — Mirror stories must import `presentation.scss`
 - [P048 no-inline-style](#p048-no-inline-style) — No inline `style=` attributes
 
@@ -128,6 +128,15 @@ Each principle declares a `**Type:**` (Triggered, Preference, Fact, Verification
   // paste Bootstrap's .btn:hover rules here
 }
 ```
+
+### P044: faux-state-class
+
+**Type:** Procedural
+**Trigger:** Implementing a mirror story that must show a non-declarative interactive state (hover, focus, pressed) that the reference story already simulates via `.faux-*` classes on native elements — a state that can't be set via a React Aria prop.
+**Steps:**
+1. Add a `.faux-[state]` bridge rule in `_bootstrap-bridges.scss`, applying the same property values Bootstrap uses for the equivalent native pseudo-class — e.g. `.faux-hover { background-color: var(--bs-btn-hover-bg); }`.
+2. Add the faux class to the specimen alongside whatever other classes it already needs (the RAC default class, Bootstrap classes) — use the callback form or an explicit literal string enumerating every class, never a bare plain string that would replace them.
+**Stop-condition:** Every interactive-state specimen the reference story shows for this component has a matching mirror-story specimen.
 
 ---
 
@@ -395,10 +404,6 @@ Three corollaries:
 ### P032: title-case-labels
 
 **Variants story labels must be title-cased — never raw prop strings:** When a Variants story maps over prop values to render each variant (e.g. `{VARIANTS.map(v => <Button variant={v}>{v}</Button>)}`), labels render lowercase because prop values are lowercase strings. Always title-case the label: either capitalize the first letter (`v.charAt(0).toUpperCase() + v.slice(1)`) or use Bootstrap's documented display name. Do not pass the raw prop string as the visible label.
-
-### P044: faux-state-class
-
-**Simulate non-declarative interactive states in mirror stories using `.faux-*` CSS:** Reference stories simulate interactive states (focus, hover, pressed) using `.faux-*` CSS classes on native HTML elements (e.g. `.faux-focus` on `<select>`). Mirror stories must match this coverage — do not omit an interactive state specimen just because the state cannot be triggered via React Aria props. The pattern: (1) add a `.faux-[state]` bridge rule in `_bootstrap-bridges.scss` (P003) applying the same property values Bootstrap uses for the equivalent native pseudo-class; if the RAC component replaces `className` entirely (preventing the faux class from landing on the component root), wrap the component in a `.faux-[state]-scope` div and scope the bridge rule to that wrapper; (2) wrap the component in the story with that div (or pass `className="faux-[state]"` where the class lands on a stable outer element). This is symmetric with how reference stories fake state on native elements and requires no changes to the component's core API.
 
 ### P047: presentation-import
 

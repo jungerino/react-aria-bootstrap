@@ -30,20 +30,16 @@ If the directory exists and contains `_decorators.tsx`, setup has already been d
    stories/react-aria-bootstrap/mirror/
    ```
 
-2. **Move and rename `_decorators.tsx`**
-   - Source: `stories/bootstrap-test/_decorators.tsx`
-   - Destination: `stories/react-aria-bootstrap/_decorators.tsx`
-   - Rename the export: `withBootstrapTest` → `withBootstrap`
-   - Do not change the implementation — the dark mode mapping works correctly as written.
+2. **Create `_decorators.tsx`**
+   - Path: `stories/react-aria-bootstrap/_decorators.tsx`
+   - Exports `withBootstrap`, a Storybook decorator that sets `data-bs-theme` on `document.documentElement` based on the active `backgrounds` toolbar value.
 
-3. **Move `presentation.scss`**
-   - Source: `stories/bootstrap-test/bootstrap-reference/augments.scss`
-   - Destination: `stories/react-aria-bootstrap/presentation.scss`
-   - Do not change the content.
+3. **Create `presentation.scss`**
+   - Path: `stories/react-aria-bootstrap/presentation.scss`
+   - Shared faux-state and layout CSS used by reference and mirror stories.
 
-4. **Update `.storybook/main.js` story glob**
-   - Old: `"../stories/bootstrap-test/bootstrap-reference/**/*.stories.@(js|jsx|mjs|ts|tsx)"`
-   - New: `"../stories/react-aria-bootstrap/**/*.stories.@(js|jsx|mjs|ts|tsx)"`
+4. **Set the `.storybook/main.js` story glob**
+   - `"../stories/react-aria-bootstrap/**/*.stories.@(js|jsx|mjs|ts|tsx)"`
    - This single glob covers all three story categories: `reference/`, `mirror/`, and root-level end-product stories.
 
 5. **Update `.storybook/preview.js`**
@@ -57,7 +53,6 @@ If the directory exists and contains `_decorators.tsx`, setup has already been d
 
 ## Notes
 
-- `stories/bootstrap-test/` is left intact. It will be removed when Stage 5 migration is complete. Until then it is excluded from the story glob.
 - `presentation.scss` is **not** added as a global import in `preview.js`. Reference and mirror stories import it directly; end-product stories do not need it.
 - Story categories by subdirectory:
   - `stories/react-aria-bootstrap/reference/` — Bootstrap reference stories (Stage 4 output)

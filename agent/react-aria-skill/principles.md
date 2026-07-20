@@ -32,11 +32,13 @@ Each principle declares a `**Type:**` (Triggered, Preference, Fact, Verification
 ### Boundary Ownership (P040)
 - [P040 container-owns-boundary](#p040-container-owns-boundary) — Boundary properties belong on the container, not children
 
+### Prop Surface & Variant Coverage (P007, P038)
+- [P007 variant-replace](#p007-variant-replace) — Build a `variantClassMap` from the taxonomy's resolved Bootstrap variant set
+- [P038 prop-audit-first](#p038-prop-audit-first) — Verify every layout/orientation/selection-mode/variant prop has a taxonomy entry
+
 ### Core Principles (not yet reviewed — membership below is current; see tracker for status)
 - [P004 conflict-css](#p004-conflict-css) — Comment out conflicting project CSS
 - [P005 bundle-isolation](#p005-bundle-isolation) — Bootstrap-test stories require bundle-level isolation
-- [P006 modifier-audit](#p006-modifier-audit) — Audit Bootstrap modifier classes before implementing variants
-- [P007 variant-replace](#p007-variant-replace) — Bootstrap variants replace, don't extend
 - [P009 clean-slate](#p009-clean-slate) — Comment-out is not a clean slate
 - [P011 cursor-pointer](#p011-cursor-pointer) — Non-native interactive elements need `cursor: pointer`
 - [P015 scss-mixins](#p015-scss-mixins) — Use Bootstrap's SCSS mixins for `$enable-*`-gated properties
@@ -59,7 +61,6 @@ Each principle declares a `**Type:**` (Triggered, Preference, Fact, Verification
 - [P034 contrast-all-states](#p034-contrast-all-states) — Maintain ≥ 4.5:1 contrast through all interaction states
 - [P035 no-color-alone](#p035-no-color-alone) — Non-color attribute as primary state differentiator
 - [P037 multi-select-separator](#p037-multi-select-separator) — Separator between adjacent selected items
-- [P038 prop-audit-first](#p038-prop-audit-first) — Enumerate React Aria prop surface before implementing
 - [P041 value-display-stable-dims](#p041-value-display-stable-dims) — Trigger sizes to its widest option
 - [P042 right-anchor-indicator](#p042-right-anchor-indicator) — Pin trailing indicator to right edge in flex rows
 - [P043 visual-metaphor-completeness](#p043-visual-metaphor-completeness) — Verify full Bootstrap visual metaphor
@@ -170,6 +171,24 @@ Each principle declares a `**Type:**` (Triggered, Preference, Fact, Verification
 
 ---
 
+## Prop Surface & Variant Coverage
+
+### P007: variant-replace
+
+**Type:** Triggered
+**Trigger:** Implementing a component whose taxonomy resolves a Bootstrap-authoritative variant set for a prop (e.g. `btn-primary`, `btn-success` for `variant`).
+**Action:** Build a `variantClassMap` mapping each resolved Bootstrap variant name to its full Bootstrap class, and use the resolved names (without prefix — `'primary' | 'secondary' | 'success'`, etc.) as the component's prop type in place of the component library's inherited variant type. Add a Variants story showing all supported values side by side.
+**Rationale:** Which Bootstrap variants apply, and which library-inherited variant names have no equivalent, is a taxonomy-level decision (see the taxonomy's Variants section) — this principle covers only the resulting implementation, not re-determining the set.
+
+### P038: prop-audit-first
+
+**Type:** Verification
+**Trigger:** During the Preparation Phase, after loading the component's taxonomy.
+**Check:** Call `mcp__react-aria__get_react_aria_page` for the component and confirm every prop with layout, orientation, selection-mode, or variant semantics has a corresponding entry in the taxonomy's Variants section.
+**On-failure:** Treat the gap as unresolved in the taxonomy, not a decision to make locally — escalate rather than determining the missing Bootstrap variant or modifier class yourself.
+
+---
+
 ## Core Principles
 
 ### P004: conflict-css
@@ -179,14 +198,6 @@ Each principle declares a `**Type:**` (Triggered, Preference, Fact, Verification
 ### P005: bundle-isolation
 
 **Bootstrap-styled stories require bundle-level CSS isolation:** Storybook compiles a single shared CSS bundle — all CSS imported anywhere in the project enters the global scope of every story. Commenting out CSS imports in styled components is insufficient: other stories import original components, which import their CSS, which then matches `.react-aria-*` selectors everywhere. `@layer` deprioritization is also insufficient — it only arbitrates direct property conflicts; additive project styles (e.g. interaction-state backgrounds) apply unopposed when Bootstrap has no competing rule. The correct fix is a Storybook glob filter that loads only `stories/react-aria-bootstrap/` stories, so no original unstyled component is ever imported and no project CSS enters the bundle. Storybook has no native per-story CSS isolation in any current version.
-
-### P006: modifier-audit
-
-**Audit Bootstrap's modifier classes before implementing layout or orientation variants:** Bootstrap components often have modifier classes that handle layout variants with their own corrected structural selectors, token values, and border handling (e.g. `.list-group-horizontal`, `.nav-pills`, `.nav-fill`). Before implementing a React Aria layout or orientation variant, check Bootstrap's documentation for matching modifier classes and apply them — don't hand-roll what Bootstrap already provides.
-
-### P007: variant-replace
-
-**Bootstrap variants are the authoritative set — replace, don't extend:** When Bootstrap defines variant classes for a component (e.g. `btn-primary`, `btn-success`), its full set is the authoritative prop type. Replace the component library's inherited `variant` type with Bootstrap's variant names (without prefix: `'primary' | 'secondary' | 'success'` etc.), build a `variantClassMap` mapping each to its full Bootstrap class, and remove any variant names with no Bootstrap equivalent (e.g. `quiet`, `ghost`, `cta`). Do not carry forward component-library-specific variants unless intentionally extending Bootstrap — the prop contract should reflect what Bootstrap actually provides. Any component with a `variant` prop must have a Variants story showing all supported values side by side. **Before finalizing the variant set, read the Bootstrap documentation page for that component and identify all meaningful variant classes from it — do not rely on recall.**
 
 ### P009: clean-slate
 
@@ -287,10 +298,6 @@ Background-image swaps cannot be transitioned — the caret snaps. This matches 
 ### P037: multi-select-separator
 
 **Add a visible separator between adjacent selected items in multi-selection components:** When a component supports multiple simultaneous selection and the selected-state style fills the item background, adjacent selected items share the same filled background with no visual break — making them read as a single merged selection rather than discrete selected items. Add a visible separator between adjacent selected items: a border, outline stroke, or gap. This is a visual correctness requirement regardless of whether the underlying Bootstrap component offers multi-selection behavior — the separator need must be identified from the React Aria prop surface (`selectionMode="multiple"` or equivalent) and applied in the bridge.
-
-### P038: prop-audit-first
-
-**Before implementing any component, enumerate its React Aria prop surface from the documentation:** Read the React Aria documentation for the component and list all props before writing any code. Flag any prop with layout, orientation, selection-mode, or variant semantics — these require bridge rules and stories. Do not rely on recall; the documentation is the authoritative prop surface. This mirrors P007 (which requires reading Bootstrap docs before finalizing variants): both the React Aria prop surface and the Bootstrap variant set must be read, not remembered.
 
 ### P041: value-display-stable-dims
 

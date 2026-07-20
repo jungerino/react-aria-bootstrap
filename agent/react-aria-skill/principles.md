@@ -36,17 +36,18 @@ Each principle declares a `**Type:**` (Triggered, Preference, Fact, Verification
 - [P007 variant-replace](#p007-variant-replace) — Build a `variantClassMap` from the taxonomy's resolved Bootstrap variant set
 - [P038 prop-audit-first](#p038-prop-audit-first) — Verify every layout/orientation/selection-mode/variant prop has a taxonomy entry
 
+### Reboot & Browser Defaults (P020, P050)
+- [P020 reboot-align](#p020-reboot-align) — Bootstrap reboot silently changes browser-default styling
+- [P050 reboot-mismatch](#p050-reboot-mismatch) — Element type substitution invalidates Bootstrap reboot rules
+
 ### Core Principles (not yet reviewed — membership below is current; see tracker for status)
-- [P004 conflict-css](#p004-conflict-css) — Comment out conflicting project CSS
 - [P005 bundle-isolation](#p005-bundle-isolation) — Bootstrap-test stories require bundle-level isolation
-- [P009 clean-slate](#p009-clean-slate) — Comment-out is not a clean slate
 - [P011 cursor-pointer](#p011-cursor-pointer) — Non-native interactive elements need `cursor: pointer`
 - [P015 scss-mixins](#p015-scss-mixins) — Use Bootstrap's SCSS mixins for `$enable-*`-gated properties
 - [P016 fixed-dims](#p016-fixed-dims) — Fix explicit dimensions for mounting/unmounting indicators
 - [P017 border-transparent](#p017-border-transparent) — `border-color: transparent` over `border-width: 0`
 - [P018 postcss-scope](#p018-postcss-scope) — Scope Bootstrap via `postcss-prefix-selector`, not SCSS nesting
 - [P019 outline-base](#p019-outline-base) — `btn-outline-{variant}` for borderless interactive elements
-- [P020 reboot-align](#p020-reboot-align) — Bootstrap reboot overrides browser defaults
 - [P021 outline-text-color](#p021-outline-text-color) — `btn-outline-*` sets text color to variant color
 - [P022 bs-icons](#p022-bs-icons) — Bootstrap Icons over inline SVG
 - [P023 css-native-visual](#p023-css-native-visual) — Let Bootstrap render CSS-native visual elements
@@ -65,7 +66,6 @@ Each principle declares a `**Type:**` (Triggered, Preference, Fact, Verification
 - [P042 right-anchor-indicator](#p042-right-anchor-indicator) — Pin trailing indicator to right edge in flex rows
 - [P043 visual-metaphor-completeness](#p043-visual-metaphor-completeness) — Verify full Bootstrap visual metaphor
 - [P049 rac-trigger-width](#p049-rac-trigger-width) — Consume RAC's `--trigger-width` for dropdown width
-- [P050 reboot-mismatch](#p050-reboot-mismatch) — Element type substitution invalidates Bootstrap reboot rules
 - [P051 programmatic-focus-visible](#p051-programmatic-focus-visible) — Suppress UA outline; use `[data-focus-visible]` for keyboard-only ring
 - [P052 portal-no-ancestor-sel](#p052-portal-no-ancestor-sel) — RAC overlay elements render in portals; ancestor bridge selectors never match them
 
@@ -189,19 +189,29 @@ Each principle declares a `**Type:**` (Triggered, Preference, Fact, Verification
 
 ---
 
+## Reboot & Browser Defaults
+
+### P020: reboot-align
+
+**Type:** Fact
+**Fact:** Bootstrap's `_reboot.scss` resets many browser default styles the moment Bootstrap loads — e.g. `th { text-align: inherit }` overrides the browser's native `<th>` centering.
+**Implication:** Never assume an element's unstyled browser-default appearance (alignment, spacing, borders) once Bootstrap is loaded. Check what Bootstrap's reboot actually resolves a property to, and declare explicitly whatever value the design needs.
+**Example:** A `<th>` renders inherit-aligned (typically left, matching body text) under Bootstrap, not centered — a component that needs centered header cells must declare `text-align: center` itself. Other common resets to check: `<fieldset>` border/padding, `<legend>` sizing, `<button>` background/border.
+
+### P050: reboot-mismatch
+
+**Type:** Triggered
+**Trigger:** A sub-part whose taxonomy `DOM conflicts` entry documents an element-type substitution — React Aria renders a different HTML element than the Bootstrap counterpart assumes.
+**Action:** Check the pre-extracted reference CSS (`agent/artifacts/reference-css/{component}-{StoryName}.css`) for rules matching the *original* Bootstrap-expected element type (e.g. a bare `th { ... }` rule sourced from `_reboot.scss`), and apply the same property values explicitly to the substituted element in the bridge. If the needed rule isn't present in the extracted CSS, follow the Extracted CSS Gap Protocol rather than reading `_reboot.scss` directly.
+**Rationale:** `_reboot.scss`'s rules are scoped to specific HTML element types; when React Aria substitutes a different element, those rules load globally but never match it, so their baseline styling silently doesn't apply. The pre-extracted CSS already contains the answer — it's captured from the reference story's real, un-substituted markup, so a reboot rule that matched there is already present in the extracted file in exactly the form it needs to be reproduced.
+
+---
+
 ## Core Principles
-
-### P004: conflict-css
-
-**Conflicting project CSS:** Comment out (do not delete) any project CSS rules that conflict with a desired Bootstrap rule.
 
 ### P005: bundle-isolation
 
-**Bootstrap-styled stories require bundle-level CSS isolation:** Storybook compiles a single shared CSS bundle — all CSS imported anywhere in the project enters the global scope of every story. Commenting out CSS imports in styled components is insufficient: other stories import original components, which import their CSS, which then matches `.react-aria-*` selectors everywhere. `@layer` deprioritization is also insufficient — it only arbitrates direct property conflicts; additive project styles (e.g. interaction-state backgrounds) apply unopposed when Bootstrap has no competing rule. The correct fix is a Storybook glob filter that loads only `stories/react-aria-bootstrap/` stories, so no original unstyled component is ever imported and no project CSS enters the bundle. Storybook has no native per-story CSS isolation in any current version.
-
-### P009: clean-slate
-
-**Comment-out is not a clean slate — assert your own baseline:** Commenting out a project CSS file removes it from that component's import, but the same file may still load via another path (e.g., the original non-bootstrap story imports the original component, which imports its CSS). Any selectors in that file that match your Bootstrap-styled elements will still apply. Do not assume comment-out leaves a blank slate. For every structural property (margin, padding, display, sizing) that Bootstrap's classes expect to control, explicitly set it in the bridge or via Bootstrap utility classes — even if the value is just a reset to zero.
+**Bootstrap-styled stories require bundle-level CSS isolation:** Storybook compiles a single shared CSS bundle — all CSS imported anywhere in the project enters the global scope of every story. Commenting out CSS imports in styled components is insufficient: other stories import original components, which import their CSS, which then matches `.react-aria-*` selectors everywhere. `@layer` deprioritization is also insufficient — it only arbitrates direct property conflicts; additive project styles (e.g. interaction-state backgrounds) apply unopposed when Bootstrap has no competing rule. The correct fix is a Storybook glob filter that loads only `stories/react-aria-bootstrap/` stories, so no original unstyled component is ever imported and no project CSS enters the bundle. Storybook has no native per-story CSS isolation in any current version. This glob filter is already in place (`.storybook/main.js`) — original per-component CSS (`src/{Component}.css`) has no import path into any Bootstrap-styled component, story, or bridge file. This already fully eliminates the leakage risk two now-deleted principles (formerly P004, P009) existed to guard against — see the consolidation tracker for detail.
 
 ### P011: cursor-pointer
 
@@ -233,10 +243,6 @@ transform: (prefix, selector) => {
 ### P019: outline-base
 
 **`btn-outline-{variant}` as a behavioral base for borderless interactive elements:** `btn-outline-{variant}` ships with Bootstrap's full interaction state rules — hover background fill, active background, focus ring. Pairing it with `border-color: transparent` suppresses the visible border at rest while leaving those interaction styles intact. Use this for two categories: (1) grid/list cells (date cells, list items — repeated elements where visible borders add noise); (2) component chrome controls (prev/next, dismiss, expand buttons that live inside a larger component). If a button's job is to be *noticed*, keep the border; if its job is to be *available*, use `border-color: transparent`.
-
-### P020: reboot-align
-
-**Bootstrap reboot overrides browser defaults — make alignment explicit:** Bootstrap's `_reboot.scss` resets browser defaults that components may silently rely on. A common case: `th { text-align: inherit }` overrides the browser's default centering of `<th>` elements. Never rely on browser-default alignment when Bootstrap is loaded — declare it explicitly. Common resets to watch: `<th>` text-align, `<fieldset>` border/padding, `<legend>` sizing, `<button>` background/border.
 
 ### P021: outline-text-color
 
@@ -343,10 +349,6 @@ Do not use Bootstrap's `.visually-hidden` — it sets `position: absolute; width
 ```
 
 This is RAC structural behaviour, not a Bootstrap state bridge — no `data-*` attribute is involved. Apply to any component where the dropdown or popover should match its trigger width (Select, ComboBox, etc.). The `[data-trigger="Select"]` attribute is set by RAC on the Popover automatically — no TSX change needed. `[data-trigger="Select"]` is used rather than `.react-aria-Select .react-aria-Popover` because Popover is portal-rendered; ancestor selectors never match (see P052).
-
-### P050: reboot-mismatch
-
-**Element type substitution invalidates Bootstrap reboot rules:** Bootstrap's `_reboot.scss` applies baseline CSS to specific HTML element types. When React Aria renders a different element type than the Bootstrap counterpart assumes for a sub-part, those rules load globally but do not match the substitute. During the preparation phase, for each sub-part where element types differ, read `src/scss/vendor/bootstrap-5.3.8/_reboot.scss` and identify rules scoped to the original element type. Apply the invalidated properties explicitly in the bridge — they will not take effect through the loaded stylesheet.
 
 ### P051: programmatic-focus-visible
 

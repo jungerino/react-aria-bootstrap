@@ -205,3 +205,132 @@
 .tabs-ref-width-demo {
   width: 28rem;
 }
+
+// ============================================================
+// TagGroup
+// ============================================================
+
+// Tag has no direct Bootstrap counterpart (taxonomy M006) — resolved as
+// .btn + .btn-outline-secondary (Decisions D1/D2) with badge-informed
+// sizing/shape token overrides layered on top. display:inline-flex is
+// needed unconditionally (not just when a Remove Button is present) since
+// a single class can't conditionally switch its own display mode based on
+// children — see taxonomy "Tag sizing/shape overrides".
+//
+// align-self:flex-start (review fix): .ref-specimen is a flex column with
+// the default align-items:stretch (same mechanism documented on
+// .ref-select-wrap above) — without this, a .tag nested inside a
+// .ref-specimen stretches to the full cross-axis width of its specimen
+// column (driven by the widest sibling, typically the uppercase label),
+// instead of hugging its own label+icon content. inline-flex alone does
+// not prevent this: it governs how .tag lays out its own children, not how
+// .tag itself is sized as a flex item of its parent.
+.tag {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 0.35em;
+  --bs-btn-padding-x: 0.65em;
+  --bs-btn-padding-y: 0.35em;
+  --bs-btn-font-size: 0.875rem;
+  --bs-btn-border-radius: var(--bs-border-radius-pill);
+}
+
+// Faux states — .tag. Bootstrap has no static-class equivalent for any of
+// these (unlike Selected/Disabled below, which reuse real Bootstrap
+// classes), so explicit faux classes are required (P-001).
+.tag.faux-hover {
+  color: var(--bs-btn-hover-color);
+  background-color: var(--bs-btn-hover-bg);
+  border-color: var(--bs-btn-hover-border-color);
+}
+
+.tag.faux-focus-visible {
+  color: var(--bs-btn-hover-color);
+  background-color: var(--bs-btn-hover-bg);
+  border-color: var(--bs-btn-hover-border-color);
+  outline: 0;
+  box-shadow: var(--bs-btn-focus-box-shadow);
+}
+
+.tag.faux-pressed {
+  color: var(--bs-btn-active-color);
+  background-color: var(--bs-btn-active-bg);
+  border-color: var(--bs-btn-active-border-color);
+}
+
+// Selected — the complete .btn-primary token set, borrowed verbatim (M007)
+// rather than partially re-derived (taxonomy Decision D3 / State mappings
+// "data-selected" row). Applied instead of .btn-outline-secondary, not
+// alongside it.
+.tag.tag-selected {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: #0d6efd;
+  --bs-btn-border-color: #0d6efd;
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: #0b5ed7;
+  --bs-btn-hover-border-color: #0a58ca;
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: #0a58ca;
+  --bs-btn-active-border-color: #0a53be;
+  --bs-btn-disabled-color: #fff;
+  --bs-btn-disabled-bg: #0d6efd;
+  --bs-btn-disabled-border-color: #0d6efd;
+}
+
+// Disabled and Removable-padding both reuse real Bootstrap mechanisms with
+// no custom rule needed: `.disabled` fires Bootstrap's own `.btn.disabled`
+// selector using whichever color-modifier's disabled tokens are present;
+// `:has(.remove-button)` mirrors the pre-existing vanilla scaffold's own
+// mechanism and only fires when the Remove Button genuinely renders (P-017).
+.tag:has(.remove-button) {
+  padding-inline-end: calc(var(--bs-btn-padding-x) * 0.5);
+}
+
+// Remove Button (.btn-close) — icon-font glyph instead of background-image
+// (Decision D4, per P022 bs-icons).
+//
+// Review fixes:
+// - Size: font-size:1.5em on .btn-close itself (not just the inner glyph)
+//   scales width/height/padding together, since all three are expressed in
+//   em units relative to .btn-close's own font-size in Bootstrap's
+//   compiled rule (width:1em;height:1em;padding:0.25em). Scaling only the
+//   inner .bi-x glyph's font-size would grow the icon past its 1em content
+//   box without growing the padding around it.
+// - Color: was `color: inherit`, picking up .tag's own --bs-btn-color
+//   (`.btn-outline-secondary`'s #6c757d at rest) *and* getting dimmed
+//   further by Bootstrap's own --bs-btn-close-opacity:0.5 — the combination
+//   read as too faint. Set explicitly to --bs-body-color and neutralize the
+//   opacity dimming (--bs-btn-close-opacity:1) so the icon reads as solid
+//   body text, not a translucent overlay on top of an already-light color.
+.btn-close.remove-button {
+  --bs-btn-close-bg: none;
+  --bs-btn-close-opacity: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5em;
+  color: var(--bs-body-color);
+
+  .bi-x {
+    font-size: 1em;
+    color: inherit;
+  }
+}
+
+// Selected Tag: the remove-button icon must follow the selected tag's white
+// text instead of the fixed --bs-body-color default, or it would be
+// illegible against the primary-blue fill.
+.tag-selected .btn-close.remove-button {
+  color: #fff;
+}
+
+.btn-close.remove-button.faux-hover {
+  opacity: var(--bs-btn-close-hover-opacity);
+}
+
+.btn-close.remove-button.faux-focus-visible {
+  outline: 0;
+  box-shadow: var(--bs-btn-close-focus-shadow);
+  opacity: var(--bs-btn-close-focus-opacity);
+}

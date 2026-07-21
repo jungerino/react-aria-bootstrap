@@ -165,3 +165,43 @@
   border-color: var(--bs-primary);
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e");
 }
+
+// ============================================================
+// Tabs
+// ============================================================
+
+// Faux states — .nav-link, scoped to .nav-underline (the only Nav/Tabs
+// style in scope per taxonomy Decision D1). Ancestor context is required
+// (P-002): both the hover/focus color rule and the border-bottom-color rule
+// live on `.nav-underline .nav-link:hover, .nav-underline .nav-link:focus`,
+// not on `.nav-link:hover` alone.
+.nav-underline .nav-link.faux-hover {
+  color: var(--bs-nav-link-hover-color);
+  border-bottom-color: currentcolor;
+}
+
+// Real keyboard focus triggers both `:focus` (shared with hover, above) and
+// `:focus-visible` (outline + box-shadow) simultaneously — the latter does
+// not replace the former, so this class includes both (per taxonomy state
+// mappings). Bootstrap's `.nav-link:focus-visible` box-shadow is a literal
+// compiled value, not a `--bs-*` custom property (M007).
+.nav-underline .nav-link.faux-focus-visible {
+  color: var(--bs-nav-link-hover-color);
+  border-bottom-color: currentcolor;
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+// Selected (.active) and Disabled (.disabled) are real Bootstrap classes —
+// no faux class needed for either (P-001/P-007).
+
+// Reference-only: constrains the Fill/Justified specimens to a width where
+// the two distribution mechanisms visibly diverge. `.nav-fill`'s flex-basis
+// is content-aware (short labels stay narrow, the long label grows wider);
+// `.nav-justified`'s flex-basis is always 0 (all labels forced to the exact
+// same width). With no width constraint, abundant free space makes both
+// rows nearly indistinguishable — real Bootstrap layout, just not a useful
+// demonstration of the delta between the two classes.
+.tabs-ref-width-demo {
+  width: 28rem;
+}

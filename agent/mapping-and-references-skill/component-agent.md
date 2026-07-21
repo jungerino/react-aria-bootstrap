@@ -441,6 +441,25 @@ Use this as a falsification test: visual indistinguishability from another state
 
 Any reference story that includes an open-state specimen for a trigger with a directional caret or chevron must show the caret flipped to the open position. Apply `transform: rotate(180deg)` to the caret element via a `.faux-open` class in `presentation.scss` — do not swap icon variants or toggle visibility. Consistent with P-001 faux-state handling and mirrors P024 in `agent/react-aria-skill/principles.md`.
 
+### P-019: Dual-counterpart specimens use the semantic/visual counterpart's element
+
+Build each reference-story sub-part from the semantic/visual counterpart's native element by default — it carries native behaviors (e.g. a `<select>` sizing to its widest `<option>`) that would otherwise need hand-built CSS.
+
+Substitute the structural counterpart's element only where the semantic/visual counterpart's native element cannot express the needed state in static HTML (e.g. a `<select>`'s open list is OS-rendered, unstylable). When one sub-part needs the substitution, render it as an independent element alongside the rest, kept visually consistent (same option marked selected/active in both).
+
+**Example: Select** — trigger specimens use `<select className="form-select">` throughout; the Open specimen keeps that `<select>` at rest and pairs it with an independent `.dropdown-menu`:
+
+```tsx
+<select className="form-select" defaultValue="banana">
+  <option value="apple">Apple</option>
+  <option value="banana">Banana</option>
+</select>
+<div className="dropdown-menu show">
+  <button className="dropdown-item" type="button">Apple</button>
+  <button className="dropdown-item active" type="button">Banana</button>
+</div>
+```
+
 ### P-017: Asymmetric spacing that reserves clearance for an element or background-image must be verified against what the reference component actually renders
 
 When asymmetric padding or margin in a Bootstrap counterpart exists to reserve clearance for an absolutely-positioned element or background-image (such as an icon or indicator), confirm that element or image is actually rendered in the reference component. If it is not, eliminate the asymmetric spacing.

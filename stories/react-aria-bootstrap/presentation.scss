@@ -2,3 +2,166 @@
 // Reference story shared layout utilities
 // Used across multiple components.
 // ============================================================
+
+.ref-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 1.5rem;
+}
+
+.ref-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ref-specimen {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.ref-specimen-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--bs-secondary-color);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+// ============================================================
+// Select
+// ============================================================
+
+// Faux states — trigger (.form-select)
+// Bootstrap's .form-select defines no :hover or :active/:pressed rule at all
+// (verified against compiled CSS), so no faux-hover/faux-pressed class exists
+// for it — that absence is the correct target, not an omission.
+.form-select.faux-focus {
+  border-color: #86b7fe;
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+// Faux states — .dropdown-item (Select's open-list options)
+.dropdown-item.faux-hover {
+  color: var(--bs-dropdown-link-hover-color);
+  background-color: var(--bs-dropdown-link-hover-bg);
+}
+
+.dropdown-item.faux-focus {
+  color: var(--bs-dropdown-link-hover-color);
+  background-color: var(--bs-dropdown-link-hover-bg);
+  // Bootstrap's own `.dropdown-item:hover, .dropdown-item:focus` rule does not
+  // suppress outline, so the UA focus ring stays visible on top of the shared
+  // hover-color tokens (P-014/P-015) — this is what keeps focus visually
+  // distinct from hover (P-016).
+  outline: auto -webkit-focus-ring-color;
+}
+
+.dropdown-item.faux-active {
+  color: var(--bs-dropdown-link-active-color);
+  background-color: var(--bs-dropdown-link-active-bg);
+}
+
+// Static (non-faux) selected look for single-selection mode — same token
+// values as .faux-active, since Bootstrap's `.dropdown-item.active,
+// .dropdown-item:active` is a single combined rule for both concepts.
+.dropdown-item.select-item-selected {
+  color: var(--bs-dropdown-link-active-color);
+  background-color: var(--bs-dropdown-link-active-bg);
+}
+
+// Reference-only mock of the open menu: static positioning (the real
+// implementation is a positioned Popover; the reference story just needs to
+// render the menu inline, at the trigger's width) and no default display:none,
+// since it's always "open" as a static specimen.
+.select-reference-menu {
+  position: static;
+  display: block;
+  min-width: 12rem;
+}
+
+// Reference-only: pins the Open-specimen trigger to the same width as
+// .select-reference-menu, illustrating that the Popover matches the
+// trigger's width rather than Bootstrap's free-floating dropdown-menu sizing
+// (see taxonomy DOM conflicts — Popover width already matches trigger width
+// in the current src/Select.css scaffold).
+.select-reference-trigger {
+  width: 12rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Open-specimen trigger wrapper: the real composite renders a `<ChevronDown>`
+// icon as a genuine child element (not a background-image, per the trigger
+// arrow DOM conflict), so it's the only sub-part that can visibly rotate for
+// the open state. The reference-story trigger is otherwise a native
+// `<select>` (P-019) whose own background-image arrow cannot rotate — this
+// wrapper suppresses that native arrow and overlays a decorative chevron in
+// its place so the Open specimens can satisfy P-018 (caret flips to the open
+// position via a `.faux-open` class).
+.ref-select-wrap {
+  position: relative;
+  display: inline-block;
+  // .ref-specimen is a flex column with the default align-items:stretch,
+  // which blockifies this flex-item child and stretches it to fill the
+  // cross axis (driven by the widest sibling specimen's label). Without this,
+  // the wrapper — and therefore the absolutely-positioned caret inside it —
+  // stretches far past the <select>'s own width instead of hugging it.
+  align-self: flex-start;
+}
+
+.ref-select-wrap .select-reference-trigger {
+  background-image: none;
+}
+
+.select-caret {
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  width: 1em;
+  height: 1em;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--bs-body-color);
+}
+
+.select-caret.faux-open {
+  transform: translateY(-50%) rotate(180deg);
+}
+
+// Multi-select selection checkbox — a decorative, non-input element styled to
+// look like .form-check-input. Bootstrap's `[type=checkbox]` attribute
+// selector (which normally supplies border-radius) can't match this element,
+// so border-radius is redeclared explicitly here.
+// A .dropdown-item containing a checkbox indicator lays out as a flex row
+// (checkbox leading, label text following) instead of Bootstrap's default
+// block stacking.
+.dropdown-item:has(.select-item-checkbox) {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.select-item-checkbox {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 1em;
+  height: 1em;
+  margin-top: 0.125em;
+  background-color: var(--bs-body-bg);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  border: var(--bs-border-width) solid var(--bs-border-color);
+  border-radius: 0.25em;
+}
+
+.select-item-checkbox.faux-checked {
+  background-color: var(--bs-primary);
+  border-color: var(--bs-primary);
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e");
+}

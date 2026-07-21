@@ -40,9 +40,10 @@ Each principle declares a `**Type:**` (Triggered, Preference, Fact, Verification
 - [P020 reboot-align](#p020-reboot-align) — Bootstrap reboot silently changes browser-default styling
 - [P050 reboot-mismatch](#p050-reboot-mismatch) — Element type substitution invalidates Bootstrap reboot rules
 
-### Dimensions & Layout Stability (P016, P026)
+### Dimensions & Layout Stability (P016, P026, P041)
 - [P016 fixed-dims](#p016-fixed-dims) — Fix explicit dimensions for mounting/unmounting indicators
 - [P026 use-rem](#p026-use-rem) — Use `rem` for Bootstrap-matched sizing
+- [P041 value-display-stable-dims](#p041-value-display-stable-dims) — Use taxonomy specimen data; sizer for content-driven dimensions
 
 ### Core Principles (not yet reviewed — membership below is current; see tracker for status)
 - [P005 bundle-isolation](#p005-bundle-isolation) — Bootstrap-test stories require bundle-level isolation
@@ -64,7 +65,6 @@ Each principle declares a `**Type:**` (Triggered, Preference, Fact, Verification
 - [P034 contrast-all-states](#p034-contrast-all-states) — Maintain ≥ 4.5:1 contrast through all interaction states
 - [P035 no-color-alone](#p035-no-color-alone) — Non-color attribute as primary state differentiator
 - [P037 multi-select-separator](#p037-multi-select-separator) — Separator between adjacent selected items
-- [P041 value-display-stable-dims](#p041-value-display-stable-dims) — Trigger sizes to its widest option
 - [P042 right-anchor-indicator](#p042-right-anchor-indicator) — Pin trailing indicator to right edge in flex rows
 - [P043 visual-metaphor-completeness](#p043-visual-metaphor-completeness) — Verify full Bootstrap visual metaphor
 - [P049 rac-trigger-width](#p049-rac-trigger-width) — Consume RAC's `--trigger-width` for dropdown width
@@ -227,6 +227,35 @@ Each principle declares a `**Type:**` (Triggered, Preference, Fact, Verification
 **Exception:** Use `em` where Bootstrap itself uses it for intentionally fluid scaling.
 **Example:** A checkbox indicator sized `1em × 1em` shrinks inside a smaller-font-size context; `1rem × 1rem` matches Bootstrap's `.form-check-input` regardless of nesting.
 
+### P041: value-display-stable-dims
+
+**Type:** Triggered
+**Trigger:** The taxonomy records specimen data for a sub-part.
+**Action:** Use that recorded data for the sub-part's own content, matching the reference exactly. Where the taxonomy also flags content-driven dimensions, achieve visual parity by rendering a hidden sizer containing every recorded value as an individual block child — the browser resolves the widest one without JS measurement — not by hard-coding the dimension observed in the reference.
+
+```scss
+.trigger { display: flex; flex-direction: column; }
+.trigger .option-sizer {
+  display: block;
+  visibility: hidden;
+  height: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+```
+```tsx
+<Button className="trigger">
+  <ValueDisplay />
+  <span className="option-sizer" aria-hidden="true">
+    {options.map((label) => <div key={label}>{label}</div>)}
+  </span>
+</Button>
+```
+
+**Rationale:** A hard-coded dimension matches the reference's specific demo values by coincidence, not mechanism — it silently breaks the moment a real consumer's option set differs from the reference's. The sizer reproduces the same content-driven behavior directly, so it stays correct for any option set, not just the one the reference happened to use.
+
+Do not use Bootstrap's `.visually-hidden` — it sets `position: absolute; width: 1px`, removing the sizer from layout flow. This principle applies only to finite option sets; typed-input components (ComboBox, DatePicker) have different sizing constraints.
+
 ---
 
 ## Core Principles
@@ -318,31 +347,6 @@ Background-image swaps cannot be transitioned — the caret snaps. This matches 
 ### P037: multi-select-separator
 
 **Add a visible separator between adjacent selected items in multi-selection components:** When a component supports multiple simultaneous selection and the selected-state style fills the item background, adjacent selected items share the same filled background with no visual break — making them read as a single merged selection rather than discrete selected items. Add a visible separator between adjacent selected items: a border, outline stroke, or gap. This is a visual correctness requirement regardless of whether the underlying Bootstrap component offers multi-selection behavior — the separator need must be identified from the React Aria prop surface (`selectionMode="multiple"` or equivalent) and applied in the bridge.
-
-### P041: value-display-stable-dims
-
-**A trigger that displays a selected value from a finite option set must size to its widest option, not its current value:** Bootstrap's native `<select>` sizes to the full option set automatically; a custom trigger backed by a `<button>` intrinsically sizes to the currently displayed value and shifts layout on each selection change. Fix: render a hidden sizer inside the trigger containing all option labels as individual block children — the browser resolves the widest one without JS measurement.
-
-```scss
-.trigger { display: flex; flex-direction: column; }
-.trigger .option-sizer {
-  display: block;
-  visibility: hidden;
-  height: 0;
-  overflow: hidden;
-  white-space: nowrap;
-}
-```
-```tsx
-<Button className="trigger">
-  <ValueDisplay />
-  <span className="option-sizer" aria-hidden="true">
-    {options.map((label) => <div key={label}>{label}</div>)}
-  </span>
-</Button>
-```
-
-Do not use Bootstrap's `.visually-hidden` — it sets `position: absolute; width: 1px`, removing the sizer from layout flow. This principle applies only to finite option sets; typed-input components (ComboBox, DatePicker) have different sizing constraints.
 
 ### P042: right-anchor-indicator
 

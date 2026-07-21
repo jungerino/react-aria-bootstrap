@@ -460,6 +460,14 @@ Substitute the structural counterpart's element only where the semantic/visual c
 </div>
 ```
 
+### P-020: Record specimen data in the taxonomy; flag and demonstrate content-driven dimensions
+
+Record the literal content each reference specimen displays — labels, values, placeholder text — in the taxonomy's Reference story canvas section, not just which specimens exist. Reference images alone don't reliably convey a sub-part's full data set (a closed trigger's specimen shows only its current value, not the option list behind it).
+
+When a sub-part's dimensions are driven by its content rather than fixed — sized to the widest of several possible values, for instance, rather than to whichever value happens to be displayed — note that explicitly, alongside the full set of values it must hold steady against.
+
+Build the reference specimens to demonstrate it: show that sub-part with at least two different content values, including the widest realistic one, rendered at the same size. A sub-part shown only once, at one value, gives no evidence that its sizing is content-driven rather than coincidental.
+
 ### P-017: Asymmetric spacing that reserves clearance for an element or background-image must be verified against what the reference component actually renders
 
 When asymmetric padding or margin in a Bootstrap counterpart exists to reserve clearance for an absolutely-positioned element or background-image (such as an icon or indicator), confirm that element or image is actually rendered in the reference component. If it is not, eliminate the asymmetric spacing.

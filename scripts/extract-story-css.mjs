@@ -96,10 +96,26 @@ const matchedRules = await previewFrame.evaluate(() => {
       });
 
       // Pass 2: class-pattern match — include if the selector references a class
-      // present in the story DOM, regardless of dynamic pseudo-class state
-      const classMatch = domClasses.size > 0 && [...domClasses].some(cls =>
-        rule.selectorText.includes(cls)
-      );
+      // present in the story DOM, regardless of dynamic pseudo-class state.
+      //
+      // Matches on a class-selector token boundary, not a raw substring: a
+      // plain `.includes()` check makes short/prefix-heavy class names false-
+      // positive-match unrelated longer class names that happen to start with
+      // the same characters — e.g. domClasses containing `.bi` (Bootstrap
+      // Icons' base font class) would `.includes()`-match every `.bi-{name}`
+      // glyph rule in the entire icon library (`.bi-123`, `.bi-alarm`, ...),
+      // not just `.bi` itself. The lookahead requires whatever immediately
+      // follows the matched class name to NOT be a further identifier
+      // character (word char or hyphen) — i.e. the next character must be a
+      // real selector delimiter (`:`, `.`, `[`, space, `,`, `>`, `+`, `~`,
+      // `)`, or end of string), so `.bi` matches `.bi::before`/`.bi ` but not
+      // `.bi-123`, while `.btn` still correctly matches inside compound
+      // selectors like `.btn-check:checked + .btn` (the trailing `.btn`
+      // token, not the unrelated `.btn-check` prefix).
+      const classMatch = domClasses.size > 0 && [...domClasses].some(cls => {
+        const escaped = cls.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        return new RegExp(`${escaped}(?![\\w-])`).test(rule.selectorText);
+      });
 
       if (domMatch || classMatch) {
         const text = mediaContext

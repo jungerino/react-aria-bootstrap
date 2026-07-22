@@ -4,44 +4,13 @@
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
   },
   "permissions": {
-    "allow": [
-      "mcp__claude-in-chrome__browser_batch",
-      "mcp__claude-in-chrome__tabs_context_mcp",
-      "mcp__claude-in-chrome__read_console_messages",
-      "mcp__claude-in-chrome__navigate",
-      "mcp__claude-in-chrome__read_page",
-      "mcp__claude-in-chrome__get_page_text",
-      "mcp__storybook__preview-stories",
-      "mcp__storybook__get-storybook-story-instructions",
-      "mcp__react-aria__get_react_aria_page",
-      "mcp__react-aria__list_react_aria_pages",
-      "mcp__react-aria__get_react_aria_page_info",
-      "WebSearch",
-      "mcp__figma__whoami",
-      "Bash(node *)",
-      "Bash(git diff *)",
-      "Bash(python3 *)",
-      "Bash(echo *)",
-      "Bash(curl -s \"http://localhost:6006/*\")",
-      "Bash(npx tsc *)",
-      "Bash(git switch *)",
-      "Bash(find /Users/josh/Library/CloudStorage/Dropbox/Github/react-aria-bootstrap/node_modules/react-aria-components*)",
-      "Bash(sed -n *)",
-      "Bash(grep *)",
-      "Skill(update-config)",
-      "Skill(update-config:*)",
-      "Bash(git fetch *)",
-      "Bash(git ls-remote *)",
-      "Bash(git check-ignore *)",
-      "Bash(git ls-tree *)",
-      "Bash(git show *)",
-      "Bash(disown)",
-      "Bash(xargs cat)",
-      "Bash(git log *)",
-      "Bash(git status *)",
-      "Bash(npx babel *)",
-      "Bash(npx --no-install tsc *)"
+    "deny": [
+      "mcp__claude-in-chrome"
     ],
+    "ask": [
+      "Bash(git commit *)"
+    ],
+    "defaultMode": "bypassPermissions",
     "additionalDirectories": [
       "/Users/josh/.claude/plans"
     ]

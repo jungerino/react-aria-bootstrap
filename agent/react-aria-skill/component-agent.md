@@ -296,6 +296,15 @@ If any new SCSS files appear under `stories/`, move their bridge rules to `src/s
 **Run final `compare-stories.mjs` sweep** across all stories with `--threshold 0.003`. Do not re-read reference images — they remain in context from Preparation Phase.
 - If any story fails: re-enter the fix loop (Phase C mechanics) for those stories only, then re-run the full sweep. Repeat until all stories pass.
 
+**Triggered Principle Compliance Check** (run once, before reporting `verification-sweep-passed`):
+
+For every `Type: Triggered` principle in `principles.md` whose trigger condition holds for this component (per the taxonomy and the specimen data actually in scope), cite the file:line where its action's concrete artifact is implemented in code. A narrative claim that the action was "considered" is not evidence. If no such artifact exists yet, implement it now — a Triggered principle's action is never optional once its trigger condition holds, regardless of whether the current specimen data would make its absence visible in a pixel diff (SKILL.md G060). There is no exception to discover and no one to ask; implement it and re-run the sweep.
+
+Record the check in the component-wide findings doc as a table:
+
+| Principle | Trigger condition met? | Evidence (file:line) |
+|-----------|------------------------|-----------------------|
+
 Before reporting `verification-sweep-passed`: record applied M-codes and P-codes — with ID and slug — in the component's `**Principles used:**` bulleted list in `## Stage 5` of `agent/logs/batch-{N}.md`.
 
 When all stories pass the sweep, report `verification-sweep-passed` to the primary agent.

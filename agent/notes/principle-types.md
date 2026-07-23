@@ -15,6 +15,7 @@ Source taxonomy: `agent/notes/principles-templates-best-practices.md` (six templ
 **Use when:** behavior depends on a detectable situation — condition leads to action.
 **Fields:** `Type` · `Trigger` · `Action` · `Rationale` · `Example` (if it clarifies)
 **Confirmed example:** P001 `compound-sel` in `principles.md`.
+**No exception exists once the trigger condition holds.** The action is mandatory, not a default an agent can judge unnecessary case-by-case. There is no escalation path for skipping one — if the action seems avoidable, implement it anyway. See `SKILL.md` G060.
 
 ## Preference
 

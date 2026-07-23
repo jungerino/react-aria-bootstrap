@@ -111,6 +111,13 @@ Corrections to mistakes an agent will predictably make without being told. Loade
 The same pattern applies to any Bootstrap component class with its own `:active` rule, not just `.btn`.
 **Symptom:** Keyboard users pressing Enter/Space see no visual press feedback at all, while mouse/touch users do.
 
+### G060: dataset-coincidence-skip
+
+**Tempting-but-wrong:** A `Type: Triggered` principle's action seems unnecessary because the current taxonomy specimen data doesn't exercise the divergent case (e.g., current-selection width happens to equal widest-option width) — skip the action and note the simplification in the findings doc.
+**Why-it-fails:** A Triggered principle has no exception clause (no `Exception` field, unlike `Preference`-type) — once the trigger condition holds, the action is mandatory, unconditionally. "The current dataset makes this invisible" is exactly the coincidence-not-mechanism failure several Triggered principles (e.g. P041) exist to prevent; using it to justify skipping the principle applies the failure to itself.
+**Correct-approach:** If the trigger condition holds, implement the action — full stop. Do not evaluate whether the action is "load-bearing" for the current specimen data; that evaluation is itself the anti-pattern. There is no exception to discover and no one to ask. If genuinely unsure whether the *trigger condition* holds (a different question from whether the action is worth doing once it does), resolve that from the taxonomy and the principle's own `Trigger` field — not from a judgment about consequences.
+**Symptom:** A findings-doc entry that reads like a justification for omitting a Triggered principle's action.
+
 ---
 
 ## Workflow

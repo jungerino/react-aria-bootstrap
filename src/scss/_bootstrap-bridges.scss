@@ -1,2 +1,471 @@
 // Bridge selectors: React Aria data-* → Bootstrap interaction states
 // Populated during iterations. Do not add unverified rules here.
+
+// ============================================================
+// Select
+// ============================================================
+
+// Trigger (Button) — `.form-select` is the applied visual counterpart
+// (Decision D1). RAC renders a real <ChevronDown> child icon instead of
+// Form Select's background-image arrow — suppress the native image and lay
+// the icon out via flex so it stays pinned to the trailing edge, with the
+// value text taking the remaining space (P011/P042; DOM conflicts "Trigger
+// arrow").
+//
+// P041 value-display-stable-dims: the trigger is `flex-direction: column`
+// holding two rows — the visible value+caret row (`.select-trigger-value`)
+// and a hidden `.option-sizer` row containing every option's text as an
+// individual block child. Neither row sets its own width; the container's
+// default `align-items: stretch` makes both fill whichever width the
+// *widest* child (i.e. the widest option, via the sizer) resolves to, so
+// the trigger sizes to the widest option like a native `<select>` — not
+// just to whichever value happens to be currently selected.
+.react-aria-Button.form-select {
+  --bs-form-select-bg-img: none;
+  display: flex;
+  flex-direction: column;
+  text-align: start;
+  // The base rule reserves 2.25rem of right padding for the native
+  // background-image arrow (suppressed above). The real icon consumes its
+  // own flex space instead (icon width + gap), so keep right padding equal
+  // to the other three sides — otherwise the space gets reserved twice and
+  // the trigger renders wider than the reference at every content length.
+  padding-right: 0.75rem;
+}
+
+.react-aria-Button.form-select .select-trigger-value {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.react-aria-Button.form-select .react-aria-SelectValue {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.react-aria-Button.form-select .lucide-chevron-down {
+  flex-shrink: 0;
+  width: 1em;
+  height: 1em;
+  color: var(--bs-body-color);
+}
+
+// P041's sizer: reserves the widest option's width in layout without being
+// visible or occupying vertical space. Not Bootstrap's `.visually-hidden`
+// (that's `position: absolute`, which would remove it from the flow this
+// technique depends on).
+.react-aria-Button.form-select .option-sizer {
+  display: block;
+  visibility: hidden;
+  height: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+// data-disabled — the only property `.form-select:disabled` changes.
+.react-aria-Button.form-select[data-disabled] {
+  background-color: var(--bs-secondary-bg);
+}
+
+// P050 reboot-mismatch (taxonomy DOM conflicts, "Trigger element type",
+// M018): Bootstrap's reboot scopes two rules to the bare `select` type —
+// `select { overflow-wrap: normal }` and `select:disabled { opacity: 1 }`
+// (both confirmed present in the extracted reference CSS) — neither matches
+// the substituted real `<button>`. Reproduced explicitly on the button.
+.react-aria-Button.form-select {
+  overflow-wrap: normal;
+}
+
+.react-aria-Button.form-select:disabled {
+  opacity: 1;
+}
+
+// data-invalid lives on the Select root (ancestor), not the Button — DOM
+// conflicts "Invalid state attribute location".
+.react-aria-Select[data-invalid] .react-aria-Button.form-select {
+  border-color: var(--bs-form-invalid-border-color);
+}
+
+.react-aria-Select[data-invalid] .react-aria-Button.form-select[data-focused] {
+  border-color: var(--bs-form-invalid-border-color);
+  box-shadow: 0 0 0 0.25rem rgba(var(--bs-danger-rgb), 0.25);
+}
+
+// SelectValue — muted placeholder text; no dedicated Bootstrap class.
+.react-aria-SelectValue[data-placeholder] {
+  color: var(--bs-secondary-color);
+}
+
+// Caret rotation on open (P024/P018). The real child icon carries no other
+// hook, so the selector targets lucide-react's generated class directly.
+.react-aria-Select[data-open] .lucide-chevron-down {
+  transform: rotate(180deg);
+}
+
+// P044 faux-state-class: the OpenSingleSelect/OpenMultiSelect mirror
+// specimens show the trigger "at rest" (not genuinely open — a real open
+// state would mount a real Popover, duplicating the separate independent
+// menu specimen those stories already render beside it) but with the caret
+// in its open/rotated position, matching the reference story's own
+// `.select-caret.faux-open` treatment for the same specimen. `data-open`
+// only fires while genuinely open, so this state needs an explicit faux
+// class on the real chevron rather than the real bridge above.
+.react-aria-Select.faux-open .lucide-chevron-down {
+  transform: rotate(180deg);
+}
+
+// Popover — visual chrome lives here, not ListBox (Decision D2). RAC
+// mounts/unmounts the Popover instead of toggling `.show`, so force display
+// unconditionally (DOM conflicts "Popover visibility mechanism").
+.react-aria-Popover.dropdown-menu {
+  display: block;
+}
+
+// Match the trigger's width (P049) — native <select> does this
+// automatically, a custom popover does not.
+.react-aria-Popover.dropdown-menu[data-trigger='Select'] {
+  width: var(--trigger-width);
+}
+
+// ListBox — scroll container only (Decision D2); no dedicated Bootstrap
+// class beyond scroll/overflow. Never shows its own visible ring — the
+// activedescendant pattern delegates focus indication to individual items.
+.react-aria-ListBox.dropdown-listbox {
+  max-height: 15rem;
+  overflow-y: auto;
+  outline: none;
+}
+
+// ListBoxItem (option) states.
+.react-aria-ListBoxItem.dropdown-item {
+  cursor: pointer; // P011 — a <div>, not a native <a>/<button>
+}
+
+.react-aria-ListBoxItem.dropdown-item[data-hovered] {
+  color: var(--bs-dropdown-link-hover-color);
+  background-color: var(--bs-dropdown-link-hover-bg);
+}
+
+.react-aria-ListBoxItem.dropdown-item[data-focused] {
+  color: var(--bs-dropdown-link-hover-color);
+  background-color: var(--bs-dropdown-link-hover-bg);
+}
+
+// Bootstrap's own `.dropdown-item:hover, .dropdown-item:focus` rule does not
+// suppress outline, so the UA focus ring must be reproduced explicitly —
+// real DOM focus never reaches an item under the roving/activedescendant
+// pattern, so this is required, not redundant (DOM conflicts "ListBoxItem
+// focus mechanism").
+.react-aria-ListBoxItem.dropdown-item[data-focus-visible] {
+  outline: auto -webkit-focus-ring-color;
+}
+
+.react-aria-ListBoxItem.dropdown-item[data-pressed] {
+  color: var(--bs-dropdown-link-active-color);
+  background-color: var(--bs-dropdown-link-active-bg);
+}
+
+.react-aria-ListBoxItem.dropdown-item[data-disabled] {
+  color: var(--bs-dropdown-link-disabled-color);
+  pointer-events: none;
+  background-color: transparent;
+}
+
+// Selected-state mechanism splits by selectionMode (M017 delta, Decisions
+// D4/D5): single-select highlights the item background; multi-select fills
+// the leading checkbox indicator instead and leaves the item background
+// untouched.
+.react-aria-ListBoxItem.dropdown-item[data-selection-mode='single'][data-selected] {
+  color: var(--bs-dropdown-link-active-color);
+  background-color: var(--bs-dropdown-link-active-bg);
+}
+
+.react-aria-ListBoxItem.dropdown-item[data-selection-mode='multiple'][data-selected] .select-item-checkbox {
+  background-color: var(--bs-primary);
+  border-color: var(--bs-primary);
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e");
+}
+
+// FieldError visibility — `.invalid-feedback` is hidden by default and
+// normally shown via `.is-invalid ~ .invalid-feedback`; RAC conditionally
+// mounts FieldError only when a real error exists, and the sibling selector
+// wouldn't reach it here anyway (data-invalid lives on the Select root, an
+// ancestor of FieldError, not a preceding sibling) — DOM presence already
+// signals "show", so force display unconditionally instead.
+.react-aria-FieldError.invalid-feedback {
+  display: block;
+}
+
+// Root wrapper — no direct Bootstrap counterpart (taxonomy: "bare structural
+// wrapper"). When a Label is rendered, the reference story wraps
+// label+control+description/error in `.ref-stack` (flex column, 0.5rem gap)
+// rather than relying on each child's own block margin alone — reproduce the
+// same total spacing here, scoped to the label-bearing case only, since the
+// label-less stories (bare trigger, or trigger+FieldError with no label)
+// already match the reference's plain block-flow spacing without it.
+.react-aria-Select.select-with-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+// Note: `.select-item-checkbox`'s resting/unchecked base look (background,
+// border, size, border-radius redeclare per the `[type=checkbox]`
+// attribute-selector DOM conflict) and the flex layout for a `.dropdown-item`
+// containing one are already defined generically in
+// `stories/react-aria-bootstrap/presentation.scss` — those rules are not
+// reference-specific (no `.ref-` scoping) and apply equally to this real
+// component's rendered DOM, so they are not duplicated here.
+
+// ============================================================
+// Tabs
+// ============================================================
+
+// Root wrapper — no direct Bootstrap counterpart (taxonomy: Bootstrap has no
+// wrapper joining a tab list to its content; the two trees are linked only
+// by `data-bs-target`/`aria-controls`, never DOM nesting). Retains custom,
+// non-Bootstrap flex layout so the TabList/TabPanels composite reads as one
+// component regardless of orientation. Gap values reproduce the reference
+// story's own layout exactly: horizontal stacks `.ref-stack`'s 0.5rem flex
+// gap with a separate 1rem `.mt-3` margin (0.5rem + 1rem = 1.5rem, and
+// margin-top on a flex item never collapses with the parent's `gap`, so a
+// single 1.5rem gap here is pixel-equivalent); vertical matches the
+// reference's `.me-3` (1rem) horizontal margin the same way.
+.react-aria-Tabs {
+  display: flex;
+  max-width: 100%;
+}
+
+.react-aria-Tabs[data-orientation='horizontal'] {
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.react-aria-Tabs[data-orientation='vertical'] {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+// TabList — `.nav.nav-underline` (Decision D1) applied in TSX. Vertical
+// orientation reproduces `.flex-column`'s single declaration directly
+// (taxonomy state mappings) rather than conditionally applying the utility
+// class name, avoiding any utility `!important` interaction.
+.react-aria-TabList.nav[data-orientation='vertical'] {
+  flex-direction: column;
+}
+
+// Tab — `.nav-link` applied directly to the real, focusable/hoverable Tab
+// element (a div, or an <a> when `href` is set — never a <button>, M018).
+// Because it's genuinely hoverable/focusable, Bootstrap's native
+// `:hover`/`:focus`/`:focus-visible` rules fire on their own — no bridge
+// needed for `data-hovered`/`data-focused`/`data-focus-visible` (taxonomy
+// state mappings). `data-pressed` has no Bootstrap visual either — Bootstrap
+// defines no `:active` rule for `.nav-link` at all (states.md, G050's
+// exception clause: nothing to bridge when the applied class has no real
+// `:active` rule). Only `data-selected` and `data-disabled` need explicit
+// bridges.
+//
+// Order matters: `[data-disabled]` is declared before `[data-selected]` so
+// that when both are present (Selected + Disabled specimen), the shared
+// `color` property resolves to the selected/active rule — reproducing real
+// Bootstrap's specificity outcome (`.nav-underline .nav-link.active` at
+// specificity 0,3,0 outranks `.nav-link.disabled` at 0,2,0). Both bridge
+// selectors below carry equal specificity to each other (the same
+// `.react-aria-Tab` qualifier is added uniformly to both), so declaration
+// order is what decides the tie here; `pointer-events`/`cursor` are only
+// declared on the disabled rule and are unaffected by the ordering.
+.react-aria-Tab.nav-link[data-disabled] {
+  color: var(--bs-nav-link-disabled-color);
+  pointer-events: none;
+  cursor: default;
+}
+
+.react-aria-Tab.nav-link[data-selected] {
+  font-weight: 700;
+  color: var(--bs-nav-underline-link-active-color);
+  border-bottom-color: currentcolor;
+}
+
+// TabPanels — `.tab-content` applied in TSX (literal string, form 2 —
+// TabPanels' className has no render-prop form). `position: relative`
+// anchors the exiting panel's `position: absolute` cross-fade below
+// (retained custom CSS, not a Bootstrap mechanism — Bootstrap's own
+// `.tab-content > .tab-pane` toggles `display` instead; React Aria
+// mounts/unmounts and cross-fades via its own mechanism, per DOM conflicts).
+.react-aria-TabPanels.tab-content {
+  position: relative;
+}
+
+// TabPanel — no Bootstrap class beyond structural (taxonomy: `.fade`/`.show`
+// are not applied).
+.react-aria-TabPanel {
+  outline: none;
+  transition: opacity 200ms ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .react-aria-TabPanel {
+    transition: none;
+  }
+}
+
+// data-focused / data-focus-visible — no Bootstrap counterpart (taxonomy:
+// `.tab-pane` has no focus styling of its own in any compiled rule). Retain
+// a custom outline treatment, aligned to Bootstrap's generic
+// `--bs-focus-ring-*` tokens for consistency (taxonomy's optional alignment
+// note) — no real Bootstrap component rule is being overridden either way.
+.react-aria-TabPanel[data-focus-visible] {
+  box-shadow: 0 0 0 var(--bs-focus-ring-width) var(--bs-focus-ring-color);
+}
+
+// data-inert — closest Bootstrap analog is `.tab-content > .tab-pane`'s
+// resting `display: none` (taxonomy). Excludes the exiting case: RAC sets
+// `data-inert` on *any* non-selected panel, including one currently
+// exiting/cross-fading (verified against react-aria-components source,
+// dist/private/Tabs.js) — hiding it outright here would truncate the
+// fade-out the `data-exiting` rule below is meant to show.
+.react-aria-TabPanel[data-inert]:not([data-exiting]) {
+  display: none;
+}
+
+// data-entering / data-exiting — no Bootstrap equivalent (taxonomy):
+// Bootstrap's `.fade`/`.show` assumes all panes are co-present and toggled
+// via `display`, whereas React Aria mounts only the active panel and
+// animates the swap itself. Retain the existing custom opacity cross-fade.
+.react-aria-TabPanel[data-entering],
+.react-aria-TabPanel[data-exiting] {
+  opacity: 0;
+}
+
+.react-aria-TabPanel[data-exiting] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
+// ============================================================
+// TagGroup
+// ============================================================
+
+// Root wrapper — no direct Bootstrap counterpart (taxonomy: bare
+// structural wrapper). Mirrors Select's `.select-with-label` precedent:
+// when a Label is rendered, stack Label/TagList/Description/Error in a
+// flex column with the same 0.5rem gap the reference story's `.ref-stack`
+// uses. The label-less stories (bare TagList, or TagList+Description/Error
+// with no Label — never exercised in this taxonomy's story set, but valid
+// per the prop surface) already match plain block-flow spacing without
+// this, since there's only ever one child in that case.
+.react-aria-TagGroup.tag-group-with-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+// TagList — bare structural wrapper (taxonomy M006), `.d-flex.flex-wrap
+// .gap-2` utilities applied in TSX (no Bootstrap component class exists
+// for a "chip container" role). data-focused/data-focus-visible: the
+// container itself is never the visible focus target (individual Tags
+// are) — no bridge, just suppress the outline unconditionally (taxonomy
+// State mappings).
+.react-aria-TagList {
+  outline: none;
+}
+
+// Tag — `.tag.btn.btn-outline-secondary` applied in TSX (Decisions D1/D2).
+// Base sizing/shape overrides (display, padding, font-size, border-radius)
+// and the reference story's faux-state/`.tag-selected` classes already
+// live in `stories/react-aria-bootstrap/presentation.scss` (unscoped, no
+// `.ref-` prefix) and apply equally to this real component's rendered DOM
+// — not duplicated here (same pattern as Select's `.select-item-checkbox`,
+// see that section's closing note). Only the real `[data-*]` bridges
+// follow; `data-focused`/`data-focus-visible` need no bridge — Tag is a
+// genuinely focusable div (roving tabindex, `useTag`), so real
+// `:focus-visible` fires natively (taxonomy State mappings).
+
+// data-hovered — explicit bridge preferred over real `:hover` (RAC's
+// useHover deliberately excludes touch), reads the same --bs-btn-hover-*
+// vars .btn-outline-secondary already sets — no contest.
+.react-aria-Tag.btn[data-hovered] {
+  color: var(--bs-btn-hover-color);
+  background-color: var(--bs-btn-hover-bg);
+  border-color: var(--bs-btn-hover-border-color);
+}
+
+// data-pressed — covers keyboard (Enter/Space) presses that real :active
+// may not reliably capture (G050).
+.react-aria-Tag.btn[data-pressed] {
+  color: var(--bs-btn-active-color);
+  background-color: var(--bs-btn-active-bg);
+  border-color: var(--bs-btn-active-border-color);
+}
+
+// data-selected — no native Bootstrap selector fires (`.btn.active` is
+// never added by React Aria). Declares `.btn-primary`'s complete literal
+// token set verbatim (taxonomy State mappings) — this compound selector
+// outranks `.btn-outline-secondary`'s own token block on specificity, so
+// no class swap is needed.
+.react-aria-Tag.btn[data-selected] {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: #0d6efd;
+  --bs-btn-border-color: #0d6efd;
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: #0b5ed7;
+  --bs-btn-hover-border-color: #0a58ca;
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: #0a58ca;
+  --bs-btn-active-border-color: #0a53be;
+  --bs-btn-disabled-color: #fff;
+  --bs-btn-disabled-bg: #0d6efd;
+  --bs-btn-disabled-border-color: #0d6efd;
+}
+
+// Selected Tag's Remove Button icon must follow the selected tag's white
+// text instead of presentation.scss's fixed --bs-body-color default, or it
+// becomes illegible against the primary-blue fill (taxonomy DOM conflicts,
+// "Remove Button icon delivery").
+.react-aria-Tag.btn[data-selected] .react-aria-Button.btn-close.remove-button {
+  color: #fff;
+}
+
+// data-disabled — a <div>, not a form-disableable element, so real
+// :disabled never fires (M018 elem-type-sub). `.btn-outline-secondary` has
+// no separate disabled color/bg/border shift beyond opacity in its own
+// token block, so opacity + pointer-events alone reproduce the target.
+.react-aria-Tag.btn[data-disabled] {
+  opacity: var(--bs-btn-disabled-opacity);
+  pointer-events: none;
+}
+
+// data-allows-removing — M017 delta: tighten trailing padding to make
+// room for the Remove Button. Fires only when the Remove Button genuinely
+// renders (mirrors the presentation.scss reference-story `:has(.remove-
+// button)` mechanism, re-expressed as a data-attribute selector).
+.react-aria-Tag.btn[data-allows-removing] {
+  padding-inline-end: calc(var(--bs-btn-padding-x) * 0.5);
+}
+
+// Remove Button (`.react-aria-Button.btn-close.remove-button`) — icon-font
+// glyph base look lives in presentation.scss (Decision D4); only the real
+// data-* bridge follows. data-focused/data-focus-visible and data-disabled
+// need no bridge — a real, genuinely focusable/disableable <button>, so
+// native :focus/:focus-visible/:disabled fire directly. data-pressed needs
+// no bridge either — `.btn-close` has no dedicated :active rule in
+// compiled CSS (absence is the correct target, not an omission).
+.react-aria-Button.btn-close.remove-button[data-hovered] {
+  opacity: var(--bs-btn-close-hover-opacity);
+}
+
+// Error text — TagGroup has no isInvalid/data-invalid state at all
+// (taxonomy: confirmed absent from TagGroupProps), so there is no
+// `.is-invalid` gating mechanism to hook into. DOM presence of the
+// conditionally-rendered Text already signals "show" — force display
+// unconditionally instead (taxonomy DOM conflicts, "Error text visibility
+// mechanism").
+.react-aria-Text[slot='errorMessage'].invalid-feedback {
+  display: block;
+}

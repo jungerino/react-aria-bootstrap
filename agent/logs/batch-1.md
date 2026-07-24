@@ -79,12 +79,51 @@
 
 ### Select
 **Principles used:**
-- *(e.g., `P014 data-pressed`, `P022 bs-icons`)*
+- `P001 compound-sel` — kept the RAC default class alongside Bootstrap classes throughout (`.react-aria-Button.form-select`, `.react-aria-ListBoxItem.dropdown-item`, `.react-aria-Popover.dropdown-menu`, `.react-aria-Select`)
+- `P002 class-in-tsx` — callback form (`{ defaultClassName } => ...`) used for every className in `Select.tsx`
+- `P003 scss-bridge` — all `data-*` states bridged in `_bootstrap-bridges.scss`
+- `P005 bundle-isolation` — rebuilt directly on `react-aria-components` primitives instead of the vanilla-starter's shared `src/Button.tsx`/`ListBox.tsx`/`Popover.tsx`/`Form.tsx` wrappers, since those unconditionally import original per-component CSS keyed to the vanilla theme's token namespace
+- `P007 variant-replace` — custom `size` prop (`sm`/`lg`) resolves to `form-select-sm`/`form-select-lg`, replacing the component-library-inherited variant concept entirely (taxonomy Decision D3)
+- `P011 cursor-pointer` — `cursor: pointer` added explicitly on `.react-aria-ListBoxItem.dropdown-item` (a `<div>`, not a native interactive element)
+- `P013 prefer-component-cls` — `.form-select`, `.dropdown-item`, `.dropdown-menu`, `.form-label`, `.form-text`, `.invalid-feedback` used throughout; no layout utility classes needed in the component itself
+- `P024 caret-flip` — `.react-aria-Select[data-open] .lucide-chevron-down { transform: rotate(180deg); }`
+- `P036 derive-from-counterpart` — Button's disabled/invalid/focus bridges and ListBoxItem's hover/focus/pressed/disabled/selected bridges all copied from `.form-select`'s and `.dropdown-item`'s real compiled-CSS mechanism in the extracted reference CSS, not re-derived from visual similarity
+- `P038 prop-audit-first` — cross-checked Select's full prop table via `mcp__react-aria__get_react_aria_page` against the taxonomy's Variants section during Preparation Phase; no gap found
+- `P040 container-owns-boundary` — Popover (container) owns the `.dropdown-menu` visual chrome (border/radius/background); ListBox and its items own no boundary of their own (Decision D2)
+- `P041 value-display-stable-dims` — implemented per the principle's own example structure: a hidden `.option-sizer` span inside the trigger `Button`, containing every option's text as an individual block child, so the trigger's width resolves to the widest *option*, not just the current value. (An earlier pass skipped this on the reasoning that the current specimen data made the two cases coincide — rejected by the coordinator per `SKILL.md` G060 `dataset-coincidence-skip`; implemented for real, see `select-findings.md`'s Correction section.)
+- `P042 right-anchor-indicator` — `justify-content: space-between` on the trigger's value+caret row pins the chevron to the trailing edge regardless of value text length
+- `P044 faux-state-class` — `.faux-hover`/`.faux-focus` (already defined in `presentation.scss`) applied to specific mirror-story `SelectItem`s, and a new `.faux-open` bridge rule (rotating the real trigger chevron) applied to the OpenSingleSelect/OpenMultiSelect trigger specimens, matching the reference story's own `.select-caret.faux-open` treatment for the same specimens — states that can't be produced without live interaction
+- `P047 presentation-import` — mirror story imports `../presentation.scss` directly
+- `P049 rac-trigger-width` — `.react-aria-Popover.dropdown-menu[data-trigger='Select'] { width: var(--trigger-width); }`
+- `P050 reboot-mismatch` — taxonomy DOM conflicts "Trigger element type" (M018, native `<select>` → real `<button>`): `select { overflow-wrap: normal }` and `select:disabled { opacity: 1 }` are bare-`select`-scoped reboot rules that won't match the substituted button; reproduced explicitly in `_bootstrap-bridges.scss`
+- `P052 portal-no-ancestor-sel` — Popover bridge selectors written with no ancestor prefix, scoped via `[data-trigger='Select']` instead
 
 ### Tabs
 **Principles used:**
-- *(e.g., `P014 data-pressed`, `P022 bs-icons`)*
+- `P001 compound-sel` — RAC default class kept alongside Bootstrap classes throughout (`.react-aria-Tab.nav-link`, `.react-aria-TabList.nav`, `.react-aria-TabPanels.tab-content`, `.react-aria-Tabs`)
+- `P002 class-in-tsx` — callback form used for `Tab`/`TabList`; literal-string form 2 used for `TabPanels` specifically, since its `className` prop has no render-prop form (verified via the API table) and passing any string replaces the RAC default outright (G040)
+- `P003 scss-bridge` — `[data-selected]`/`[data-disabled]` bridged explicitly on `Tab`; `[data-focus-visible]`/`[data-inert]`/`[data-entering]`/`[data-exiting]` bridged on `TabPanel`
+- `P005 bundle-isolation` — built directly on `react-aria-components` primitives instead of importing the pre-existing `src/Tabs.css` (vanilla-starter per-component CSS keyed to the phased-out `--text-color`/`--spacing-*` token namespace), matching Select's precedent
+- `P013 prefer-component-cls` — `.nav`, `.nav-underline`, `.nav-link`, `.tab-content` used throughout; Decision D3's fill/justify variant applies the real `.nav-fill`/`.nav-justified` Bootstrap classes via React Context rather than a synthetic bridge selector reproducing their effect
+- `P033 verify-scss-vars` — `--bs-focus-ring-width`/`--bs-focus-ring-color` (TabPanel's custom focus treatment) confirmed present in the pre-extracted reference CSS before use
+- `P036 derive-from-counterpart` — `[data-selected]`/`[data-disabled]` bridge property values copied verbatim from `.nav-underline .nav-link.active`/`.nav-link.disabled`'s real compiled-CSS declarations in the extracted reference CSS
+- `P038 prop-audit-first` — cross-checked the full Tabs/TabList/Tab/TabPanels/TabPanel prop tables via `mcp__react-aria__get_react_aria_page` against the taxonomy's Variants section; no prop gap found (orientation, keyboardActivation, Tab.isDisabled, Tab.href, TabPanel.shouldForceMount all covered)
+- `P044 faux-state-class` — `.faux-hover`/`.faux-focus-visible` (already defined in `presentation.scss` for the Tabs reference story) applied via `Tab`'s className-passthrough for the States story's Hover/Focused specimens
+- `P047 presentation-import` — mirror story imports `../presentation.scss` directly
+- Taxonomy completeness gap (not a listed principle ID): cross-checking `react-aria-components/dist/private/Tabs.js` directly found the Tabs root also carries `data-focused`/`data-focus-visible`/`data-disabled`, absent from the taxonomy's Tabs-root state-mapping table (only `data-orientation` listed). Left unbridged — no Bootstrap counterpart exists for a whole tabs+content composite's focus-within ring or disabled treatment, and an unmatched `data-*` attribute renders no visual output on its own. Logged in `tabs-findings.md` per principles.md's "When Bootstrap Mapping Cannot Be Found" appendix.
 
 ### TagGroup
 **Principles used:**
-- *(e.g., `P014 data-pressed`, `P022 bs-icons`)*
+- `P001 compound-sel` — RAC default class kept alongside Bootstrap classes throughout (`.react-aria-Tag.btn`, `.react-aria-Button.btn-close.remove-button`, `.react-aria-TagGroup`, `.react-aria-TagList`)
+- `P002 class-in-tsx` — callback form used for `Tag`/remove `Button`/`TagList`; literal-string form 2 used for `TagGroup` root specifically, since its `className` prop has no render-prop form (verified via `dist/types/src/TagGroup.d.ts`) and passing any string replaces the RAC default outright (G040)
+- `P003 scss-bridge` — `[data-hovered]`/`[data-pressed]`/`[data-selected]`/`[data-disabled]`/`[data-allows-removing]` bridged explicitly on `Tag`; `[data-hovered]` bridged on the Remove Button
+- `P005 bundle-isolation` — rebuilt directly on `react-aria-components/TagGroup`'s own re-exports (`TagGroup`, `TagList`, `Tag`, `Button`, `Label`, `Text`) instead of the vanilla-starter's shared `src/Form.tsx`/`src/Content.tsx` wrappers, matching Select/Tabs' precedent
+- `P013 prefer-component-cls` — `.btn`, `.btn-outline-secondary`, `.btn-close`, `.form-label`, `.form-text`, `.invalid-feedback` used throughout; `.d-flex.flex-wrap.gap-2` utilities used only for TagList, which has no Bootstrap component-class counterpart at all (taxonomy M006)
+- `P022 bs-icons` — Remove Button glyph rendered as `<i class="bi bi-x">` instead of the original stub's `lucide-react` `<X/>` (Decision D4)
+- `P036 derive-from-counterpart` — `[data-hovered]`/`[data-pressed]`/`[data-selected]`/`[data-disabled]` bridge property values copied verbatim from `.btn:hover`/`.btn-check:checked + .btn, ...:active`/`.btn-primary`'s own token block/`.btn:disabled, .btn.disabled` in the pre-extracted reference CSS, not re-derived from visual similarity
+- `P038 prop-audit-first` — cross-checked `AriaTagGroupProps`/`TagProps` (via `useTagGroup.d.ts` and `TagGroup.d.ts`, `mcp__react-aria__get_react_aria_page` having no dedicated data-attributes table for this component per the taxonomy's own Confidence section) against the taxonomy's Variants section; no prop gap found
+- `P040 container-owns-boundary` — not directly triggered (Tag has no child sub-boundary to own), but its converse informed Decision D1's resolution: `.btn`'s own border/radius live on the Tag element itself, not distributed across sub-elements
+- `P044 faux-state-class` — `.faux-hover`/`.faux-focus-visible`/`.faux-pressed` (already defined in `presentation.scss` for the TagGroup reference story) applied via `Tag`'s className passthrough for the States story; extended via a new `removeButtonClassName` prop on `Tag` so the Removable story could apply the same faux classes to the nested Remove Button specifically
+- `P047 presentation-import` — mirror story imports `../presentation.scss` directly, reusing its pre-existing `.tag`/faux-state/`.tag-selected`/`.btn-close.remove-button` rules rather than duplicating them into `_bootstrap-bridges.scss` (same pattern as Select's `.select-item-checkbox` reuse)
+- `P053 prefer-visual-target-class` — confirmed `.btn-outline-secondary`'s hover/active/disabled rules produce visible output on `.react-aria-Tag.btn` as applied (not left silently inert, per the taxonomy's "Tag base token gap" DOM conflict); the `[data-selected]` override was written as a full token-set bridge rather than adding a second component class
+- G050 (native-active-keyboard-gap) — considered and found inapplicable to Tag's/Remove Button's `data-focused`/`data-focus-visible` (no bridge needed there, per taxonomy): the gap G050 describes is specific to `:active` under keyboard activation, not `:focus-visible`, which fires correctly for keyboard focus regardless of input modality on a genuinely focusable element
